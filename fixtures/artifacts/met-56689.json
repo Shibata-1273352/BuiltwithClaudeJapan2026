@@ -1,0 +1,32 @@
+{
+  "id": "met-56689",
+  "source": "https://www.metmuseum.org/art/collection/search/56689",
+  "image_url": "https://images.metmuseum.org/CRDImages/as/original/DP121552.jpg",
+  "image_file": "met_56689.jpg",
+  "image_size": [2624, 3840],
+  "rights": "Public domain (The Met isPublicDomain=true)",
+  "lantern_box": [0.35, 0.068, 0.95, 0.363],
+  "anchors": [
+    {
+      "name": "bottom_center",
+      "x": 0.7431,
+      "y": 0.3651,
+      "how": "lowest point of the SAM 3 lantern mask (the hook); checked visually"
+    },
+    {
+      "name": "left_extreme",
+      "x": 0.3525,
+      "y": 0.1245,
+      "how": "leftmost point of the SAM 3 lantern mask (widest visible row of the paper body); checked visually"
+    },
+    {
+      "name": "base_left",
+      "x": 0.6193,
+      "y": 0.3125,
+      "how": "top-left corner of the black metal base band (pixel 1625,1200); placed by eye on a gridded zoom"
+    }
+  ],
+  "annotated_by": "claude-code (manual, visual check on gridded zoom)",
+  "annotated_at": "2026-11-02",
+  "note": "Lantern is cut off by the top and right edges of the print; anchors use visible parts only (4.10 step 5)."
+}

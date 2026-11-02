@@ -1,0 +1,757 @@
+{
+  "version": 1,
+  "note": "Corpus manifest (REQUIREMENTS.md 4.4.1). Whole books are ingested. Official sources are registered as excerpts with URL, retrieval date and range.",
+  "sources": [
+    {
+      "id": "bird-unbeaten",
+      "type": "book",
+      "lang": "en",
+      "format": "gutenberg",
+      "title": "Unbeaten Tracks in Japan",
+      "author": "Isabella L. Bird",
+      "author_died": 1904,
+      "first_published": 1880,
+      "edition": "Popular edition (John Murray), abridged; Gutenberg #2184 transcribes the 1911 printing",
+      "edition_year": 1911,
+      "url": "https://www.gutenberg.org/cache/epub/2184/pg2184.txt",
+      "provider": "Project Gutenberg #2184",
+      "license": "Public domain in the US (Gutenberg) and Japan (author d. 1904)",
+      "chapter_pattern": "^LETTER [IVXLC]+\\.?$",
+      "notes": "Letter V (Yedo, June 9 [1878]) describes the Asakusa temple and Kwan-non. Its 'grand red gate' with the Ni-o is the Nio-mon (today's Hozomon), NOT Kaminarimon, which was absent 1865/66-1960."
+    },
+    {
+      "id": "scidmore-jinrikisha",
+      "type": "book",
+      "lang": "en",
+      "format": "gutenberg",
+      "title": "Jinrikisha Days in Japan",
+      "author": "Eliza Ruhamah Scidmore",
+      "author_died": 1928,
+      "first_published": 1891,
+      "edition": "Harper & Brothers",
+      "edition_year": 1891,
+      "url": "https://www.gutenberg.org/cache/epub/72989/pg72989.txt",
+      "provider": "Project Gutenberg #72989",
+      "license": "Public domain in the US (published 1891) and Japan (author d. 1928)",
+      "chapter_pattern": "^CHAPTER [IVXLC]+\\.?$",
+      "notes": "Asakusa / Kwannon; its Nio gate is the Nio-mon, not Kaminarimon."
+    },
+    {
+      "id": "kafu-hiyorigeta",
+      "type": "book",
+      "lang": "ja",
+      "format": "aozora",
+      "title": "日和下駄",
+      "author": "永井荷風",
+      "author_died": 1959,
+      "first_published": 1915,
+      "first_published_note": "三田文学 1914–15; book 籾山書店 1915 (standard bibliography; Aozora card gives no 初出)",
+      "edition": "荷風随筆集（上） / 岩波文庫、岩波書店",
+      "edition_year": "1986（昭和61）年9月16日",
+      "parts": [
+        {
+          "aozora_id": 49658,
+          "title": "日和下駄",
+          "zip_url": "https://www.aozora.gr.jp/cards/001341/files/49658_ruby_70066.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/001341/card49658.html",
+          "input_by": "門田裕志",
+          "proofread_by": "阿部哲也"
+        }
+      ],
+      "provider": "青空文庫",
+      "license": "Public domain in Japan (author d. 1959) and the US (published 1915)",
+      "notes": "States that 雷門 had already burned while the 二王門 remained."
+    },
+    {
+      "id": "koun-kaiko",
+      "type": "book",
+      "lang": "ja",
+      "format": "aozora",
+      "title": "幕末維新懐古談",
+      "author": "高村光雲",
+      "author_died": 1934,
+      "first_published": 1929,
+      "first_published_note": "『光雲懐古談』万里閣書房 1929",
+      "edition": "幕末維新懐古談 / 岩波文庫、岩波書店",
+      "edition_year": "1995（平成7）年1月17日",
+      "parts": [
+        {
+          "aozora_id": 1546,
+          "title": "01 私の父祖のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1546_ruby_21459.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1546.html",
+          "input_by": "山田芳美",
+          "proofread_by": "土屋隆"
+        },
+        {
+          "aozora_id": 1547,
+          "title": "02 私の子供の時のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1547_ruby_21460.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1547.html",
+          "input_by": "山田芳美",
+          "proofread_by": "土屋隆"
+        },
+        {
+          "aozora_id": 1548,
+          "title": "03 安床の「安さん」の事",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1548_ruby_21461.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1548.html",
+          "input_by": "山田芳美",
+          "proofread_by": "土屋隆"
+        },
+        {
+          "aozora_id": 1549,
+          "title": "04 私の父の訓誡",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1549_ruby_21462.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1549.html",
+          "input_by": "山田芳美",
+          "proofread_by": "土屋隆"
+        },
+        {
+          "aozora_id": 1550,
+          "title": "05 その頃の床屋と湯屋のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1550_ruby_21463.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1550.html",
+          "input_by": "山田芳美",
+          "proofread_by": "土屋隆"
+        },
+        {
+          "aozora_id": 1551,
+          "title": "06 高村東雲の生い立ち",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1551_ruby_21464.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1551.html",
+          "input_by": "山田芳美",
+          "proofread_by": "土屋隆"
+        },
+        {
+          "aozora_id": 1552,
+          "title": "07 彫刻修業のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1552_ruby_21465.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1552.html",
+          "input_by": "山田芳美",
+          "proofread_by": "土屋隆"
+        },
+        {
+          "aozora_id": 1553,
+          "title": "08「木寄せ」その他のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1553_ruby_21466.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1553.html",
+          "input_by": "網迫、山田芳美、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 1554,
+          "title": "09 甲子年の大黒のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1554_ruby_21467.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1554.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 1555,
+          "title": "10 仏師の店のはなし（職人気質）",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/1555_ruby_21468.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card1555.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 45963,
+          "title": "11 大火以前の雷門附近",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45963_ruby_21550.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45963.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 45964,
+          "title": "12 名高かった店などの印象",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45964_ruby_21551.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45964.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 45961,
+          "title": "13 浅草の大火のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45961_ruby_21552.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45961.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 45966,
+          "title": "14 猛火の中の私たち",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45966_ruby_21553.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45966.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 45967,
+          "title": "15 焼け跡の身惨なはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45967_ruby_21554.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45967.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 45962,
+          "title": "16 その頃の消防夫のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45962_ruby_21555.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45962.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 45965,
+          "title": "17 猫と鼠のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45965_ruby_21556.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45965.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "しだひろし"
+        },
+        {
+          "aozora_id": 46197,
+          "title": "18 一度家に帰り父に誡められたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46197_ruby_24207.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46197.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46198,
+          "title": "19 上野戦争当時のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46198_ruby_24208.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46198.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46199,
+          "title": "20 遊芸には縁のなかったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46199_ruby_24209.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46199.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46200,
+          "title": "21 年季あけ前後のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46200_ruby_24210.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46200.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46201,
+          "title": "22 徴兵適齢のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46201_ruby_24211.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46201.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46202,
+          "title": "23 家内を貰った頃のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46202_ruby_24212.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46202.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46203,
+          "title": "24 堀田原へ引っ越した頃のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46203_ruby_24213.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46203.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46393,
+          "title": "25 初めて博覧会の開かれた当時のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46393_ruby_24214.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46393.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46394,
+          "title": "26 店初まっての大作をしたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46394_ruby_24215.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46394.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46395,
+          "title": "27 引き続き作に苦心したこと",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46395_ruby_24216.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46395.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46396,
+          "title": "28 東雲師逝去のこと",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46396_ruby_24217.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46396.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46397,
+          "title": "29 東雲師没後の事など",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46397_ruby_24218.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46397.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46398,
+          "title": "30 身を引いた時のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46398_ruby_24219.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46398.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 45960,
+          "title": "31 神仏混淆廃止改革されたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45960_ruby_24220.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45960.html",
+          "input_by": "しだひろし",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46399,
+          "title": "32 本所五ツ目の羅漢寺のこと",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46399_ruby_24221.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46399.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46400,
+          "title": "33 蠑螺堂百観音の成り行き",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46400_ruby_24222.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46400.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46401,
+          "title": "34 私の守り本尊のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46401_ruby_24223.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46401.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 45968,
+          "title": "35 実物写生ということのはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/45968_ruby_24224.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card45968.html",
+          "input_by": "しだひろし",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46538,
+          "title": "36 脂土や石膏に心を惹かれたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46538_ruby_24225.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46538.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46539,
+          "title": "37 鋳物の仕事をしたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46539_ruby_24226.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46539.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46540,
+          "title": "38 象牙彫り全盛時代のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46540_ruby_24227.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46540.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46541,
+          "title": "39 牙彫りを排し木彫りに固執したはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46541_ruby_24228.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46541.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46542,
+          "title": "40 貿易品の型彫りをしたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46542_ruby_24229.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46542.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46543,
+          "title": "41 蘆の葉のおもちゃのはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46543_ruby_24230.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46543.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46544,
+          "title": "42 熊手を拵えて売ったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46544_ruby_24231.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46544.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46545,
+          "title": "43 歳の市のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46545_ruby_24232.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46545.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46546,
+          "title": "44 東雲師の家の跡のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46546_ruby_24233.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46546.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46637,
+          "title": "45 竜池会の起ったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46637_ruby_24673.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46637.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46638,
+          "title": "46 石川光明氏と心安くなったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46638_ruby_24674.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46638.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46639,
+          "title": "47 彫工会の成り立ちについて",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46639_ruby_24675.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46639.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46640,
+          "title": "48 会の名のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46640_ruby_24676.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46640.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46641,
+          "title": "49 発会当時およびその後のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46641_ruby_24677.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46641.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46642,
+          "title": "50 大病をした時のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46642_ruby_24678.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46642.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46760,
+          "title": "51 大隈綾子刀自の思い出",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46760_ruby_25170.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46760.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46761,
+          "title": "52 皇居御造営の事、鏡縁、欄間を彫ったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46761_ruby_25171.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46761.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46762,
+          "title": "53 葉茶屋の狆のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46762_ruby_25172.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46762.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46763,
+          "title": "54 好き狆のモデルを得たはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46763_ruby_25173.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46763.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46764,
+          "title": "55 四頭の狆を製作したはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46764_ruby_25174.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46764.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46836,
+          "title": "56 鶏の製作を引き受けたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46836_ruby_25993.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46836.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46837,
+          "title": "57 矮鶏のモデルを探したはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46837_ruby_25994.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46837.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46838,
+          "title": "58 矮鶏の製作に取り掛かったこと",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46838_ruby_25995.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46838.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46839,
+          "title": "59 矮鶏の作が計らず展覧会に出品されたいきさつ",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46839_ruby_25996.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46839.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46840,
+          "title": "60 聖上行幸当日のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46840_ruby_25997.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46840.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46841,
+          "title": "61 叡覧後の矮鶏のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46841_ruby_25998.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46841.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46842,
+          "title": "62 佐竹の原繁昌のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46842_ruby_25999.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46842.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46843,
+          "title": "63 佐竹の原へ大仏を拵えたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46843_ruby_26000.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46843.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46844,
+          "title": "64 大仏の末路のあわれなはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/46844_ruby_26001.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card46844.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47003,
+          "title": "65 学校へ奉職した前後のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47003_ruby_26429.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47003.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47004,
+          "title": "66 奈良見物に行ったことのはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47004_ruby_26430.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47004.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47005,
+          "title": "67 帝室技芸員の事",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47005_ruby_26431.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47005.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47006,
+          "title": "68 楠公銅像の事",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47006_ruby_26432.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47006.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47007,
+          "title": "69 馬専門の彫刻家のこと",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47007_ruby_26433.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47007.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47008,
+          "title": "70 木彫の楠公を天覧に供えたはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47008_ruby_26434.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47008.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47009,
+          "title": "71 その他のことなど",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47009_ruby_26435.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47009.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47010,
+          "title": "72 総領の娘を亡くした頃のはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47010_ruby_26436.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47010.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47035,
+          "title": "73 栃の木で老猿を彫ったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47035_ruby_26759.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47035.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47036,
+          "title": "74 初めて家持ちとなったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47036_ruby_26760.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47036.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47037,
+          "title": "75 不動の像が縁になったはなし",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47037_ruby_26761.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47037.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47038,
+          "title": "76 門人を置いたことについて",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47038_ruby_26762.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47038.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47039,
+          "title": "77 西町時代の弟子のこと",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47039_ruby_26763.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47039.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47040,
+          "title": "78 谷中時代の弟子のこと",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47040_ruby_26765.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47040.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 47041,
+          "title": "79 その後の弟子の事",
+          "zip_url": "https://www.aozora.gr.jp/cards/000270/files/47041_ruby_26766.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/000270/card47041.html",
+          "input_by": "網迫、土屋隆",
+          "proofread_by": "noriko saito"
+        },
+        {
+          "aozora_id": 46156,
+          "title": "80 田村松魚の言葉",
+          "zip_url": "https://www.aozora.gr.jp/cards/001226/files/46156_ruby_24234.zip",
+          "card_url": "https://www.aozora.gr.jp/cards/001226/card46156.html",
+          "input_by": "しだひろし",
+          "proofread_by": "noriko saito"
+        }
+      ],
+      "provider": "青空文庫",
+      "license": "Public domain in Japan (author d. 1934) and the US (published 1929)",
+      "notes": "Eyewitness account of the 慶応元年 fire that destroyed 雷門. Aozora splits the book into 80 chapters; all are ingested."
+    },
+    {
+      "id": "sensoji-official",
+      "type": "official_record",
+      "lang": "ja",
+      "format": "web_excerpt",
+      "title": "雷門（浅草寺 公式サイト 境内案内）",
+      "author": "浅草寺",
+      "url": "https://www.senso-ji.jp/guide/guide01.html",
+      "license": "Quotation (引用) of short excerpts with attribution",
+      "excerpts": [
+        "しかし、幕末の慶応元年（1865）、浅草田原町からの失火により雷門まで延焼してしまう。",
+        "この慶応の焼失より実に95年間も雷門は再建されなかった。",
+        "現在の門は、昭和35年（1960）に松下電器産業（現パナソニック）社長・松下幸之助氏の寄進により、再建された。",
+        "慶応元年（1865）12月12日、田原町大火により焼失",
+        "昭和35年（1960）5月1日 95年ぶりに再建",
+        "元々雷門はこの二神の名前から「風雷神門」と呼ばれていたが、いつの頃からか雷門とだけ呼ばれるようになった。"
+      ]
+    },
+    {
+      "id": "jta-tagengo-kaminarimon",
+      "type": "official_record",
+      "lang": "en",
+      "format": "web_excerpt",
+      "title": "Kaminarimon Gate (Japan Tourism Agency multilingual commentary database, R1-01373)",
+      "author": "観光庁 / 浅草地区多言語解説協議会",
+      "url": "https://www.mlit.go.jp/tagengo-db/R1-01373.html",
+      "license": "Quotation of short excerpts with attribution",
+      "excerpts": [
+        "After a fire in 1866, nearly a hundred years passed before the permanent Kaminarimon was built.",
+        "In the interim, temporary gates were constructed using different styles and materials.",
+        "The current Kaminarimon was built in 1960 with donations from Matsushita Konosuke (1894–1989)"
+      ]
+    }
+  ]
+}
