@@ -238,7 +238,9 @@ def build_photo_scene(models: "Models", img: Image.Image, scene_id: str, artifac
                 anchors.append(b)
         scene["anchors"] = anchor_dicts(anchors)
         draw_anchors(img, anchors, out / "anchors.png")
-        if artifact:
+        # align only to artifacts with hand-checked anchors (fixtures/artifacts/<id>.json); other
+        # sites have none yet, and a stray lantern match must not fail the scene
+        if artifact and (ANNOTATIONS / f"{artifact}.json").exists():
             scene["alignment"] = align(img, anchors, artifact, out)
 
     (out / "scene.json").write_text(json.dumps(scene, ensure_ascii=False, indent=2))
