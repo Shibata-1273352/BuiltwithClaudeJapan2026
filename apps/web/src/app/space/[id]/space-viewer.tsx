@@ -6,12 +6,15 @@
  * painting (FR-33) comes on 11/6.
  */
 import { OrbitControls, useTexture } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import * as THREE from "three";
 import { yearState, type TimelineData } from "@/lib/time-river";
 import {
   CAMERA_Z,
+  ENTER_MS,
+  easeInOut,
+  framePlane,
   LAYER_Z,
   artifactRectInPhoto,
   depthCompensation,
@@ -85,6 +88,56 @@ function LayerPlane({
   );
 }
 
+type Controls = { target: THREE.Vector3; update: () => void } | null;
+
+/**
+ * FR-33: move the camera from the photo into the painting (or back) in ENTER_MS with ease-in-out.
+ * Starts from wherever the user left the camera, so the move never jumps.
+ */
+function CameraRig({
+  moving,
+  inside,
+  frame,
+  reduced,
+  controls,
+  onDone,
+}: {
+  moving: number; // timestamp when the move started, 0 = idle
+  inside: boolean;
+  frame: { position: [number, number, number]; target: [number, number, number] } | null;
+  reduced: boolean;
+  controls: React.RefObject<Controls>;
+  onDone: () => void;
+}) {
+  const { camera } = useThree();
+  const from = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
+  useFrame(() => {
+    if (!moving || !frame) return;
+    const c = controls.current;
+    if (!from.current) from.current = { pos: camera.position.clone(), target: c ? c.target.clone() : new THREE.Vector3() };
+    const t = reduced ? 1 : easeInOut((performance.now() - moving) / ENTER_MS);
+    const toPos = inside ? new THREE.Vector3(...frame.position) : new THREE.Vector3(0, 0, CAMERA_Z);
+    const toTarget = inside ? new THREE.Vector3(...frame.target) : new THREE.Vector3(0, 0, 0);
+    camera.position.lerpVectors(from.current.pos, toPos, t);
+    const target = new THREE.Vector3().lerpVectors(from.current.target, toTarget, t);
+    if (c) {
+      c.target.copy(target);
+      c.update();
+    } else camera.lookAt(target);
+    if (t >= 1) {
+      from.current = null;
+      onDone();
+    }
+  });
+  return null;
+}
+
+function AspectProbe({ onAspect }: { onAspect: (a: number) => void }) {
+  const { size } = useThree();
+  useEffect(() => onAspect(size.width / Math.max(1, size.height)), [size.width, size.height, onAspect]);
+  return null;
+}
+
 function Fps({ onFps }: { onFps: (n: number) => void }) {
   const acc = useRef({ frames: 0, start: 0 });
   useFrame(() => {
@@ -111,15 +164,32 @@ export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJ
   const [split, setSplit] = useState(0);
   const [overlay, setOverlay] = useState(0);
   const [year, setYear] = useState(2026);
+  const [inside, setInside] = useState(false); // FR-33: inside the painting
+  const [moving, setMoving] = useState(0);
+  const [aspect, setAspect] = useState(1.6);
+  const controls = useRef<Controls>(null);
   const ys = timeline ? yearState(timeline, year) : null;
   const gateOpacity = ys ? GATE_OPACITY[ys.state] : 1;
   // Before the 1866 fire the Kansei-era gate Hiroshige painted stood: open the print automatically.
-  const overlayEff = ys && ys.state === "present" && year < 1866 ? Math.max(overlay, 0.85) : overlay;
+  const overlayBase = ys && ys.state === "present" && year < 1866 ? Math.max(overlay, 0.85) : overlay;
+  const overlayEff = inside ? 1 : overlayBase;
+  const photoOpacity = inside ? 0 : 1; // the photo dissolves as we enter the painting
   const [fps, setFps] = useState(0);
   const world = useMemo(() => photoWorldSize(scene.size), [scene.size]);
   const file = (f: string) => `/api/cache/scenes/${id}/${f}`;
   const align = scene.alignment?.ok ? scene.alignment : undefined;
   const artRect = useMemo(() => (align ? rectToPlane(artifactRectInPhoto(align), world) : null), [align, world]);
+  // The painting plane sits just in front of the foreground and is depth-compensated like the others.
+  const artZ = LAYER_Z.foreground + 0.05;
+  const artFrame = useMemo(() => {
+    if (!artRect) return null;
+    const k = depthCompensation(artZ);
+    return framePlane({ x: artRect.x * k, y: artRect.y * k, w: artRect.w * k, h: artRect.h * k }, artZ, 30, aspect);
+  }, [artRect, artZ, aspect]);
+  const go = (into: boolean) => {
+    setInside(into);
+    setMoving(performance.now());
+  };
   const elements = Object.entries(scene.elements).sort((a, b) => LAYER_Z[a[1].layer] - LAYER_Z[b[1].layer]);
 
   useEffect(() => {
@@ -132,7 +202,7 @@ export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJ
       <div className="relative h-[70vh] flex-1 lg:h-auto">
         <Canvas camera={{ position: [0, 0, CAMERA_Z], fov: 30 }} dpr={[1, 2]} gl={{ antialias: true }}>
           <color attach="background" args={["#0e1426"]} />
-          <LayerPlane url={file(scene.plate ?? scene.photo)} rect={{ x: 0, y: 0, ...world }} targetZ={0} split={split} reduced={reduced} />
+          <LayerPlane url={file(scene.plate ?? scene.photo)} rect={{ x: 0, y: 0, ...world }} targetZ={0} split={split} reduced={reduced} opacity={photoOpacity} />
           {elements.map(([key, el], i) => (
             <LayerPlane
               key={key}
@@ -141,7 +211,7 @@ export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJ
               targetZ={LAYER_Z[el.layer]}
               split={split}
               reduced={reduced}
-              opacity={GATE_LAYERS.has(key) ? gateOpacity : 1}
+              opacity={(GATE_LAYERS.has(key) ? gateOpacity : 1) * photoOpacity}
               renderOrder={i + 1}
             />
           ))}
@@ -156,7 +226,15 @@ export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJ
               renderOrder={100}
             />
           )}
-          <OrbitControls enablePan={false} minDistance={1.5} maxDistance={8} />
+          <OrbitControls
+            ref={controls as never}
+            enabled={!moving}
+            enablePan={false}
+            minDistance={0.5}
+            maxDistance={8}
+          />
+          <CameraRig moving={moving} inside={inside} frame={artFrame} reduced={reduced} controls={controls} onDone={() => setMoving(0)} />
+          <AspectProbe onAspect={setAspect} />
           <Fps onFps={setFps} />
         </Canvas>
         <p className="pointer-events-none absolute right-3 top-3 rounded bg-night/70 px-2 py-1 text-xs text-muted">
@@ -173,6 +251,18 @@ export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJ
         >
           {split ? "平面に戻す" : "層に割る"}
         </button>
+
+        {align && (
+          <button
+            type="button"
+            data-testid="enter-painting"
+            disabled={Boolean(moving)}
+            onClick={() => go(!inside)}
+            className="min-h-11 rounded-full bg-toki px-5 font-bold text-night disabled:opacity-50"
+          >
+            {inside ? "今へ戻る" : "絵の中へ（広重 1856）"}
+          </button>
+        )}
 
         {timeline && ys && (
           <label className="flex flex-col gap-2" data-testid="space-time">
@@ -220,7 +310,7 @@ export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJ
               aria-label="広重の絵を重ねる割合"
             />
             <span className="text-sm text-muted">
-              {overlayEff > overlay ? "1866年の焼失より前は、広重が描いた門の時代として自動で重ねています。" : ""}
+              {overlayBase > overlay ? "1866年の焼失より前は、広重が描いた門の時代として自動で重ねています。" : ""}
               位置合わせ：大提灯の下端と左端（資料側のアンカーは事前注記：{align.artifact_anchors_annotated_by}）
             </span>
           </label>

@@ -44,6 +44,17 @@ try {
     await page.waitForTimeout(900);
     await page.screenshot({ path: path.join(outDir, `${slug}-${value}.png`) });
   }
+  // --click testid: click, then screenshot mid-transition (800 ms) and after it (2200 ms)
+  const ci = rest.indexOf("--click");
+  if (ci >= 0) {
+    const tid = rest[ci + 1];
+    const t0 = Date.now();
+    await page.getByTestId(tid).click();
+    await page.waitForTimeout(800 - (Date.now() - t0));
+    await page.screenshot({ path: path.join(outDir, `${slug}-${tid}-mid.png`) });
+    await page.waitForTimeout(1400);
+    await page.screenshot({ path: path.join(outDir, `${slug}-${tid}-end.png`) });
+  }
   if (rest.includes("--orbit")) {
     const canvas = page.locator("canvas").first();
     const box = await canvas.boundingBox();

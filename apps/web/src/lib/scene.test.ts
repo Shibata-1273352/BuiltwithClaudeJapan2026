@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { artifactRectInPhoto, depthCompensation, photoWorldSize, rectToPlane, type SceneJson } from "./scene";
+import { artifactRectInPhoto, depthCompensation, easeInOut, framePlane, photoWorldSize, rectToPlane, type SceneJson } from "./scene";
 
 describe("scene geometry", () => {
   it("maps the full photo to a centered plane", () => {
@@ -18,6 +18,24 @@ describe("scene geometry", () => {
     const s = depthCompensation(z, 4);
     // projected size ∝ size / (cameraZ - z)
     expect((1 * s) / (4 - z)).toBeCloseTo(1 / 4);
+  });
+
+  it("frames a plane so it fills the view (FR-33)", () => {
+    const f = framePlane({ x: 0.5, y: -0.2, w: 1, h: 2 }, 0.9, 30, 1.6, 1);
+    // projected height at the plane = 2 * d * tan(15°) must equal the plane height (2)
+    const d = f.position[2] - 0.9;
+    expect(2 * d * Math.tan(Math.PI / 12)).toBeCloseTo(2);
+    expect(f.target).toEqual([0.5, -0.2, 0.9]);
+    // a wide plane is limited by width
+    const g = framePlane({ x: 0, y: 0, w: 4, h: 1 }, 0, 30, 1, 1);
+    expect(2 * g.position[2] * Math.tan(Math.PI / 12)).toBeCloseTo(4);
+  });
+
+  it("eases in and out monotonically within 0..1", () => {
+    expect(easeInOut(0)).toBe(0);
+    expect(easeInOut(1)).toBe(1);
+    expect(easeInOut(0.5)).toBeCloseTo(0.5);
+    expect(easeInOut(0.25)).toBeLessThan(easeInOut(0.3));
   });
 
   it("inverts the photo->artifact transform", () => {
