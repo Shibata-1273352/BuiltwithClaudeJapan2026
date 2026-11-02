@@ -44,6 +44,20 @@ await page.waitForFunction(
 );
 const ms = Date.now() - t0;
 await page.screenshot({ path: path.join(outDir, "explore.png"), fullPage: true });
+const narrativeJa = await page.getByTestId("narrative").innerText().catch(() => null);
+let narrativeEn: string | null = null;
+let langMs: number | null = null;
+if (await page.getByTestId("lang-en").count()) {
+  const t1 = Date.now();
+  await page.getByTestId("lang-en").click();
+  await page
+    .waitForFunction(() => /[A-Za-z]{4,}.*[A-Za-z]{4,}/.test(document.querySelector('[data-testid="narrative"]')?.textContent?.slice(0, 80) ?? ""), null, {
+      timeout: 60_000,
+    })
+    .catch(() => undefined);
+  langMs = Date.now() - t1;
+  narrativeEn = await page.getByTestId("narrative").innerText().catch(() => null);
+}
 const text = (await page.getByTestId("exploration").textContent()) ?? "";
 console.log(
   JSON.stringify(
@@ -53,7 +67,10 @@ console.log(
       place: await page.getByTestId("place").textContent().catch(() => null),
       excerpt: text.slice(0, 300),
       existence: await page.getByTestId("existence").innerText().catch(() => null),
-      narrative: await page.getByTestId("narrative").innerText().catch(() => null),
+      narrative: narrativeJa,
+      narrativeEn,
+      langMs,
+      names: await page.getByTestId("names").innerText().catch(() => null),
       gap: await page.getByTestId("gap").innerText().catch(() => null),
       claims: await page.getByTestId("claims").innerText().catch(() => null),
       threads: await page.getByTestId("threads").innerText().catch(() => null),

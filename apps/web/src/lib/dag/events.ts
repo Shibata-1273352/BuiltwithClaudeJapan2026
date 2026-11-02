@@ -17,6 +17,7 @@ export type EventType =
   | "existence"
   | "conflicts"
   | "threads"
+  | "names"
   | "narrative"
   | "graph"
   | "ai_call"
