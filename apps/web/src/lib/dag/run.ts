@@ -18,7 +18,11 @@ import { buildPlan } from "./plan";
 import { retrieveFacet, type Retrieved } from "./retrieve";
 import { claimThreads, existenceThreads, type ExistenceRow } from "./threads";
 import { extractClaims, selectForExtraction } from "../extract";
-import { existenceFor, timeline } from "../timeline-server";
+import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
+import { buildClaimCards, narrate } from "../narrate";
+import { saveToGraph } from "../graph-write";
+import type { CheckedClaim } from "@tsumugi/core";
+import { existenceFor, sourceTime, timeline } from "../timeline-server";
 import type { CallRecord } from "../claude";
 import type { DB } from "../corpus/db";
 
@@ -64,7 +68,10 @@ async function stage<T>(ctx: RunContext, name: string, fn: () => Promise<T>): Pr
   return out;
 }
 
-export async function runExploration(explorationId: string, capture: CaptureRow): Promise<void> {
+export type RunOptions = { gapRound: boolean };
+
+/** opts.gapRound=false is method D, true is D+ (4.9); D+ is the adopted default. */
+export async function runExploration(explorationId: string, capture: CaptureRow, opts: RunOptions = { gapRound: true }): Promise<void> {
   const ctx = new RunContext(explorationId);
   const db = store();
   const finish = (status: "done" | "failed" | "deadline", result: unknown) => {
@@ -146,16 +153,17 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
     });
 
     // 5. Extract evidence and propose claims (Claude), checked by code (FR-13, FR-14, FR-57)
-    const byPassage = new Map(retrieved.map((r) => [r.passageId, r]));
-    const extraction = await stage(ctx, "extract", async () => {
-      const selected = selectForExtraction(retrieved);
-      if (!selected.length) return { claims: [] };
+    const all: Retrieved[] = [...retrieved];
+    const byPassage = new Map(all.map((r) => [r.passageId, r]));
+    const extractRound = async (round: number, selected: Retrieved[]): Promise<CheckedClaim[]> => {
+      if (!selected.length) return [];
       ctx.claude();
       const corpus = openDb({ readonly: true });
       try {
         const r = await extractClaims(corpus, E, place, selected);
         logCall(ctx, db, explorationId, r.record);
         emit(explorationId, "claims", {
+          round,
           passages: r.passages.length,
           accepted: r.claims.filter((c) => c.status === "accepted").length,
           downgraded: r.claims.filter((c) => c.status === "downgraded").length,
@@ -176,19 +184,60 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
             sentence_ids: c.sentence_ids,
           })),
         });
-        return { claims: r.claims };
+        // keep claim ids unique across rounds
+        return r.claims.map((c) => ({ ...c, id: `${c.id}:r${round}` }));
       } finally {
         corpus.close();
       }
-    });
+    };
+    const claims1 = await stage(ctx, "extract", () => extractRound(1, selectForExtraction(retrieved)));
 
-    // 6. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
+    // 6. Gap evaluation and one extra round (Claude decides what is missing; code validates) — FR-20
+    const claims2 = opts.gapRound
+      ? await stage(ctx, "gap", async () => {
+          if (ctx.remaining() < 35_000) {
+            emit(explorationId, "gap", { skipped: "time", assessment: "残り時間が少ないため、追加の探索は行いませんでした。" });
+            return [];
+          }
+          ctx.claude();
+          const summary = summarizeForGap(plan, retrieved, claims1, retrieved.map((r) => ({ source: r.sourceId, value: existenceFor(place, r.sourceId).value })));
+          const g = await evaluateGaps(E, place, summary);
+          logCall(ctx, db, explorationId, g.record);
+          if (!g.out) {
+            emit(explorationId, "gap", { skipped: "invalid_output" });
+            return [];
+          }
+          const gaps = validateGaps(g.out, E);
+          const corpus = openDb({ readonly: true });
+          let found: Retrieved[] = [];
+          try {
+            found = g.out.enough ? [] : searchGaps(corpus, E, place, gaps, plan, new Set(all.map((r) => r.passageId)));
+          } finally {
+            corpus.close();
+          }
+          emit(explorationId, "gap", {
+            assessment: g.out.assessment,
+            enough: g.out.enough,
+            gaps: gaps.map((x) => ({ facet: x.facet, lang: x.lang, entity: x.entity, reason: x.reason, terms: x.terms, rejectedTerms: x.rejectedTerms })),
+            found: found.length,
+            candidates: found.map((c) => ({ ...c, text: c.text.slice(0, 300) })),
+          });
+          for (const f of found) {
+            all.push(f);
+            byPassage.set(f.passageId, f);
+          }
+          return found.length ? extractRound(2, selectForExtraction(found)) : [];
+        })
+      : [];
+    const extraction = { claims: [...claims1, ...claims2] };
+
+    // 7. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
     const existence = await stage(ctx, "existence", async () => {
-      const sources = [...new Set(retrieved.map((r) => r.sourceId))];
+      const sources = [...new Set(all.map((r) => r.sourceId))];
       const rows: ExistenceRow[] = sources
         .map((s) => {
           const j = existenceFor(place, s);
-          const title = retrieved.find((r) => r.sourceId === s)?.sourceTitle ?? s;
+          const title = all.find((r) => r.sourceId === s)?.sourceTitle ?? s;
           return {
             source: s,
             sourceTitle: title,
@@ -210,20 +259,82 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
     const threads = [...existenceThreads(existence, E, place), ...claimThreads(extraction.claims, E, place, byPassage)];
     emit(explorationId, "threads", threads);
 
+    // 8. Weave: narrative from adopted claims only, checked sentence by sentence (FR-17, 4.8)
+    const narrative = await stage(ctx, "narrate", async () => {
+      if (ctx.remaining() < 12_000) {
+        emit(explorationId, "narrative", { skipped: "time" });
+        return null;
+      }
+      const cards = buildClaimCards(
+        E,
+        extraction.claims,
+        threads,
+        existence,
+        (pid) => byPassage.get(pid)?.sourceTitle ?? pid,
+        (pid) => sourceTime(byPassage.get(pid)?.sourceId ?? ""),
+      );
+      if (!cards.size) return null;
+      ctx.claude();
+      const lang = capture.ui_lang === "en" ? "en" : "ja";
+      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id));
+      logCall(ctx, db, explorationId, r.record);
+      emit(explorationId, "narrative", {
+        lang,
+        sentences: r.sentences.filter((s) => s.ok).map(({ text, claim_ids, assertion_type }) => ({ text, claim_ids, assertion_type })),
+        dropped: r.sentences.filter((s) => !s.ok).map(({ text, problems }) => ({ text, problems })),
+      });
+      return r.sentences;
+    });
+
+    // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.
+    const graph = await stage(ctx, "graph", async () => {
+      const corpus = openDb({ readonly: true });
+      let sources: { id: string; type: string; title: string; version: string }[] = [];
+      try {
+        const ids = [...new Set(all.map((r) => r.sourceId))];
+        sources = ids
+          .map((id) => corpus.prepare("SELECT id, type, title, version_hash AS version FROM sources WHERE id = ?").get(id))
+          .filter(Boolean) as typeof sources;
+      } finally {
+        corpus.close();
+      }
+      const lang = capture.ui_lang === "en" ? "en" : "ja";
+      const r = await saveToGraph(E, {
+        captureId: capture.id,
+        target: place,
+        claims: extraction.claims.map((c) => ({
+          ...c,
+          sourceId: byPassage.get(c.passage_id)?.sourceId ?? "",
+          sourceVersion: sources.find((s) => s.id === byPassage.get(c.passage_id)?.sourceId)?.version,
+        })),
+        existence,
+        threads,
+        narrative: (narrative ?? []).filter((s) => s.ok).map((s) => ({ ...s, lang })),
+        sources,
+      });
+      emit(explorationId, "graph", r.ok ? { saved: true, ms: r.ms } : { saved: false, message: "グラフ保存失敗（再試行できます）" });
+      if (!r.ok) console.error(`[graph ${explorationId}]`, r.error);
+      return r.ok;
+    });
+
     const summary = {
+      graph_saved: graph,
+      narrative_sentences: narrative?.filter((s) => s.ok).length ?? 0,
+      narrative_dropped: narrative?.filter((s) => !s.ok).length ?? 0,
       status: "threads",
       place,
-      candidates: retrieved.length,
+      candidates: all.length,
+      gap_round: opts.gapRound,
       claims: extraction.claims.length,
       threads: threads.length,
       states: threads.reduce<Record<string, number>>((m, t) => ((m[t.state] = (m[t.state] ?? 0) + 1), m), {}),
       bySource: Object.fromEntries(
-        [...new Set(retrieved.map((r) => r.sourceId))].map((s) => [s, retrieved.filter((r) => r.sourceId === s).length]),
+        [...new Set(all.map((r) => r.sourceId))].map((s) => [s, all.filter((r) => r.sourceId === s).length]),
       ),
       claude_calls: ctx.claudeCalls,
       cost_usd: Math.round(ctx.costUsd * 1e4) / 1e4,
       elapsed_ms: Date.now() - ctx.started,
-      next: "gap evaluation / narrative (11/5–11/6)",
+      next: "language switch, presentation mode, time slider",
     };
     emit(explorationId, "done", summary);
     finish("done", summary);
