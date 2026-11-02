@@ -2,7 +2,7 @@
  * Time river and time slider logic (REQUIREMENTS.md FR-23, FR-56, RAG-11). Pure; used by the UI
  * and the tests. Judgments reuse the same core functions as the server, so they cannot diverge.
  */
-import { judgeExistence, temporaryAt, toRange, type ExistenceEvent, type Period } from "@tsumugi/core";
+import { absenceReason, DISPUTED_WHAT, judgeExistence, temporaryAt, toRange, type ExistenceEvent, type Period } from "@tsumugi/core";
 
 export type TimelineData = {
   entity: string;
@@ -33,24 +33,33 @@ export function yearState(d: TimelineData, year: number): YearState {
   }
   if (j.value === "absent") {
     const t = tmp.value === "built_that_time";
+    const ev = d.events as ExistenceEvent[];
+    const permanent = ev.some((e) => e.event === "temporary");
+    const why = absenceReason(
+      ev.find((e) => j.period?.from.includes(e.id)),
+      ev.find((e) => j.period?.to.includes(e.id)),
+      n,
+      permanent,
+    );
     return {
       year,
       state: "absent",
       temporary: t,
       evidence,
       label: {
-        ja: `${year}年：恒久的な${n.ja}は、焼失後まだ再建されていなかった${t ? "（この年、仮設の門が設けられた）" : ""}`,
-        en: `${year}: the permanent ${n.en} had not yet been rebuilt after the fire${t ? " (a temporary gate was put up this year)" : ""}`,
+        ja: `${year}年：${why.ja}${t ? "（この年、仮設の門が設けられた）" : ""}`,
+        en: `${year}: ${why.en}${t ? " (a temporary gate was put up this year)" : ""}`,
       },
     };
   }
   if (j.reason === "sources_disagree") {
+    const what = DISPUTED_WHAT[(d.events as ExistenceEvent[]).find((e) => e.id === j.disputedEvent)?.event ?? "destroyed"] ?? DISPUTED_WHAT.destroyed;
     return {
       year,
       state: "withheld",
       temporary: false,
       evidence,
-      label: { ja: `${year}年：判定保留（焼失日が史料間で一致しない）`, en: `${year}: withheld (sources disagree on the date of the fire)` },
+      label: { ja: `${year}年：判定保留（${what.ja}が史料間で一致しない）`, en: `${year}: withheld (sources disagree on ${what.en})` },
     };
   }
   return {
@@ -59,8 +68,8 @@ export function yearState(d: TimelineData, year: number): YearState {
     temporary: false,
     evidence,
     label: {
-      ja: `${year}年：${j.reason === "no_data" ? "この時期の記録は登録されていない" : "この年に焼失・再建があり、年単位では確かめられない"}`,
-      en: `${year}: ${j.reason === "no_data" ? "no records for this period" : "a fire or rebuilding happened this year; cannot be confirmed at year precision"}`,
+      ja: `${year}年：${j.reason === "no_data" ? "この時期の記録は登録されていない" : "この年に建造・焼失・再建・移築のいずれかがあり、年単位では確かめられない"}`,
+      en: `${year}: ${j.reason === "no_data" ? "no records for this period" : "it was built, destroyed, rebuilt or moved this year; cannot be confirmed at year precision"}`,
     },
   };
 }

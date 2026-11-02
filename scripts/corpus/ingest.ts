@@ -6,6 +6,7 @@
  * Raw downloads are cached in $DATA_DIR/corpus/raw/<id>/ with their sha256.
  * After ingestion, prints term counts per site (corpus/sites.json) so weak books can be replaced.
  */
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -186,6 +187,28 @@ async function ingestWebExcerpt(src: any): Promise<Insert> {
   };
 }
 
+/**
+ * Official PDF (e.g. 東京都建設局): text via pdfminer (scripts/corpus/pdf_text.py, pinned), excerpts
+ * checked against it with whitespace removed. The PDF bytes are kept as the raw record.
+ */
+async function ingestPdfExcerpt(src: any): Promise<Insert> {
+  const raw = await fetchCached(src.id, "document.pdf", src.url);
+  const file = path.join(dataDir!, "corpus", "raw", src.id, "document.pdf");
+  const text = execFileSync("uv", ["run", "--no-project", "--with", "pdfminer.six==20250506", "python", "-I", path.join(repo, "scripts", "corpus", "pdf_text.py"), file], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+    maxBuffer: 64 * 2 ** 20,
+  });
+  const squash = (s: string) => s.replace(/\s+/g, "");
+  const missing = src.excerpts.filter((e: string) => !squash(text).includes(squash(e)));
+  if (missing.length) throw new Error(`${src.id}: excerpts not found in PDF: ${missing.join(" | ")}`);
+  return {
+    chapters: [{ label: src.title, kind: "body", paragraphs: src.excerpts.map((t: string) => ({ text: t })) }],
+    raw: [raw],
+    meta: { excerpt_verified_against_pdf: true, excerpt_count: src.excerpts.length, extractor: "pdfminer.six==20250506" },
+  };
+}
+
 function siteCounts(db: DB) {
   const rows: Record<string, Record<string, number>> = {};
   for (const [site, def] of Object.entries<any>(sites)) {
@@ -217,7 +240,9 @@ for (const src of manifest.sources) {
         ? await ingestAozora(src)
         : src.format === "met_fixture"
           ? await ingestMetFixture(src)
-          : await ingestWebExcerpt(src);
+          : src.format === "pdf_excerpt"
+            ? await ingestPdfExcerpt(src)
+            : await ingestWebExcerpt(src);
   const r = store(db, src, ins);
   console.log(`${src.id}: ${ins.chapters.length} chapters, ${r.passages} passages, ${r.sentences} sentences (${Date.now() - t0} ms)`);
 }

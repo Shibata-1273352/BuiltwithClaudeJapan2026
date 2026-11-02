@@ -12,17 +12,20 @@ type Stage = { stage: string; status: string; ms?: number };
 type Claim = { status: string; predicate: string; subject: string; value: string | null; failed_checks: string[]; source?: string };
 type Gap = { assessment?: string; gaps?: { facet: string; lang: string; reason: string; terms: string[] }[]; found?: number; skipped?: string };
 
-const STAGES = ["see", "place", "plan", "retrieve", "extract", "gap", "existence", "names", "narrate", "graph"];
+const STAGES = ["see", "place", "plan", "retrieve", "extract:en", "extract:ja", "gap", "extract2", "existence", "names", "narrate", "space", "graph"];
 const STAGE_JA: Record<string, string> = {
   see: "視る（Claude）",
   place: "場所の特定",
   plan: "検索プラン",
   retrieve: "検索",
-  extract: "証拠の抽出（Claude）",
-  gap: "不足の評価（Claude）",
+  "extract:en": "証拠の抽出・英（Claude）",
+  "extract:ja": "証拠の抽出・日（Claude）",
+  extract2: "追加の抽出（Claude）",
+  gap: "不足の評価（Claude、抽出と並行）",
   existence: "存在判定（コード）",
   names: "言の地層（コード）",
   narrate: "紡ぐ（Claude）",
+  space: "間・空間解析（推論サーバー、並行）",
   graph: "Evidence Graph 保存",
 };
 const CHECK_JA: Record<string, string> = {
@@ -68,7 +71,7 @@ export function PresentLive() {
           const ev = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
           setEvents((p) => (p.some((x) => x.seq === ev.seq) ? p : [...p, ev]));
         };
-        for (const t of ["stage", "see", "place", "candidates", "gap", "claims", "existence", "names", "threads", "narrative", "graph", "ai_call", "done", "failed"])
+        for (const t of ["stage", "see", "place", "candidates", "gap", "claims", "existence", "names", "threads", "narrative", "space", "graph", "ai_call", "done", "failed"])
           es.addEventListener(t, on);
       } catch {
         setError("通信に失敗しました");

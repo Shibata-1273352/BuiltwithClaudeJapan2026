@@ -21,6 +21,7 @@ import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
+import { requestScene } from "../inference";
 import { narrativeFor, saveNarrative } from "../narrative-service";
 import { findNames, namePatterns, type CheckedClaim, type FoundName } from "@tsumugi/core";
 import { existenceFor, sourceTime, timeline } from "../timeline-server";
@@ -119,6 +120,27 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return;
     }
 
+    // 間 (parallel, 4.3/4.10): masks, depth, layers and alignment on the inference server. Started as
+    // soon as the place is known (it picks the artifact to align to) and awaited only at the end.
+    const artifactFor = (entityId: string): string | null => {
+      const rel = E.dict.relations.find((r) => r.type === "DEPICTS" && r.to === entityId);
+      const met = rel ? E.get(rel.from)?.external_ids?.met : undefined;
+      return met ? `met-${met}` : null;
+    };
+    const spaceStarted = Date.now();
+    emit(explorationId, "stage", { stage: "space", status: "start", remaining_ms: ctx.remaining() });
+    const spacePromise = requestScene(capture.image_path, capture.id, artifactFor(place), Math.max(5_000, Math.min(30_000, ctx.remaining() - 5_000))).then((r) => {
+      emit(explorationId, "stage", { stage: "space", status: "done", ms: Date.now() - spaceStarted });
+      emit(
+        explorationId,
+        "space",
+        r.ok
+          ? { ok: true, scene_id: r.scene.scene_id, url: `/space/${r.scene.scene_id}`, elements: Object.keys(r.scene.elements), aligned: Boolean(r.scene.alignment?.ok), ms: r.scene.elapsed_ms }
+          : { ok: false, reason: r.reason, message: "空間解析：簡易表示" }, // FR-34
+      );
+      return r.ok;
+    });
+
     // 3. Plan (FR-08)
     const plan = await stage(ctx, "plan", async () => {
       const p = buildPlan(E, place);
@@ -193,45 +215,51 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         corpus.close();
       }
     };
-    const claims1 = await stage(ctx, "extract", () => extractRound(1, selectForExtraction(retrieved)));
-
-    // 6. Gap evaluation and one extra round (Claude decides what is missing; code validates) — FR-20
-    const claims2 = opts.gapRound
-      ? await stage(ctx, "gap", async () => {
-          if (ctx.remaining() < 35_000) {
-            emit(explorationId, "gap", { skipped: "time", assessment: "残り時間が少ないため、追加の探索は行いませんでした。" });
-            return [];
-          }
-          ctx.claude();
-          const summary = summarizeForGap(plan, retrieved, claims1, retrieved.map((r) => ({ source: r.sourceId, value: existenceFor(place, r.sourceId).value })));
-          const g = await evaluateGaps(E, place, summary);
-          logCall(ctx, db, explorationId, g.record);
-          if (!g.out) {
-            emit(explorationId, "gap", { skipped: "invalid_output" });
-            return [];
-          }
-          const gaps = validateGaps(g.out, E);
-          const corpus = openDb({ readonly: true });
-          let found: Retrieved[] = [];
-          try {
-            found = g.out.enough ? [] : searchGaps(corpus, E, place, gaps, plan, new Set(all.map((r) => r.passageId)));
-          } finally {
-            corpus.close();
-          }
-          emit(explorationId, "gap", {
-            assessment: g.out.assessment,
-            enough: g.out.enough,
-            gaps: gaps.map((x) => ({ facet: x.facet, lang: x.lang, entity: x.entity, reason: x.reason, terms: x.terms, rejectedTerms: x.rejectedTerms })),
-            found: found.length,
-            candidates: found.map((c) => ({ ...c, text: c.text.slice(0, 300) })),
-          });
-          for (const f of found) {
-            all.push(f);
-            byPassage.set(f.passageId, f);
-          }
-          return found.length ? extractRound(2, selectForExtraction(found)) : [];
-        })
-      : [];
+    // 6. Gap evaluation (Claude decides what is missing from the retrieval; code validates) — FR-20.
+    //    It runs concurrently with round-1 extraction, which is split by language, so the three
+    //    Claude calls overlap instead of queueing (latency budget 4.13).
+    const runGap = async (): Promise<Retrieved[]> => {
+      if (ctx.remaining() < 35_000) {
+        emit(explorationId, "gap", { skipped: "time", assessment: "残り時間が少ないため、追加の探索は行いませんでした。" });
+        return [];
+      }
+      ctx.claude();
+      const summary = summarizeForGap(plan, retrieved, [], retrieved.map((r) => ({ source: r.sourceId, value: existenceFor(place, r.sourceId).value })));
+      const g = await evaluateGaps(E, place, summary);
+      logCall(ctx, db, explorationId, g.record);
+      if (!g.out) {
+        emit(explorationId, "gap", { skipped: "invalid_output" });
+        return [];
+      }
+      const gaps = validateGaps(g.out, E);
+      const corpus = openDb({ readonly: true });
+      let found: Retrieved[] = [];
+      try {
+        found = g.out.enough ? [] : searchGaps(corpus, E, place, gaps, plan, new Set(retrieved.map((r) => r.passageId)));
+      } finally {
+        corpus.close();
+      }
+      emit(explorationId, "gap", {
+        assessment: g.out.assessment,
+        enough: g.out.enough,
+        gaps: gaps.map((x) => ({ facet: x.facet, lang: x.lang, entity: x.entity, reason: x.reason, terms: x.terms, rejectedTerms: x.rejectedTerms })),
+        found: found.length,
+        candidates: found.map((c) => ({ ...c, text: c.text.slice(0, 300) })),
+      });
+      return found;
+    };
+    const selected1 = selectForExtraction(retrieved);
+    const [c1en, c1ja, found2] = await Promise.all([
+      stage(ctx, "extract:en", () => extractRound(1, selected1.filter((c) => c.lang === "en"))),
+      stage(ctx, "extract:ja", () => extractRound(1, selected1.filter((c) => c.lang === "ja"))),
+      opts.gapRound ? stage(ctx, "gap", runGap) : Promise.resolve([] as Retrieved[]),
+    ]);
+    const claims1 = [...c1en, ...c1ja];
+    for (const f of found2) {
+      all.push(f);
+      byPassage.set(f.passageId, f);
+    }
+    const claims2 = found2.length ? await stage(ctx, "extract2", () => extractRound(2, selectForExtraction(found2))) : [];
     const extraction = { claims: [...claims1, ...claims2] };
 
     // 7. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
@@ -255,7 +283,9 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
             disputedEvent: "disputedEvent" in j ? j.disputedEvent : undefined,
           };
         })
-        .filter((r) => r.time); // sources without a known time are not judged
+        // sources without a known time are not judged; a work's depiction date says nothing about a
+        // site it does not depict (Hiroshige's Asakusa print is no evidence about Ueno)
+        .filter((r) => r.time && !(r.time.kind === "depicted_at" && !r.relation));
       emit(explorationId, "existence", { entity: place, rows });
       const tl = timeline();
       const conflicts = tl.t.conflicts.filter((c) => tl.t.existence_events.some((e) => e.id === c.about && e.entity === place));
@@ -285,7 +315,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         const getS = corpus.prepare("SELECT id, text FROM sentences WHERE passage_id = ? ORDER BY n");
         const rows: (FoundName & { source: string; sourceTitle: string; time: string | null; sentence: string })[] = [];
         for (const r of all) {
-          const st = sourceTime(r.sourceId);
+          const st = sourceTime(r.sourceId, place);
           for (const s of getS.all(r.passageId) as { id: string; text: string }[]) {
             for (const n of findNames(s.id, s.text, r.lang, patterns)) {
               rows.push({ ...n, source: r.sourceId, sourceTitle: r.sourceTitle, time: st?.start ?? null, sentence: s.text });
@@ -310,7 +340,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       }
     });
 
-    const threads = [...existenceThreads(existence, E, place), ...claimThreads(extraction.claims, E, place, byPassage)];
+    const threads = [...existenceThreads(existence, E, place, timeline().t.existence_events.filter((e) => e.entity === place)),...claimThreads(extraction.claims, E, place, byPassage)];
     emit(explorationId, "threads", threads);
 
     // 8. Weave: narrative from adopted claims only, checked sentence by sentence (FR-17, 4.8)
@@ -325,7 +355,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         threads,
         existence,
         (pid) => byPassage.get(pid)?.sourceTitle ?? pid,
-        (pid) => sourceTime(byPassage.get(pid)?.sourceId ?? ""),
+        (pid) => sourceTime(byPassage.get(pid)?.sourceId ?? "", place),
       );
       if (!cards.size) return null;
       ctx.claude();
@@ -341,6 +371,8 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       emit(explorationId, "narrative", payload);
       return r.sentences;
     });
+
+    const spaceOk = await spacePromise; // bounded by its own timeout
 
     // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.
     const graph = await stage(ctx, "graph", async () => {
@@ -375,6 +407,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
 
     const summary = {
       graph_saved: graph,
+      space: spaceOk ? `/space/${capture.id}` : "degraded",
       narrative_sentences: narrative?.filter((s) => s.ok).length ?? 0,
       narrative_dropped: narrative?.filter((s) => !s.ok).length ?? 0,
       status: "threads",

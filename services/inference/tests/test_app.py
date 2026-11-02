@@ -48,6 +48,21 @@ def test_rejects_bad_box():
     assert r.status_code == 422
 
 
+def test_scene_requires_token():
+    r = client.post("/scene", files={"image": ("x.png", _png(), "image/png")}, data={"scene_id": "cap_abc"})
+    assert r.status_code == 401
+
+
+def test_scene_rejects_path_like_ids():
+    r = client.post(
+        "/scene",
+        headers={"Authorization": "Bearer test-token"},
+        files={"image": ("x.png", _png(), "image/png")},
+        data={"scene_id": "../../etc"},
+    )
+    assert r.status_code == 422
+
+
 def test_requires_prompt():
     r = client.post("/segment", headers={"Authorization": "Bearer test-token"},
                     files={"image": ("x.png", _png(), "image/png")})

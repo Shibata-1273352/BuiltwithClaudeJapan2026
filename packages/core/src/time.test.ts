@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { expand, judgeExistence, periodsFrom, temporaryAt, timeKeys, toRange, type ExistenceEvent } from "./time";
 
 const timeline = JSON.parse(readFileSync(path.join(import.meta.dirname, "..", "..", "..", "corpus", "timeline.json"), "utf8"));
-const events: ExistenceEvent[] = timeline.existence_events;
+const events: ExistenceEvent[] = timeline.existence_events.filter((e: ExistenceEvent) => e.entity === "ent:kaminarimon");
 const periods = periodsFrom(events, "2026-11-02");
 const at = (start: string, precision: "day" | "month" | "year" | "range" = "day", end?: string) =>
   judgeExistence(periods, toRange({ precision, start, end }));
@@ -75,11 +75,18 @@ describe("review 2026-11-03 fixes", () => {
     expect(cf.sides.map((s: { gregorian: string }) => s.gregorian)).toEqual(["1866-01-28", "1866-01-30"]);
   });
 
+  it("before a structure is first built or moved here, it is absent (not 'no data')", () => {
+    const ev: ExistenceEvent[] = [{ id: "ex:h:1879", entity: "ent:h", event: "moved_in", time: { start: "1879-01-01", end: "1879-12-31" }, evidence: [] }];
+    const p = periodsFrom(ev, "2026-01-01");
+    expect(judgeExistence(p, toRange({ precision: "day", start: "1868-07-04" }), ev)).toMatchObject({ value: "absent", reason: "inside_absent" });
+    expect(judgeExistence(p, toRange({ precision: "year", start: "1914" }), ev).value).toBe("present");
+  });
+
   it("Bird's edition is pinned and his relation to the gate is 'observed the site'", () => {
     const bird = timeline.source_times.find((s: { source: string }) => s.source === "bird-unbeaten");
     expect(bird.edition.provider).toBe("Project Gutenberg #2184");
     expect(bird.edition.version_hash).toMatch(/^[0-9a-f]{64}$/);
-    expect(bird.relation_to_subject).toMatchObject({ kind: "observed_site", entity: "ent:sensoji" });
+    expect(bird.subjects["ent:kaminarimon"].relation).toMatchObject({ kind: "observed_site", entity: "ent:sensoji" });
   });
 });
 

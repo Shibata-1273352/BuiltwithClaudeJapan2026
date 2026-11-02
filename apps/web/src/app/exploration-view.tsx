@@ -32,7 +32,7 @@ type NarrativeEvent = {
 type GapEvent = { assessment?: string; gaps?: { facet: string; lang: string; reason: string; terms: string[] }[]; found?: number };
 type ClaimsEvent = { passages: number; accepted: number; downgraded: number; rejected: number };
 
-const EXIST_LABEL: Record<string, string> = { present: "あった", absent: "なかった（恒久的な門）", unknown: "確かめられない" };
+const EXIST_LABEL: Record<string, string> = { present: "あった", absent: "なかった", unknown: "確かめられない" };
 const STATE_LABEL: Record<string, string> = {
   ink: "インク",
   combined: "組み合わせ",
@@ -45,7 +45,7 @@ const STATE_LABEL: Record<string, string> = {
 
 type Ev = { seq: number; type: string; data: unknown };
 
-const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", gap: "不足の評価と追加探索", existence: "存在判定", narrate: "紡ぐ" };
+const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", "extract:en": "抽出（英）", "extract:ja": "抽出（日）", extract2: "追加の抽出", gap: "不足の評価（並行）", space: "間",  existence: "存在判定", narrate: "紡ぐ" };
 const FACET_LABEL: Record<string, string> = {
   place_description: "場所の記述",
   naming: "呼び名",
@@ -113,7 +113,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "space", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
   }, [jpeg, useLocation]);
@@ -131,6 +131,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const narrative = alt[lang] ?? (firstNarrative?.lang === lang || !firstNarrative?.lang ? firstNarrative : undefined);
   const names = pick<NamesEvent>("names");
   const timelineData = pick<TimelineData>("timeline");
+  const space = pick<{ ok: boolean; url?: string; aligned?: boolean; message?: string }>("space");
 
   async function switchLang(next: "ja" | "en") {
     setLang(next);
@@ -186,15 +187,19 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
       {timelineData && <TimeRiver data={timelineData} />}
       {existence && (
         <div data-testid="existence">
-          <h3 className="font-serif text-lg">時：その時、門はあったか</h3>
+          <h3 className="font-serif text-lg">時：その時、{timelineData?.name?.ja ?? "それ"}はあったか</h3>
           <ul className="text-sm">
             {existence.rows.map((r) => (
               <li key={r.source}>
                 <span className={r.value === "absent" ? "text-ba" : r.value === "present" ? "text-toki" : "text-muted"}>
-                  {r.reason === "sources_disagree" ? "判定保留（焼失日が史料間で一致しない）" : EXIST_LABEL[r.value]}
+                  {r.reason === "sources_disagree" ? "判定保留（史料間で日付が一致しない）" : EXIST_LABEL[r.value]}
                 </span>{" "}
                 {r.sourceTitle}（{r.time?.kind}: {r.time?.start}
                 {r.time?.end ? `–${r.time.end}` : ""}）
+                {/* the reason in the site's own terms (not yet rebuilt / not yet moved here …) */}
+                {threads?.find((t) => t.id === `th:exist:${r.source}`) && (
+                  <span className="block pl-4 text-xs text-muted">{threads.find((t) => t.id === `th:exist:${r.source}`)!.label[lang]}</span>
+                )}
               </li>
             ))}
           </ul>
@@ -277,6 +282,22 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
       {claims && (
         <p className="text-sm text-muted" data-testid="claims">
           主張：採用 {claims.accepted} ・格下げ {claims.downgraded} ・却下 {claims.rejected}（{claims.passages} 節から）
+        </p>
+      )}
+      {status === "完了" && expId && (
+        <a href={`/note/${expId}?lang=${lang}`} className="inline-flex min-h-11 w-fit items-center rounded-full bg-lantern px-6 font-medium text-night" data-testid="note-link">
+          {lang === "ja" ? "旅ノートを開く" : "Open the travel note"}
+        </a>
+      )}
+      {space && (
+        <p className="text-sm" data-testid="space-link">
+          {space.ok && space.url ? (
+            <a className="underline decoration-lantern underline-offset-4" href={space.url}>
+              間（ま）で見る{space.aligned ? "：広重の絵と位置合わせ済み" : ""}
+            </a>
+          ) : (
+            <span className="text-muted">{space.message ?? "空間解析：簡易表示"}</span>
+          )}
         </p>
       )}
       {threads && (

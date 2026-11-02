@@ -60,7 +60,7 @@ export async function extractClaims(db: DB, E: Entities, targetId: string, selec
   const blocks = selected.map((c) => {
     const rows = getS.all(c.passageId) as { id: string; text: string }[];
     for (const r of rows) sentences.set(r.id, { passageId: c.passageId, text: r.text, lang: c.lang });
-    const st = sourceTime(c.sourceId);
+    const st = sourceTime(c.sourceId, targetId);
     // FR-57: one-hop relations, grouped by type
     const relations = [
       `matched: ${c.matched_entity ?? "none"} (${c.relation} to the photo's subject ${targetId})`,

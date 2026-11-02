@@ -6,103 +6,697 @@
       "id": "ent:asakusa",
       "type": "area",
       "parent": null,
-      "name": { "ja": "浅草", "en": "Asakusa" },
-      "coords": { "lat": 35.7148, "lon": 139.7967 },
+      "name": {
+        "ja": "浅草",
+        "en": "Asakusa"
+      },
+      "coords": {
+        "lat": 35.7148,
+        "lon": 139.7967
+      },
       "names": [
-        { "text": "浅草", "lang": "ja", "specificity": "unique" },
-        { "text": "Asakusa", "lang": "en", "specificity": "unique" },
-        { "text": "Asaksa", "lang": "en", "specificity": "unique", "note": "older romanization" }
+        {
+          "text": "浅草",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "Asakusa",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Asaksa",
+          "lang": "en",
+          "specificity": "unique",
+          "note": "older romanization"
+        }
       ]
     },
     {
       "id": "ent:sensoji",
       "type": "site",
       "parent": "ent:asakusa",
-      "name": { "ja": "浅草寺", "en": "Sensō-ji" },
-      "coords": { "lat": 35.7148, "lon": 139.7967 },
+      "name": {
+        "ja": "浅草寺",
+        "en": "Sensō-ji"
+      },
+      "coords": {
+        "lat": 35.7148,
+        "lon": 139.7967
+      },
       "names": [
-        { "text": "浅草寺", "lang": "ja", "specificity": "unique" },
-        { "text": "金龍山", "lang": "ja", "specificity": "unique", "note": "山号 (mountain name of the temple)" },
-        { "text": "浅草観音", "lang": "ja", "specificity": "unique", "note": "通称; names the temple via its deity" },
-        { "text": "観音堂", "lang": "ja", "specificity": "ambiguous", "note": "main hall; many temples have one" },
-        { "text": "Sensoji", "lang": "en", "specificity": "unique" },
-        { "text": "Senso-ji", "lang": "en", "specificity": "unique" },
-        { "text": "Kinryuzan", "lang": "en", "specificity": "unique" },
-        { "text": "Kinryūsan", "lang": "en", "specificity": "unique" },
-        { "text": "Asakusa temple", "lang": "en", "specificity": "ambiguous" },
-        { "text": "Kwan-non Temple", "lang": "en", "specificity": "ambiguous", "note": "a temple dedicated to Kannon; maps to Sensō-ji only with context (4.4.3)" }
+        {
+          "text": "浅草寺",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "金龍山",
+          "lang": "ja",
+          "specificity": "unique",
+          "note": "山号 (mountain name of the temple)"
+        },
+        {
+          "text": "浅草観音",
+          "lang": "ja",
+          "specificity": "unique",
+          "note": "通称; names the temple via its deity"
+        },
+        {
+          "text": "観音堂",
+          "lang": "ja",
+          "specificity": "ambiguous",
+          "note": "main hall; many temples have one"
+        },
+        {
+          "text": "Sensoji",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Senso-ji",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Kinryuzan",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Kinryūsan",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Asakusa temple",
+          "lang": "en",
+          "specificity": "ambiguous"
+        },
+        {
+          "text": "Kwan-non Temple",
+          "lang": "en",
+          "specificity": "ambiguous",
+          "note": "a temple dedicated to Kannon; maps to Sensō-ji only with context (4.4.3)"
+        }
       ]
     },
     {
       "id": "ent:kaminarimon",
       "type": "structure",
       "parent": "ent:sensoji",
-      "name": { "ja": "雷門", "en": "Kaminarimon (Thunder Gate)" },
-      "coords": { "lat": 35.7111, "lon": 139.7963 },
+      "name": {
+        "ja": "雷門",
+        "en": "Kaminarimon (Thunder Gate)"
+      },
+      "coords": {
+        "lat": 35.7111,
+        "lon": 139.7963
+      },
       "names": [
-        { "text": "雷門", "lang": "ja", "specificity": "unique" },
-        { "text": "風雷神門", "lang": "ja", "specificity": "unique", "note": "formal name (Sensō-ji official site)" },
-        { "text": "Kaminarimon", "lang": "en", "specificity": "unique" },
-        { "text": "Kaminari-mon", "lang": "en", "specificity": "unique" },
-        { "text": "Thunder Gate", "lang": "en", "specificity": "unique" }
+        {
+          "text": "雷門",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "風雷神門",
+          "lang": "ja",
+          "specificity": "unique",
+          "note": "formal name (Sensō-ji official site)"
+        },
+        {
+          "text": "Kaminarimon",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Kaminari-mon",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Thunder Gate",
+          "lang": "en",
+          "specificity": "unique"
+        }
       ]
     },
     {
       "id": "ent:hozomon",
       "type": "structure",
       "parent": "ent:sensoji",
-      "name": { "ja": "宝蔵門（旧・仁王門）", "en": "Hōzōmon (formerly Niōmon)" },
+      "name": {
+        "ja": "宝蔵門（旧・仁王門）",
+        "en": "Hōzōmon (formerly Niōmon)"
+      },
       "names": [
-        { "text": "宝蔵門", "lang": "ja", "specificity": "unique" },
-        { "text": "仁王門", "lang": "ja", "specificity": "ambiguous", "note": "many temples have a 仁王門" },
-        { "text": "二王門", "lang": "ja", "specificity": "ambiguous" },
-        { "text": "Hozomon", "lang": "en", "specificity": "unique" },
-        { "text": "Ni-ô", "lang": "en", "specificity": "ambiguous", "note": "the guardian kings; marks a Niōmon, not Kaminarimon" },
-        { "text": "Nio", "lang": "en", "specificity": "ambiguous" }
+        {
+          "text": "宝蔵門",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "仁王門",
+          "lang": "ja",
+          "specificity": "ambiguous",
+          "note": "many temples have a 仁王門"
+        },
+        {
+          "text": "二王門",
+          "lang": "ja",
+          "specificity": "ambiguous"
+        },
+        {
+          "text": "Hozomon",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Ni-ô",
+          "lang": "en",
+          "specificity": "ambiguous",
+          "note": "the guardian kings; marks a Niōmon, not Kaminarimon"
+        },
+        {
+          "text": "Nio",
+          "lang": "en",
+          "specificity": "ambiguous"
+        }
       ]
     },
     {
       "id": "ent:kannon",
       "type": "deity",
       "parent": null,
-      "name": { "ja": "観音（観世音菩薩）", "en": "Kannon" },
+      "name": {
+        "ja": "観音（観世音菩薩）",
+        "en": "Kannon"
+      },
       "names": [
-        { "text": "観音", "lang": "ja", "specificity": "ambiguous", "note": "the deity in general" },
-        { "text": "観世音", "lang": "ja", "specificity": "ambiguous" },
-        { "text": "Kwan-non", "lang": "en", "specificity": "ambiguous", "note": "Bird's spelling (1911 edition)" },
-        { "text": "Kwannon", "lang": "en", "specificity": "ambiguous" },
-        { "text": "Kannon", "lang": "en", "specificity": "ambiguous" },
-        { "text": "goddess of mercy", "lang": "en", "specificity": "ambiguous" }
+        {
+          "text": "観音",
+          "lang": "ja",
+          "specificity": "ambiguous",
+          "note": "the deity in general"
+        },
+        {
+          "text": "観世音",
+          "lang": "ja",
+          "specificity": "ambiguous"
+        },
+        {
+          "text": "Kwan-non",
+          "lang": "en",
+          "specificity": "ambiguous",
+          "note": "Bird's spelling (1911 edition)"
+        },
+        {
+          "text": "Kwannon",
+          "lang": "en",
+          "specificity": "ambiguous"
+        },
+        {
+          "text": "Kannon",
+          "lang": "en",
+          "specificity": "ambiguous"
+        },
+        {
+          "text": "goddess of mercy",
+          "lang": "en",
+          "specificity": "ambiguous"
+        }
       ]
     },
     {
       "id": "ent:nakamise",
       "type": "structure",
       "parent": "ent:sensoji",
-      "name": { "ja": "仲見世", "en": "Nakamise" },
+      "name": {
+        "ja": "仲見世",
+        "en": "Nakamise"
+      },
       "names": [
-        { "text": "仲見世", "lang": "ja", "specificity": "unique" },
-        { "text": "仲店", "lang": "ja", "specificity": "unique" },
-        { "text": "Nakamise", "lang": "en", "specificity": "unique" },
-        { "text": "Naka-mise", "lang": "en", "specificity": "ambiguous", "note": "also used for unrelated arcades (e.g. Yoshiwara)" }
+        {
+          "text": "仲見世",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "仲店",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "Nakamise",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Naka-mise",
+          "lang": "en",
+          "specificity": "ambiguous",
+          "note": "also used for unrelated arcades (e.g. Yoshiwara)"
+        }
       ]
     },
     {
       "id": "ent:hiroshige-kinryuzan",
       "type": "artwork",
       "parent": null,
-      "name": { "ja": "歌川広重《名所江戸百景 浅草金龍山》", "en": "Hiroshige, Kinryūsan Temple at Asakusa (1856)" },
-      "external_ids": { "met": "56689" },
+      "name": {
+        "ja": "歌川広重《名所江戸百景 浅草金龍山》",
+        "en": "Hiroshige, Kinryūsan Temple at Asakusa (1856)"
+      },
+      "external_ids": {
+        "met": "56689"
+      },
+      "names": []
+    },
+    {
+      "id": "ent:ueno",
+      "type": "area",
+      "parent": null,
+      "name": {
+        "ja": "上野",
+        "en": "Ueno"
+      },
+      "coords": {
+        "lat": 35.7148,
+        "lon": 139.7731
+      },
+      "names": [
+        {
+          "text": "上野",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "上野の山",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "Ueno",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Uyeno",
+          "lang": "en",
+          "specificity": "unique",
+          "note": "older romanization (Bird)"
+        },
+        {
+          "text": "Uyéno",
+          "lang": "en",
+          "specificity": "unique",
+          "note": "older romanization (Scidmore)"
+        }
+      ]
+    },
+    {
+      "id": "ent:kaneiji",
+      "type": "site",
+      "parent": "ent:ueno",
+      "name": {
+        "ja": "寛永寺",
+        "en": "Kan'ei-ji"
+      },
+      "coords": {
+        "lat": 35.7224,
+        "lon": 139.7742
+      },
+      "names": [
+        {
+          "text": "寛永寺",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "東叡山",
+          "lang": "ja",
+          "specificity": "unique",
+          "note": "山号 (mountain name of the temple)"
+        },
+        {
+          "text": "東叡山寛永寺",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "上野寛永寺",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "Kan'eiji",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Kan’eiji",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Kaneiji",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Kan'ei-ji",
+          "lang": "en",
+          "specificity": "unique"
+        }
+      ]
+    },
+    {
+      "id": "ent:konponchudo",
+      "type": "structure",
+      "parent": "ent:kaneiji",
+      "name": {
+        "ja": "根本中堂（現在の堂）",
+        "en": "Konpon Chūdō (the present main hall)"
+      },
+      "coords": {
+        "lat": 35.7224,
+        "lon": 139.7742
+      },
+      "names": [
+        {
+          "text": "根本中堂",
+          "lang": "ja",
+          "specificity": "ambiguous",
+          "note": "also the old hall at 竹の台 (1698–1868); this entry is the present hall"
+        },
+        {
+          "text": "Konpon Chudo",
+          "lang": "en",
+          "specificity": "ambiguous"
+        },
+        {
+          "text": "Konpon Chūdō",
+          "lang": "en",
+          "specificity": "ambiguous"
+        },
+        {
+          "text": "Konponchudo",
+          "lang": "en",
+          "specificity": "ambiguous"
+        }
+      ]
+    },
+    {
+      "id": "ent:konponchudo-old",
+      "type": "structure",
+      "parent": "ent:kaneiji",
+      "name": {
+        "ja": "旧根本中堂（竹の台）",
+        "en": "the former Konpon Chūdō (at Takenodai)"
+      },
+      "coords": {
+        "lat": 35.7159,
+        "lon": 139.774
+      },
+      "names": [
+        {
+          "text": "中堂",
+          "lang": "ja",
+          "specificity": "ambiguous",
+          "note": "Kōun's word for the hall that burned in 1868"
+        },
+        {
+          "text": "瑠璃殿",
+          "lang": "ja",
+          "specificity": "unique",
+          "note": "勅額 of the 1698 hall"
+        }
+      ]
+    },
+    {
+      "id": "ent:kiyomizu-kannondo",
+      "type": "structure",
+      "parent": "ent:kaneiji",
+      "name": {
+        "ja": "清水観音堂",
+        "en": "Kiyomizu Kannon-dō"
+      },
+      "coords": {
+        "lat": 35.7125,
+        "lon": 139.7737
+      },
+      "names": [
+        {
+          "text": "清水観音堂",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "清水堂",
+          "lang": "ja",
+          "specificity": "ambiguous",
+          "note": "also Kiyomizu-dera in Kyoto"
+        },
+        {
+          "text": "Kiyomizu Kannon-do",
+          "lang": "en",
+          "specificity": "unique"
+        }
+      ]
+    },
+    {
+      "id": "ent:sumidagawa",
+      "type": "site",
+      "parent": null,
+      "name": {
+        "ja": "隅田川",
+        "en": "Sumida River"
+      },
+      "coords": {
+        "lat": 35.7106,
+        "lon": 139.7988
+      },
+      "names": [
+        {
+          "text": "隅田川",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "Sumida",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Sumidagawa",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Sumida-gawa",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "大川",
+          "lang": "ja",
+          "specificity": "ambiguous",
+          "note": "Edo name for the lower Sumida; also part of 大川端・大川筋"
+        }
+      ]
+    },
+    {
+      "id": "ent:azumabashi",
+      "type": "structure",
+      "parent": "ent:sumidagawa",
+      "name": {
+        "ja": "吾妻橋",
+        "en": "Azuma Bridge"
+      },
+      "coords": {
+        "lat": 35.7105,
+        "lon": 139.7984
+      },
+      "names": [
+        {
+          "text": "吾妻橋",
+          "lang": "ja",
+          "specificity": "unique"
+        },
+        {
+          "text": "大川橋",
+          "lang": "ja",
+          "specificity": "unique",
+          "note": "name at the first construction (1774)"
+        },
+        {
+          "text": "Azuma Bridge",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Adzuma Bridge",
+          "lang": "en",
+          "specificity": "unique",
+          "note": "Bird's spelling"
+        },
+        {
+          "text": "Azuma-bashi",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Azumabashi",
+          "lang": "en",
+          "specificity": "unique"
+        },
+        {
+          "text": "Azuma bashi",
+          "lang": "en",
+          "specificity": "unique"
+        }
+      ]
+    },
+    {
+      "id": "ent:inoue-azumabashi",
+      "type": "artwork",
+      "parent": null,
+      "name": {
+        "ja": "井上安治《東京名所之内 吾妻橋新築之図》",
+        "en": "Inoue Yasuji, Opening of Azuma Bridge (1887)"
+      },
+      "external_ids": {
+        "met": "37387"
+      },
+      "names": []
+    },
+    {
+      "id": "ent:hiroshige-azumabashi",
+      "type": "artwork",
+      "parent": null,
+      "name": {
+        "ja": "歌川広重《名所江戸百景 駒形堂吾妻橋》",
+        "en": "Hiroshige, Azuma Bridge from Komagatadō (1857)"
+      },
+      "external_ids": {
+        "met": "37282"
+      },
+      "names": []
+    },
+    {
+      "id": "ent:kiyonaga-azumabashi",
+      "type": "artwork",
+      "parent": null,
+      "name": {
+        "ja": "鳥居清長《吾妻橋下の舟遊び》",
+        "en": "Torii Kiyonaga, A Boating Party under Azuma Bridge (ca. 1785)"
+      },
+      "external_ids": {
+        "met": "45257"
+      },
       "names": []
     }
   ],
   "relations": [
-    { "type": "DEDICATED_TO", "from": "ent:sensoji", "to": "ent:kannon" },
-    { "type": "DEPICTS", "from": "ent:hiroshige-kinryuzan", "to": "ent:kaminarimon", "note": "the lantern of Kaminarimon in the foreground; pre-1865 gate" }
+    {
+      "type": "DEDICATED_TO",
+      "from": "ent:sensoji",
+      "to": "ent:kannon"
+    },
+    {
+      "type": "DEPICTS",
+      "from": "ent:hiroshige-kinryuzan",
+      "to": "ent:kaminarimon",
+      "note": "the lantern of Kaminarimon in the foreground; pre-1865 gate"
+    },
+    {
+      "type": "DEPICTS",
+      "from": "ent:inoue-azumabashi",
+      "to": "ent:azumabashi",
+      "note": "the new iron bridge at its opening (1887)"
+    },
+    {
+      "type": "DEPICTS",
+      "from": "ent:hiroshige-azumabashi",
+      "to": "ent:azumabashi",
+      "note": "the wooden bridge in the distance (1857)"
+    },
+    {
+      "type": "DEPICTS",
+      "from": "ent:kiyonaga-azumabashi",
+      "to": "ent:azumabashi",
+      "note": "the wooden bridge from below (ca. 1785)"
+    },
+    {
+      "type": "SUCCEEDS",
+      "from": "ent:konponchudo",
+      "to": "ent:konponchudo-old",
+      "note": "the present hall (moved here 1879) replaced the hall that burned in 1868; a different building on a different spot"
+    }
   ],
   "relation_vocab": {
-    "place": { "en": ["temple", "gate", "street", "shrine"], "ja": ["寺", "門", "堂", "境内", "仲店"] },
-    "deity": { "en": ["temple", "shrine", "worship"], "ja": ["堂", "参詣", "本尊"] },
-    "existence": { "en": ["burned", "fire", "rebuilt", "built", "destroyed"], "ja": ["焼失", "大火", "焼け", "再建", "建立"] }
+    "place": {
+      "en": [
+        "temple",
+        "gate",
+        "street",
+        "shrine",
+        "bridge",
+        "hall",
+        "pagoda",
+        "park",
+        "river"
+      ],
+      "ja": [
+        "寺",
+        "門",
+        "堂",
+        "境内",
+        "仲店",
+        "橋",
+        "中堂",
+        "本堂",
+        "五重塔"
+      ]
+    },
+    "deity": {
+      "en": [
+        "temple",
+        "shrine",
+        "worship"
+      ],
+      "ja": [
+        "堂",
+        "参詣",
+        "本尊"
+      ]
+    },
+    "existence": {
+      "en": [
+        "burned",
+        "fire",
+        "rebuilt",
+        "built",
+        "destroyed",
+        "iron bridge",
+        "moved",
+        "battle"
+      ],
+      "ja": [
+        "焼失",
+        "大火",
+        "焼け",
+        "再建",
+        "建立",
+        "架橋",
+        "架け替",
+        "鉄橋",
+        "移築",
+        "兵火",
+        "戦争"
+      ]
+    }
   }
 }

@@ -42,7 +42,8 @@ export function toRange(t: Pick<TimeValue, "precision" | "start" | "end">): Date
   return { start: expand(t.start, "start"), end: expand(t.end ?? t.start, "end") };
 }
 
-export type ExistenceEventKind = "built" | "rebuilt" | "destroyed" | "temporary";
+/** moved_in: the structure was moved to this site (it existed elsewhere before, e.g. 根本中堂 from 喜多院). */
+export type ExistenceEventKind = "built" | "rebuilt" | "destroyed" | "moved_in" | "temporary";
 
 export type ExistenceEvent = {
   id: string;
@@ -66,6 +67,9 @@ export type Period = { state: "present" | "absent"; start: string; end: string; 
 export function periodsFrom(events: ExistenceEvent[], now = new Date().toISOString().slice(0, 10)): Period[] {
   const ev = events.filter((e) => e.event !== "temporary").sort((a, b) => a.time.start.localeCompare(b.time.start));
   const out: Period[] = [];
+  // Before it was first built (or moved here) the structure was not at this site.
+  if (ev[0] && (ev[0].event === "built" || ev[0].event === "moved_in"))
+    out.push({ state: "absent", start: "0001-01-01", end: dayBefore(ev[0].time.start), from: [], to: [ev[0].id] });
   for (let i = 0; i < ev.length; i++) {
     const cur = ev[i];
     const next = ev[i + 1];
@@ -79,6 +83,33 @@ export function periodsFrom(events: ExistenceEvent[], now = new Date().toISOStri
   }
   return out;
 }
+
+type Named = { ja: string; en: string };
+type EvLike = { event: string; time: { start: string } };
+
+/**
+ * Why the structure was absent, worded from the events that bound the absent period (4.5.2):
+ * not yet rebuilt after the fire / destroyed / not yet moved here / not yet built. "permanent"
+ * only where temporary structures stood in the interim (Kaminarimon). Shared by threads and the
+ * time river so both always say the same thing.
+ */
+export function absenceReason(from: EvLike | undefined, to: EvLike | undefined, name: Named, permanent: boolean): Named {
+  const p = permanent ? { ja: "恒久的な", en: "the permanent " } : { ja: "", en: "" };
+  const y = to?.time.start.slice(0, 4) ?? "?";
+  if (from?.event === "destroyed" && to) return { ja: `${p.ja}${name.ja}は焼失後まだ再建されていなかった`, en: `${p.en}${name.en} had not yet been rebuilt after the fire` };
+  if (from?.event === "destroyed") return { ja: `${p.ja}${name.ja}は焼失していた`, en: `${p.en}${name.en} had been destroyed` };
+  if (!from && to?.event === "moved_in") return { ja: `${name.ja}はまだここに移されていなかった（${y}年に移築）`, en: `${name.en} had not yet been moved here (moved in ${y})` };
+  if (!from && to) return { ja: `${name.ja}はまだ建てられていなかった（${y}年に建造）`, en: `${name.en} had not yet been built (built in ${y})` };
+  return { ja: `${p.ja}${name.ja}はなかった`, en: `${p.en}${name.en} was not there` };
+}
+
+/** What the sources disagree on, by the kind of the disputed event. */
+export const DISPUTED_WHAT: Record<string, Named> = {
+  destroyed: { ja: "焼失日", en: "the date of the fire" },
+  rebuilt: { ja: "再建・架け替えの年", en: "the year of the rebuilding" },
+  built: { ja: "建造の年", en: "the year of construction" },
+  moved_in: { ja: "移築の年", en: "the year of the move" },
+};
 
 function shift(iso: string, days: number): string {
   const d = new Date(`${iso}T00:00:00Z`);

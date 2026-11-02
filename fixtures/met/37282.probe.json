@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-11-02T16:07:44.500Z",
+  "results": {
+    "v1.1/search": {
+      "status": 200,
+      "ms": 283,
+      "summary": {
+        "total": 4,
+        "includes": false
+      }
+    },
+    "v1/search": {
+      "status": 410,
+      "ms": 191,
+      "summary": {
+        "includes": false
+      }
+    },
+    "v1.1/objects": {
+      "status": 404,
+      "ms": 192
+    },
+    "v1/objects": {
+      "status": 200,
+      "ms": 210,
+      "summary": {
+        "title": "“Azuma Bridge from Komagatadō Temple,” from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei, Komagatadō Azumabashi)",
+        "artist": "Utagawa Hiroshige",
+        "date": "1857",
+        "isPublicDomain": true
+      }
+    }
+  }
+}

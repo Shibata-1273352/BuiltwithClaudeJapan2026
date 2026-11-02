@@ -49,6 +49,13 @@ ALIGN_ANCHORS = ("bottom_center", "left_extreme")
 
 
 class Models:
+    @classmethod
+    def from_loaded(cls, device: torch.device, sam_model, sam_proc, depth_model, depth_proc) -> "Models":
+        """Reuse models already loaded by the inference server (no second copy in memory)."""
+        m = cls.__new__(cls)
+        m.device, m.sm, m.sp, m.dm, m.dp = device, sam_model, sam_proc, depth_model, depth_proc
+        return m
+
     def __init__(self, device: torch.device):
         from transformers import AutoImageProcessor, AutoModelForDepthEstimation, Sam3Model, Sam3Processor
 
@@ -166,8 +173,14 @@ def cmd_artifact(args, models: Models) -> None:
 
 def cmd_photo(args, models: Models) -> None:
     img = Image.open(args.image).convert("RGB")
-    stem = Path(args.image).stem
-    out = data_dir() / "cache" / "scenes" / stem
+    scene = build_photo_scene(models, img, Path(args.image).stem, args.artifact, image_name=Path(args.image).name)
+    print(json.dumps(scene, ensure_ascii=False, indent=2))
+
+
+def build_photo_scene(models: "Models", img: Image.Image, scene_id: str, artifact: str | None, image_name: str = "capture.jpg",
+                      prompts: list[tuple[str, str]] | None = None) -> dict:
+    """Masks + depth + layers + plate + anchors + alignment for one photo; writes $DATA_DIR/cache/scenes/<scene_id>/."""
+    out = data_dir() / "cache" / "scenes" / scene_id
     out.mkdir(parents=True, exist_ok=True)
     timings: dict[str, int] = {}
 
@@ -179,7 +192,7 @@ def cmd_photo(args, models: Models) -> None:
 
     elements: dict[str, dict] = {}
     masks_by_key: dict[str, np.ndarray] = {}
-    for key, prompt in PHOTO_PROMPTS:
+    for key, prompt in prompts or PHOTO_PROMPTS:
         t0 = time.perf_counter()
         masks, scores = models.masks(img, text=prompt)
         timings[f"segment_{key}"] = round((time.perf_counter() - t0) * 1000)
@@ -213,7 +226,7 @@ def cmd_photo(args, models: Models) -> None:
     save_plate(img, lifted, out / "plate.jpg")
     timings["plate"] = round((time.perf_counter() - t0) * 1000)
 
-    scene: dict = {"image": Path(args.image).name, "photo": "photo.jpg", "plate": "plate.jpg",
+    scene: dict = {"image": image_name, "photo": "photo.jpg", "plate": "plate.jpg",
                    "size": [img.width, img.height], "elements": elements,
                    "depth_png": "depth.png", "timings_ms": timings}
 
@@ -225,16 +238,20 @@ def cmd_photo(args, models: Models) -> None:
                 anchors.append(b)
         scene["anchors"] = anchor_dicts(anchors)
         draw_anchors(img, anchors, out / "anchors.png")
-        if args.artifact:
-            scene["alignment"] = align(img, anchors, args.artifact, out)
+        # align only to artifacts with hand-checked anchors (fixtures/artifacts/<id>.json); other
+        # sites have none yet, and a stray lantern match must not fail the scene
+        if artifact and (ANNOTATIONS / f"{artifact}.json").exists():
+            scene["alignment"] = align(img, anchors, artifact, out)
 
     (out / "scene.json").write_text(json.dumps(scene, ensure_ascii=False, indent=2))
-    print(json.dumps(scene, ensure_ascii=False, indent=2))
+    return scene
 
 
 def align(photo: Image.Image, photo_anchors: list[Anchor], artifact_id: str, out: Path) -> dict:
     ann = json.loads((ANNOTATIONS / f"{artifact_id}.json").read_text())
     art_img_path = data_dir() / "samples" / ann["image_file"]
+    if not art_img_path.exists():
+        art_img_path = data_dir() / "cache" / "artifacts" / artifact_id / "image.jpg"
     art = Image.open(art_img_path).convert("RGB")
     by_name = {a["name"]: a for a in ann["anchors"]}
     names = [a.name for a in photo_anchors if a.name in by_name and a.name in ALIGN_ANCHORS]

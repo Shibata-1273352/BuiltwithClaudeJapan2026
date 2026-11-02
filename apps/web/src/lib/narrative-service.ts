@@ -81,7 +81,7 @@ async function generate(explorationId: string, lang: "ja" | "en"): Promise<Resul
     threads,
     existence,
     (pid) => byId.get(pid)?.source ?? pid,
-    (pid) => sourceTime(byId.get(pid)?.source_id ?? ""),
+    (pid) => sourceTime(byId.get(pid)?.source_id ?? "", place),
   );
   const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id));
   const payload: NarrativePayload = {

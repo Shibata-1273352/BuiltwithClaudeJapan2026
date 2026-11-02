@@ -1,0 +1,93 @@
+{
+  "objectID": 45257,
+  "isHighlight": false,
+  "accessionNumber": "JP2620a–c",
+  "accessionYear": "1936",
+  "isPublicDomain": true,
+  "primaryImage": "https://images.metmuseum.org/CRDImages/as/original/DP151606.jpg",
+  "primaryImageSmall": "https://images.metmuseum.org/CRDImages/as/web-large/DP151606.jpg",
+  "additionalImages": [],
+  "constituents": [
+    {
+      "constituentID": 11381,
+      "role": "Artist",
+      "name": "Torii Kiyonaga",
+      "constituentULAN_URL": "http://vocab.getty.edu/page/ulan/500058786",
+      "constituentWikidata_URL": "https://www.wikidata.org/wiki/Q427642",
+      "gender": ""
+    }
+  ],
+  "department": "Asian Art",
+  "objectName": "Print",
+  "title": "A Boating Party under Azuma Bridge",
+  "culture": "Japan",
+  "period": "Edo period (1615–1868)",
+  "dynasty": "",
+  "reign": "",
+  "portfolio": "",
+  "artistRole": "Artist",
+  "artistPrefix": "",
+  "artistDisplayName": "Torii Kiyonaga",
+  "artistDisplayBio": "Japanese, 1752–1815",
+  "artistSuffix": "",
+  "artistAlphaSort": "Torii Kiyonaga",
+  "artistNationality": "Japanese",
+  "artistBeginDate": "1752",
+  "artistEndDate": "1815",
+  "artistGender": "",
+  "artistWikidata_URL": "https://www.wikidata.org/wiki/Q427642",
+  "artistULAN_URL": "http://vocab.getty.edu/page/ulan/500058786",
+  "objectDate": "ca. 1785",
+  "objectBeginDate": 1775,
+  "objectEndDate": 1795,
+  "medium": "Triptych of woodblock prints; ink and color on paper",
+  "dimensions": "Each sheet: 15 1/4 x 10 1/4 in. (38.7 x 26 cm)",
+  "measurements": [
+    {
+      "elementName": "Overall",
+      "elementDescription": null,
+      "elementMeasurements": {
+        "Height": 38.7,
+        "Width": 26
+      }
+    }
+  ],
+  "creditLine": "The Howard Mansfield Collection, Purchase, Rogers Fund, 1936",
+  "geographyType": "",
+  "city": "",
+  "state": "",
+  "county": "",
+  "country": "",
+  "region": "",
+  "subregion": "",
+  "locale": "",
+  "locus": "",
+  "excavation": "",
+  "river": "",
+  "classification": "Prints",
+  "rightsAndReproduction": "",
+  "linkResource": "",
+  "metadataDate": "2025-10-27T04:51:38.423Z",
+  "repository": "Metropolitan Museum of Art, New York, NY",
+  "objectURL": "https://www.metmuseum.org/art/collection/search/45257",
+  "tags": [
+    {
+      "term": "Rivers",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300008707",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q4022"
+    },
+    {
+      "term": "Actors",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300025658",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q33999"
+    },
+    {
+      "term": "Boats",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300178749",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q35872"
+    }
+  ],
+  "objectWikidata_URL": "",
+  "isTimelineWork": false,
+  "GalleryNumber": ""
+}

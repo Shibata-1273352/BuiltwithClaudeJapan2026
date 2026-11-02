@@ -6,8 +6,19 @@ Take a photo of a place in Japan. TSUMUGI gathers evidence across people, places
 
 - Requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 - Verification results: [day 1](docs/verification/day1.md), [day 2](docs/verification/day2.md)
+- Timeline reviews (human): [Kaminarimon](docs/verification/timeline-review.md) (approved 2026-11-03), [Ueno / Azuma Bridge](docs/verification/timeline-review-ueno-azumabashi.md) (pending)
 
-Built for Built with Claude Japan 2026. **Status: day 1 (foundation).**
+Built for Built with Claude Japan 2026.
+
+**Sites** (13.2):
+
+| Site | Time layer | Naming layer | Example run |
+| --- | --- | --- | --- |
+| Kaminarimon, Asakusa (demo) | burned 1866, permanent gate not rebuilt until 1960; Bird 1878 / Kafū 1914 absent | 雷門 / 風雷神門 / Kwan-non temple / 二王門 … | 34.7 s, 18 claims |
+| Konpon Chūdō, Kan'ei-ji, Ueno | former hall burned 1868-07-04; present hall moved here 1879 (built 1638 at Kitain) — Kōun 1868 / Bird 1878 "not yet moved here" | Uyeno / Uyéno / 上野 / 東叡山 / 中堂 / 瑠璃殿 | 40.4 s, 10 claims |
+| Azuma Bridge, Sumida River | built 1774, iron 1887, present bridge 1930/1931 (unresolved) | 吾妻橋 / 大川橋 / Adzuma Bridge / 隅田川 / 大川 | 43.5 s, 12 claims |
+
+Per site: `/time?entity=ent:kaminarimon` (or `ent:konponchudo`, `ent:azumabashi`); judgments without Claude: `npx tsx scripts/check-existence.ts ent:konponchudo`.
 
 ## Layout
 
