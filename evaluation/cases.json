@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "frozen_at": "2026-11-03",
+  "annotated_by": "claude-code (human review pending)",
+  "note": "Evaluation gold (REQUIREMENTS.md 10.1). Not read by any prompt or by the dictionary. Frozen before the first Claude run; prompts and dictionary are not changed in response to the results.",
+  "pool_rule": "Annotation pool built without the retrieval under test (scripts/evaluation/pool.ts): every non-index passage containing a dictionary name of the target or its site (raw scan of the canonical text), plus every passage the reviewed timeline cites as event or relation evidence; for Kaminarimon also the English passages naming Kannon (Bird's chapter on the temple says 'Kwan-non', not 'Asakusa'). Each pooled passage was then kept only if it says something about the target or its site (description, naming, existence, artworks); passing mentions, routes and unrelated homonyms were dropped. Time-only evidence (prefaces, letter dates) and boilerplate museum fields are excluded.",
+  "targets": [
+    {
+      "id": "kaminarimon",
+      "entity": "ent:kaminarimon",
+      "relevant": {
+        "en": [
+          "bird-unbeaten:6:0", "bird-unbeaten:6:2", "bird-unbeaten:6:8", "bird-unbeaten:6:9", "bird-unbeaten:6:10", "bird-unbeaten:6:12",
+          "scidmore-jinrikisha:6:17", "met-56689:0:0",
+          "jta-tagengo-kaminarimon:0:0", "jta-tagengo-kaminarimon:0:1", "jta-tagengo-kaminarimon:0:2", "jta-tagengo-kaminarimon:0:3"
+        ],
+        "ja": [
+          "kafu-hiyorigeta:5:5", "kafu-hiyorigeta:5:8",
+          "koun-kaiko:10:0", "koun-kaiko:10:1", "koun-kaiko:10:2", "koun-kaiko:10:4", "koun-kaiko:10:5", "koun-kaiko:10:6",
+          "koun-kaiko:11:0", "koun-kaiko:11:3", "koun-kaiko:11:11", "koun-kaiko:11:20", "koun-kaiko:11:21", "koun-kaiko:11:23",
+          "koun-kaiko:12:12", "koun-kaiko:12:14", "koun-kaiko:12:15", "koun-kaiko:12:16", "koun-kaiko:30:5",
+          "sensoji-official:0:0", "sensoji-official:0:1", "sensoji-official:0:2", "sensoji-official:0:3", "sensoji-official:0:4",
+          "sensoji-official:0:5", "sensoji-official:0:6", "sensoji-official:0:7", "sensoji-official:0:8"
+        ]
+      }
+    },
+    {
+      "id": "ueno",
+      "entity": "ent:konponchudo",
+      "relevant": {
+        "en": ["jta-tagengo-kaneiji:0:0", "jta-tagengo-kaneiji:0:1", "jta-tagengo-konponchudo:0:0", "jta-tagengo-konponchudo:0:1"],
+        "ja": [
+          "kafu-hiyorigeta:5:1", "koun-kaiko:18:0", "koun-kaiko:18:23", "koun-kaiko:18:24", "koun-kaiko:18:26",
+          "kaneiji-official-history:0:0", "kaneiji-official-history:0:1", "kaneiji-official-history:0:2", "kaneiji-official-history:0:3",
+          "kaneiji-official-chronology:0:1", "kaneiji-official-chronology:0:2", "kaneiji-official-chronology:0:3"
+        ]
+      }
+    },
+    {
+      "id": "azumabashi",
+      "entity": "ent:azumabashi",
+      "relevant": {
+        "en": ["bird-unbeaten:6:4", "met-37387:0:0", "met-37387:0:3", "met-37282:0:0", "met-45257:0:0"],
+        "ja": [
+          "kafu-hiyorigeta:6:5", "kafu-hiyorigeta:6:8", "koun-kaiko:10:2", "koun-kaiko:12:12", "koun-kaiko:12:15", "koun-kaiko:18:28",
+          "ndl-azumabashi:0:0", "ndl-azumabashi:0:1", "ndl-azumabashi:0:2", "gotokyo-azumabashi:0:0",
+          "tokyo-kensetsu-sumida-bridges:0:0", "tokyo-kensetsu-sumida-bridges:0:1", "tokyo-kensetsu-sumida-bridges:0:2",
+          "tokyo-kensetsu-sumida-bridges:0:3", "tokyo-kensetsu-sumida-bridges:0:4", "tokyo-kensetsu-sumida-bridges:0:5",
+          "tokyo-kensetsu-lightup:0:0", "tokyo-kensetsu-lightup:0:1"
+        ]
+      }
+    }
+  ],
+  "forbidden": [
+    { "target": "kaminarimon", "source": "bird-unbeaten", "subject": "ent:kaminarimon", "predicates": ["observed", "describes"], "why": "Bird observed the temple, not the gate (the permanent gate was not there in 1878)" },
+    { "target": "kaminarimon", "source": "kafu-hiyorigeta", "subject": "ent:kaminarimon", "predicates": ["observed", "describes"], "why": "Kafū writes that 雷門 had burned; he saw 二王門" },
+    { "target": "kaminarimon", "source": "scidmore-jinrikisha", "subject": "ent:kaminarimon", "predicates": ["observed", "describes"], "why": "Scidmore describes the temple, not the gate" },
+    { "target": "kaminarimon", "source": null, "subject": "ent:kaminarimon", "predicates": ["named_as"], "values": ["Kwan-non", "Kwannon", "Kwan-non Temple", "Asakusa temple"], "why": "Kwan-non (Kannon) and the temple are not the gate" },
+    { "target": "ueno", "source": "koun-kaiko", "subject": "ent:konponchudo", "predicates": ["observed", "describes"], "why": "Kōun recalls the former hall at 竹の台; the present hall was still at 喜多院 in 1868" },
+    { "target": "ueno", "source": "bird-unbeaten", "subject": "ent:konponchudo", "predicates": ["observed", "describes"], "why": "Bird only mentions Uyeno; the present hall came in 1879" },
+    { "target": "ueno", "source": "kafu-hiyorigeta", "subject": "ent:konponchudo", "predicates": ["observed", "describes"], "why": "Kafū only says Kan'ei-ji's buildings burned" }
+  ],
+  "existence": [
+    { "target": "kaminarimon", "entity": "ent:kaminarimon", "source": "met-56689", "expected": "present", "approved": true },
+    { "target": "kaminarimon", "entity": "ent:kaminarimon", "source": "koun-kaiko", "expected": "unknown", "hold": "sources disagree on the date of the fire", "approved": true },
+    { "target": "kaminarimon", "entity": "ent:kaminarimon", "source": "bird-unbeaten", "expected": "absent", "approved": true },
+    { "target": "kaminarimon", "entity": "ent:kaminarimon", "source": "kafu-hiyorigeta", "expected": "absent", "approved": true },
+    { "target": "kaminarimon", "entity": "ent:kaminarimon", "source": "scidmore-jinrikisha", "expected": "unknown", "hold": "no observation date", "approved": true },
+    { "target": "ueno", "entity": "ent:konponchudo", "source": "koun-kaiko", "expected": "absent", "approved": false },
+    { "target": "ueno", "entity": "ent:konponchudo", "source": "bird-unbeaten", "expected": "absent", "approved": false },
+    { "target": "ueno", "entity": "ent:konponchudo", "source": "kafu-hiyorigeta", "expected": "present", "approved": false },
+    { "target": "ueno", "entity": "ent:konponchudo", "source": "scidmore-jinrikisha", "expected": "unknown", "hold": "no observation date", "approved": false },
+    { "target": "ueno", "entity": "ent:konponchudo-old", "source": "koun-kaiko", "expected": "unknown", "hold": "the hall burned on the day he recalls", "approved": false },
+    { "target": "ueno", "entity": "ent:konponchudo-old", "source": "met-56689", "expected": "present", "approved": false },
+    { "target": "azumabashi", "entity": "ent:azumabashi", "source": "met-45257", "expected": "present", "approved": false },
+    { "target": "azumabashi", "entity": "ent:azumabashi", "source": "met-37282", "expected": "present", "approved": false },
+    { "target": "azumabashi", "entity": "ent:azumabashi", "source": "koun-kaiko", "expected": "present", "approved": false },
+    { "target": "azumabashi", "entity": "ent:azumabashi", "source": "bird-unbeaten", "expected": "present", "approved": false },
+    { "target": "azumabashi", "entity": "ent:azumabashi", "source": "kafu-hiyorigeta", "expected": "present", "approved": false },
+    { "target": "azumabashi", "entity": "ent:azumabashi", "source": "met-37387", "expected": "unknown", "hold": "the rebuilding year (1887) at year precision", "approved": false }
+  ]
+}
