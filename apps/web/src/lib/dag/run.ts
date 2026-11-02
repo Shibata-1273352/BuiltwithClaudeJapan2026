@@ -16,12 +16,13 @@ import { store } from "../store";
 import { emit } from "./events";
 import { buildPlan } from "./plan";
 import { retrieveFacet, type Retrieved } from "./retrieve";
-import { claimThreads, existenceThreads, type ExistenceRow } from "./threads";
+import { claimThreads, existenceThreads } from "./threads";
 import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
 import { requestScene } from "../inference";
+import { existenceRows } from "../existence-rows";
 import { narrativeFor, saveNarrative } from "../narrative-service";
 import { findNames, namePatterns, type CheckedClaim, type FoundName } from "@tsumugi/core";
 import { existenceFor, sourceTime, timeline } from "../timeline-server";
@@ -292,30 +293,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
 
     // 7. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
     const existence = await stage(ctx, "existence", async () => {
-      const sources = [...new Set(all.map((r) => r.sourceId))];
-      const rows: ExistenceRow[] = sources
-        .map((s) => {
-          const j = existenceFor(place, s);
-          const title = all.find((r) => r.sourceId === s)?.sourceTitle ?? s;
-          return {
-            source: s,
-            sourceTitle: title,
-            time: j.time ? { kind: j.time.kind, start: j.time.start, end: j.time.end ?? null, basis: j.time.basis } : null,
-            value: j.value,
-            reason: j.reason,
-            period: "period" in j && j.period ? j.period : undefined,
-            timeEvidence: j.time?.evidence ?? [],
-            relation: j.relation,
-            basis: j.basis,
-            temporary: j.temporary,
-            disputedEvent: "disputedEvent" in j ? j.disputedEvent : undefined,
-          };
-        })
-        // sources without a known time are not judged; a work's depiction date says nothing about a
-        // site it does not depict (Hiroshige's Asakusa print is no evidence about Ueno)
-        .filter((r) => r.time && !(r.time.kind === "depicted_at" && !r.relation))
-        // a place without a reviewed chronology (e.g. the river) is not judged at all
-        .filter(() => timeline().periods.has(place));
+      const rows = existenceRows(place, all);
       emit(explorationId, "existence", { entity: place, rows });
       const tl = timeline();
       const conflicts = tl.t.conflicts.filter((c) => tl.t.existence_events.some((e) => e.id === c.about && e.entity === place));
