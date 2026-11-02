@@ -53,6 +53,7 @@ console.log(
       place: await page.getByTestId("place").textContent().catch(() => null),
       excerpt: text.slice(0, 300),
       existence: await page.getByTestId("existence").innerText().catch(() => null),
+      narrative: await page.getByTestId("narrative").innerText().catch(() => null),
       gap: await page.getByTestId("gap").innerText().catch(() => null),
       claims: await page.getByTestId("claims").innerText().catch(() => null),
       threads: await page.getByTestId("threads").innerText().catch(() => null),

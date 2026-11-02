@@ -19,8 +19,9 @@ import { retrieveFacet, type Retrieved } from "./retrieve";
 import { claimThreads, existenceThreads, type ExistenceRow } from "./threads";
 import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
+import { buildClaimCards, narrate } from "../narrate";
 import type { CheckedClaim } from "@tsumugi/core";
-import { existenceFor, timeline } from "../timeline-server";
+import { existenceFor, sourceTime, timeline } from "../timeline-server";
 import type { CallRecord } from "../claude";
 import type { DB } from "../corpus/db";
 
@@ -257,7 +258,36 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     const threads = [...existenceThreads(existence, E, place), ...claimThreads(extraction.claims, E, place, byPassage)];
     emit(explorationId, "threads", threads);
 
+    // 8. Weave: narrative from adopted claims only, checked sentence by sentence (FR-17, 4.8)
+    const narrative = await stage(ctx, "narrate", async () => {
+      if (ctx.remaining() < 12_000) {
+        emit(explorationId, "narrative", { skipped: "time" });
+        return null;
+      }
+      const cards = buildClaimCards(
+        E,
+        extraction.claims,
+        threads,
+        existence,
+        (pid) => byPassage.get(pid)?.sourceTitle ?? pid,
+        (pid) => sourceTime(byPassage.get(pid)?.sourceId ?? ""),
+      );
+      if (!cards.size) return null;
+      ctx.claude();
+      const lang = capture.ui_lang === "en" ? "en" : "ja";
+      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id));
+      logCall(ctx, db, explorationId, r.record);
+      emit(explorationId, "narrative", {
+        lang,
+        sentences: r.sentences.filter((s) => s.ok).map(({ text, claim_ids, assertion_type }) => ({ text, claim_ids, assertion_type })),
+        dropped: r.sentences.filter((s) => !s.ok).map(({ text, problems }) => ({ text, problems })),
+      });
+      return r.sentences;
+    });
+
     const summary = {
+      narrative_sentences: narrative?.filter((s) => s.ok).length ?? 0,
+      narrative_dropped: narrative?.filter((s) => !s.ok).length ?? 0,
       status: "threads",
       place,
       candidates: all.length,
@@ -271,7 +301,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       claude_calls: ctx.claudeCalls,
       cost_usd: Math.round(ctx.costUsd * 1e4) / 1e4,
       elapsed_ms: Date.now() - ctx.started,
-      next: "narrative (11/6)",
+      next: "graph write, language switch, presentation mode",
     };
     emit(explorationId, "done", summary);
     finish("done", summary);

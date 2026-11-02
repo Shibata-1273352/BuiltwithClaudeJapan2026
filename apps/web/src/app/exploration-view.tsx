@@ -15,6 +15,10 @@ type PlaceEvent = { chosen: { entity: string; path: { id: string; name: { ja: st
 type StageEvent = { stage: string; status: string; ms: number };
 type CallEvent = { usage: { input: number; output: number }; costUsd: number };
 type ExistenceEvent = { rows: ExistenceRow[] };
+type NarrativeEvent = {
+  sentences?: { text: string; claim_ids: string[]; assertion_type: string }[];
+  dropped?: { text: string; problems: string[] }[];
+};
 type GapEvent = { assessment?: string; gaps?: { facet: string; lang: string; reason: string; terms: string[] }[]; found?: number };
 type ClaimsEvent = { passages: number; accepted: number; downgraded: number; rejected: number };
 
@@ -31,7 +35,7 @@ const STATE_LABEL: Record<string, string> = {
 
 type Ev = { seq: number; type: string; data: unknown };
 
-const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", gap: "不足の評価と追加探索", existence: "存在判定" };
+const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", gap: "不足の評価と追加探索", existence: "存在判定", narrate: "紡ぐ" };
 const FACET_LABEL: Record<string, string> = {
   place_description: "場所の記述",
   naming: "呼び名",
@@ -94,7 +98,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "narrative", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
   }, [jpeg, useLocation]);
@@ -108,6 +112,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const notice = pick<{ message: string }>("notice");
   const existence = pick<ExistenceEvent>("existence");
   const gap = pick<GapEvent>("gap");
+  const narrative = pick<NarrativeEvent>("narrative");
   const claimEvents = events.filter((e) => e.type === "claims").map((e) => e.data as ClaimsEvent);
   const claims = claimEvents.length
     ? claimEvents.reduce((a, b) => ({ passages: a.passages + b.passages, accepted: a.accepted + b.accepted, downgraded: a.downgraded + b.downgraded, rejected: a.rejected + b.rejected }))
@@ -159,6 +164,22 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
               </li>
             ))}
           </ul>
+        </div>
+      )}
+      {narrative?.sentences && (
+        <div data-testid="narrative">
+          <h3 className="font-serif text-lg">紡ぐ</h3>
+          <p className="font-serif leading-relaxed">
+            {narrative.sentences.map((s, i) => (
+              <span key={i} title={s.claim_ids.join(", ")} className={s.assertion_type === "interpretive" ? "italic text-muted" : undefined}>
+                {s.text}
+              </span>
+            ))}
+          </p>
+          <p className="text-xs text-muted">
+            各文は根拠の主張に紐づいています（文にカーソルを合わせると主張IDを表示）。
+            {narrative.dropped?.length ? ` 根拠を確かめられなかった ${narrative.dropped.length} 文は除きました。` : ""}
+          </p>
         </div>
       )}
       {gap && (
