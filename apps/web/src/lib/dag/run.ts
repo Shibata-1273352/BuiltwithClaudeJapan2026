@@ -338,7 +338,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       }
     });
 
-    const threads = [...existenceThreads(existence, E, place), ...claimThreads(extraction.claims, E, place, byPassage)];
+    const threads = [...existenceThreads(existence, E, place, timeline().t.existence_events.filter((e) => e.entity === place)),...claimThreads(extraction.claims, E, place, byPassage)];
     emit(explorationId, "threads", threads);
 
     // 8. Weave: narrative from adopted claims only, checked sentence by sentence (FR-17, 4.8)

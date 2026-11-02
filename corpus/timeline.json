@@ -289,7 +289,8 @@
             "evidence": [
               "koun-kaiko:10:0"
             ],
-            "note": "An eyewitness memoir of the fire itself (published 1929)."
+            "note": "An eyewitness memoir of the fire itself (published 1929).",
+            "event": "ex:kaminarimon:1866-destroyed"
           },
           "times": [
             {

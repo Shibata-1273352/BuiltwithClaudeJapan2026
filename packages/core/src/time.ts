@@ -42,7 +42,8 @@ export function toRange(t: Pick<TimeValue, "precision" | "start" | "end">): Date
   return { start: expand(t.start, "start"), end: expand(t.end ?? t.start, "end") };
 }
 
-export type ExistenceEventKind = "built" | "rebuilt" | "destroyed" | "temporary";
+/** moved_in: the structure was moved to this site (it existed elsewhere before, e.g. 根本中堂 from 喜多院). */
+export type ExistenceEventKind = "built" | "rebuilt" | "destroyed" | "moved_in" | "temporary";
 
 export type ExistenceEvent = {
   id: string;
@@ -66,6 +67,9 @@ export type Period = { state: "present" | "absent"; start: string; end: string; 
 export function periodsFrom(events: ExistenceEvent[], now = new Date().toISOString().slice(0, 10)): Period[] {
   const ev = events.filter((e) => e.event !== "temporary").sort((a, b) => a.time.start.localeCompare(b.time.start));
   const out: Period[] = [];
+  // Before it was first built (or moved here) the structure was not at this site.
+  if (ev[0] && (ev[0].event === "built" || ev[0].event === "moved_in"))
+    out.push({ state: "absent", start: "0001-01-01", end: dayBefore(ev[0].time.start), from: [], to: [ev[0].id] });
   for (let i = 0; i < ev.length; i++) {
     const cur = ev[i];
     const next = ev[i + 1];

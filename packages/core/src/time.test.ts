@@ -75,6 +75,13 @@ describe("review 2026-11-03 fixes", () => {
     expect(cf.sides.map((s: { gregorian: string }) => s.gregorian)).toEqual(["1866-01-28", "1866-01-30"]);
   });
 
+  it("before a structure is first built or moved here, it is absent (not 'no data')", () => {
+    const ev: ExistenceEvent[] = [{ id: "ex:h:1879", entity: "ent:h", event: "moved_in", time: { start: "1879-01-01", end: "1879-12-31" }, evidence: [] }];
+    const p = periodsFrom(ev, "2026-01-01");
+    expect(judgeExistence(p, toRange({ precision: "day", start: "1868-07-04" }), ev)).toMatchObject({ value: "absent", reason: "inside_absent" });
+    expect(judgeExistence(p, toRange({ precision: "year", start: "1914" }), ev).value).toBe("present");
+  });
+
   it("Bird's edition is pinned and his relation to the gate is 'observed the site'", () => {
     const bird = timeline.source_times.find((s: { source: string }) => s.source === "bird-unbeaten");
     expect(bird.edition.provider).toBe("Project Gutenberg #2184");
