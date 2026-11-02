@@ -59,6 +59,26 @@ export function depthCompensation(z: number, cameraZ = CAMERA_Z): number {
   return (cameraZ - z) / cameraZ;
 }
 
+/** FR-33: camera transition into the painting takes 1.2–2.0 s (6.3). */
+export const ENTER_MS = 1600;
+
+/** Smooth ease-in-out for camera moves. */
+export function easeInOut(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+/**
+ * Camera position that frames a plane (world rect at depth z, already depth-compensated) so it
+ * fills the view: distance from the plane = max(h, w/aspect)/2 / tan(fov/2), with a small margin.
+ */
+export function framePlane(rect: { x: number; y: number; w: number; h: number }, z: number, fovDeg: number, aspect: number, margin = 1.02) {
+  const half = (fovDeg * Math.PI) / 360;
+  const needH = Math.max(rect.h, rect.w / aspect) * margin;
+  const dist = needH / 2 / Math.tan(half);
+  return { position: [rect.x, rect.y, z + dist] as [number, number, number], target: [rect.x, rect.y, z] as [number, number, number] };
+}
+
 /**
  * Where the whole artifact image lands in photo-normalized coordinates, given the photo->artifact
  * pixel transform (scale + translation; rotation is not used for upright lanterns).
