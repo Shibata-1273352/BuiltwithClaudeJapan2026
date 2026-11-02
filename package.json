@@ -23,7 +23,7 @@
     "graph:dump": "tsx --env-file=.env scripts/graph-dump.ts",
     "see": "tsx --env-file=.env scripts/see.ts",
     "met": "tsx scripts/met.ts",
-    "inference": "cd services/inference && uv run uvicorn app:app --host 127.0.0.1 --port 8100",
+    "inference": "cd services/inference && uv run --env-file ../../.env uvicorn app:app --host 127.0.0.1 --port 8100",
     "secrets:scan": "gitleaks detect --source . --redact --no-banner"
   },
   "devDependencies": {
