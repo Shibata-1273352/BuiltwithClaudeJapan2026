@@ -20,6 +20,7 @@ import { claimThreads, existenceThreads, type ExistenceRow } from "./threads";
 import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
+import { saveToGraph } from "../graph-write";
 import type { CheckedClaim } from "@tsumugi/core";
 import { existenceFor, sourceTime, timeline } from "../timeline-server";
 import type { CallRecord } from "../claude";
@@ -285,7 +286,39 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return r.sentences;
     });
 
+    // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.
+    const graph = await stage(ctx, "graph", async () => {
+      const corpus = openDb({ readonly: true });
+      let sources: { id: string; type: string; title: string; version: string }[] = [];
+      try {
+        const ids = [...new Set(all.map((r) => r.sourceId))];
+        sources = ids
+          .map((id) => corpus.prepare("SELECT id, type, title, version_hash AS version FROM sources WHERE id = ?").get(id))
+          .filter(Boolean) as typeof sources;
+      } finally {
+        corpus.close();
+      }
+      const lang = capture.ui_lang === "en" ? "en" : "ja";
+      const r = await saveToGraph(E, {
+        captureId: capture.id,
+        target: place,
+        claims: extraction.claims.map((c) => ({
+          ...c,
+          sourceId: byPassage.get(c.passage_id)?.sourceId ?? "",
+          sourceVersion: sources.find((s) => s.id === byPassage.get(c.passage_id)?.sourceId)?.version,
+        })),
+        existence,
+        threads,
+        narrative: (narrative ?? []).filter((s) => s.ok).map((s) => ({ ...s, lang })),
+        sources,
+      });
+      emit(explorationId, "graph", r.ok ? { saved: true, ms: r.ms } : { saved: false, message: "グラフ保存失敗（再試行できます）" });
+      if (!r.ok) console.error(`[graph ${explorationId}]`, r.error);
+      return r.ok;
+    });
+
     const summary = {
+      graph_saved: graph,
       narrative_sentences: narrative?.filter((s) => s.ok).length ?? 0,
       narrative_dropped: narrative?.filter((s) => !s.ok).length ?? 0,
       status: "threads",
@@ -301,7 +334,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       claude_calls: ctx.claudeCalls,
       cost_usd: Math.round(ctx.costUsd * 1e4) / 1e4,
       elapsed_ms: Date.now() - ctx.started,
-      next: "graph write, language switch, presentation mode",
+      next: "language switch, presentation mode, time slider",
     };
     emit(explorationId, "done", summary);
     finish("done", summary);
