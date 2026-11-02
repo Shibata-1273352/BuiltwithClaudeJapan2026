@@ -32,6 +32,14 @@ try {
   await page.goto(base + route, { waitUntil: "networkidle" });
   await page.waitForTimeout(2500);
   await page.screenshot({ path: path.join(outDir, `${slug}.png`) });
+  // --fill testid=value (e.g. --fill year-slider=1878), then screenshot as <slug>-<value>.png
+  const fi = rest.indexOf("--fill");
+  if (fi >= 0) {
+    const [tid, value] = rest[fi + 1].split("=");
+    await page.getByTestId(tid).fill(value);
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: path.join(outDir, `${slug}-${value}.png`) });
+  }
   if (rest.includes("--orbit")) {
     const canvas = page.locator("canvas").first();
     const box = await canvas.boundingBox();

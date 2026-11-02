@@ -31,6 +31,23 @@ body {
   font-family: var(--font-sans);
 }
 
+/* 6.3: the thread breaks in ~600 ms (a discovery, not a failure) */
+.thread-break path {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 0;
+  animation: thread-snap 600ms ease-out;
+}
+@keyframes thread-snap {
+  from {
+    stroke-dashoffset: 400;
+    opacity: 0.2;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

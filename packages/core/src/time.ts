@@ -72,7 +72,9 @@ export function periodsFrom(events: ExistenceEvent[], now = new Date().toISOStri
     const state = cur.event === "destroyed" ? "absent" : "present";
     // A period starts after the event zone and ends before the next event zone.
     const start = dayAfter(cur.time.end);
-    const end = next ? dayBefore(next.time.start) : now;
+    // the open-ended last period runs through the end of the current year (a year-precision
+    // question about "this year" must be answerable)
+    const end = next ? dayBefore(next.time.start) : `${now.slice(0, 4)}-12-31`;
     if (start <= end) out.push({ state, start, end, from: [cur.id], to: next ? [next.id] : [] });
   }
   return out;

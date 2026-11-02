@@ -27,7 +27,8 @@ export async function readCacheFile(
   const p = resolveCacheFile(kind, id, file);
   if (!p) return null;
   try {
-    return { body: await readFile(p), type: TYPES[path.extname(p).slice(1)] };
+    // DATA_DIR lives outside the repo and is read at runtime on purpose; exclude it from build tracing.
+    return { body: await readFile(/* turbopackIgnore: true */ p), type: TYPES[path.extname(p).slice(1)] };
   } catch {
     return null;
   }

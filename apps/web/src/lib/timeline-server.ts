@@ -1,9 +1,10 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { judgeExistence, periodsFrom, temporaryAt, toRange, type ExistenceEvent, type Period, type TimeValue } from "@tsumugi/core";
+// Static import: the human-reviewed timeline is part of the build (no runtime filesystem lookup).
+import timelineJson from "../../../../corpus/timeline.json";
 
 type Timeline = {
   reviewed_by: string | null;
+  reviewed_at?: string;
   existence_events: (ExistenceEvent & { original?: string })[];
   conflicts: { id: string; kind: string; about: string; sides: { value: string; evidence: string[] }[]; explanation: { ja: string; en: string } }[];
   source_times: { source: string; times: TimeValue[] }[];
@@ -11,13 +12,9 @@ type Timeline = {
 
 let cached: { t: Timeline; periods: Map<string, Period[]> } | undefined;
 
-function root(): string {
-  return process.env.TSUMUGI_REPO_ROOT ?? path.resolve(process.cwd(), process.cwd().endsWith(path.join("apps", "web")) ? "../.." : ".");
-}
-
 export function timeline() {
   if (cached) return cached;
-  const t = JSON.parse(readFileSync(path.join(root(), "corpus", "timeline.json"), "utf8")) as Timeline;
+  const t = timelineJson as unknown as Timeline;
   const byEntity = new Map<string, ExistenceEvent[]>();
   for (const e of t.existence_events) byEntity.set(e.entity, [...(byEntity.get(e.entity) ?? []), e]);
   const periods = new Map([...byEntity].map(([k, v]) => [k, periodsFrom(v)]));

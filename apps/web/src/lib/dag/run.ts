@@ -260,6 +260,20 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       const tl = timeline();
       const conflicts = tl.t.conflicts.filter((c) => tl.t.existence_events.some((e) => e.id === c.about && e.entity === place));
       if (conflicts.length) emit(explorationId, "conflicts", conflicts);
+      // Data for the time river / time slider (FR-23, FR-56): the client re-judges any year with
+      // the same pure functions, so the slider is instant and consistent with the server.
+      const ent = E.get(place);
+      emit(explorationId, "timeline", {
+        entity: place,
+        name: ent?.name,
+        periods: tl.periods.get(place) ?? [],
+        events: tl.t.existence_events
+          .filter((e) => e.entity === place)
+          .map((e) => ({ id: e.id, event: e.event, time: e.time, original: e.original, disputed: Boolean(e.disputed), evidence: e.evidence })),
+        conflicts: conflicts.map((c) => ({ id: c.id, about: c.about, explanation: c.explanation })),
+        sources: rows.map((r) => ({ source: r.source, title: r.sourceTitle, time: r.time, relation: r.relation?.kind ?? null, value: r.value, reason: r.reason })),
+        reviewed_by: tl.t.reviewed_by,
+      });
       return rows;
     });
 
