@@ -12,14 +12,16 @@ type Stage = { stage: string; status: string; ms?: number };
 type Claim = { status: string; predicate: string; subject: string; value: string | null; failed_checks: string[]; source?: string };
 type Gap = { assessment?: string; gaps?: { facet: string; lang: string; reason: string; terms: string[] }[]; found?: number; skipped?: string };
 
-const STAGES = ["see", "place", "plan", "retrieve", "extract", "gap", "existence", "names", "narrate", "graph"];
+const STAGES = ["see", "place", "plan", "retrieve", "extract:en", "extract:ja", "gap", "extract2", "existence", "names", "narrate", "graph"];
 const STAGE_JA: Record<string, string> = {
   see: "視る（Claude）",
   place: "場所の特定",
   plan: "検索プラン",
   retrieve: "検索",
-  extract: "証拠の抽出（Claude）",
-  gap: "不足の評価（Claude）",
+  "extract:en": "証拠の抽出・英（Claude）",
+  "extract:ja": "証拠の抽出・日（Claude）",
+  extract2: "追加の抽出（Claude）",
+  gap: "不足の評価（Claude、抽出と並行）",
   existence: "存在判定（コード）",
   names: "言の地層（コード）",
   narrate: "紡ぐ（Claude）",

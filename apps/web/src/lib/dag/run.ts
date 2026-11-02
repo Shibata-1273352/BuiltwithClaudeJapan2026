@@ -193,45 +193,51 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         corpus.close();
       }
     };
-    const claims1 = await stage(ctx, "extract", () => extractRound(1, selectForExtraction(retrieved)));
-
-    // 6. Gap evaluation and one extra round (Claude decides what is missing; code validates) — FR-20
-    const claims2 = opts.gapRound
-      ? await stage(ctx, "gap", async () => {
-          if (ctx.remaining() < 35_000) {
-            emit(explorationId, "gap", { skipped: "time", assessment: "残り時間が少ないため、追加の探索は行いませんでした。" });
-            return [];
-          }
-          ctx.claude();
-          const summary = summarizeForGap(plan, retrieved, claims1, retrieved.map((r) => ({ source: r.sourceId, value: existenceFor(place, r.sourceId).value })));
-          const g = await evaluateGaps(E, place, summary);
-          logCall(ctx, db, explorationId, g.record);
-          if (!g.out) {
-            emit(explorationId, "gap", { skipped: "invalid_output" });
-            return [];
-          }
-          const gaps = validateGaps(g.out, E);
-          const corpus = openDb({ readonly: true });
-          let found: Retrieved[] = [];
-          try {
-            found = g.out.enough ? [] : searchGaps(corpus, E, place, gaps, plan, new Set(all.map((r) => r.passageId)));
-          } finally {
-            corpus.close();
-          }
-          emit(explorationId, "gap", {
-            assessment: g.out.assessment,
-            enough: g.out.enough,
-            gaps: gaps.map((x) => ({ facet: x.facet, lang: x.lang, entity: x.entity, reason: x.reason, terms: x.terms, rejectedTerms: x.rejectedTerms })),
-            found: found.length,
-            candidates: found.map((c) => ({ ...c, text: c.text.slice(0, 300) })),
-          });
-          for (const f of found) {
-            all.push(f);
-            byPassage.set(f.passageId, f);
-          }
-          return found.length ? extractRound(2, selectForExtraction(found)) : [];
-        })
-      : [];
+    // 6. Gap evaluation (Claude decides what is missing from the retrieval; code validates) — FR-20.
+    //    It runs concurrently with round-1 extraction, which is split by language, so the three
+    //    Claude calls overlap instead of queueing (latency budget 4.13).
+    const runGap = async (): Promise<Retrieved[]> => {
+      if (ctx.remaining() < 35_000) {
+        emit(explorationId, "gap", { skipped: "time", assessment: "残り時間が少ないため、追加の探索は行いませんでした。" });
+        return [];
+      }
+      ctx.claude();
+      const summary = summarizeForGap(plan, retrieved, [], retrieved.map((r) => ({ source: r.sourceId, value: existenceFor(place, r.sourceId).value })));
+      const g = await evaluateGaps(E, place, summary);
+      logCall(ctx, db, explorationId, g.record);
+      if (!g.out) {
+        emit(explorationId, "gap", { skipped: "invalid_output" });
+        return [];
+      }
+      const gaps = validateGaps(g.out, E);
+      const corpus = openDb({ readonly: true });
+      let found: Retrieved[] = [];
+      try {
+        found = g.out.enough ? [] : searchGaps(corpus, E, place, gaps, plan, new Set(retrieved.map((r) => r.passageId)));
+      } finally {
+        corpus.close();
+      }
+      emit(explorationId, "gap", {
+        assessment: g.out.assessment,
+        enough: g.out.enough,
+        gaps: gaps.map((x) => ({ facet: x.facet, lang: x.lang, entity: x.entity, reason: x.reason, terms: x.terms, rejectedTerms: x.rejectedTerms })),
+        found: found.length,
+        candidates: found.map((c) => ({ ...c, text: c.text.slice(0, 300) })),
+      });
+      return found;
+    };
+    const selected1 = selectForExtraction(retrieved);
+    const [c1en, c1ja, found2] = await Promise.all([
+      stage(ctx, "extract:en", () => extractRound(1, selected1.filter((c) => c.lang === "en"))),
+      stage(ctx, "extract:ja", () => extractRound(1, selected1.filter((c) => c.lang === "ja"))),
+      opts.gapRound ? stage(ctx, "gap", runGap) : Promise.resolve([] as Retrieved[]),
+    ]);
+    const claims1 = [...c1en, ...c1ja];
+    for (const f of found2) {
+      all.push(f);
+      byPassage.set(f.passageId, f);
+    }
+    const claims2 = found2.length ? await stage(ctx, "extract2", () => extractRound(2, selectForExtraction(found2))) : [];
     const extraction = { claims: [...claims1, ...claims2] };
 
     // 7. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen

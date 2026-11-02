@@ -45,7 +45,7 @@ const STATE_LABEL: Record<string, string> = {
 
 type Ev = { seq: number; type: string; data: unknown };
 
-const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", gap: "不足の評価と追加探索", existence: "存在判定", narrate: "紡ぐ" };
+const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", "extract:en": "抽出（英）", "extract:ja": "抽出（日）", extract2: "追加の抽出", gap: "不足の評価（並行）", existence: "存在判定", narrate: "紡ぐ" };
 const FACET_LABEL: Record<string, string> = {
   place_description: "場所の記述",
   naming: "呼び名",
