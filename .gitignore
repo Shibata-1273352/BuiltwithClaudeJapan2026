@@ -36,3 +36,6 @@ __pycache__/
 infra/neo4j/data/
 infra/neo4j/logs/
 *.dump
+
+# Claude Code worktrees
+.claude/worktrees/
