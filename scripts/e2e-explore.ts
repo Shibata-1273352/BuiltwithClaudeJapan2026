@@ -45,6 +45,19 @@ await page.waitForFunction(
 const ms = Date.now() - t0;
 await page.screenshot({ path: path.join(outDir, "explore.png"), fullPage: true });
 const narrativeJa = await page.getByTestId("narrative").innerText().catch(() => null);
+const slider: Record<string, { state: string | null; thread: string | null; text: string | null }> = {};
+if (await page.getByTestId("time-river").count()) {
+  for (const y of [1856, 1878, 1905, 2026]) {
+    await page.getByTestId("year-slider").fill(String(y));
+    await page.waitForTimeout(700);
+    await page.getByTestId("time-river").screenshot({ path: path.join(outDir, `river-${y}.png`) });
+    slider[y] = {
+      state: await page.getByTestId("year-state").getAttribute("data-state"),
+      thread: await page.getByTestId("thread").first().getAttribute("data-state"),
+      text: await page.getByTestId("year-state").innerText(),
+    };
+  }
+}
 let narrativeEn: string | null = null;
 let langMs: number | null = null;
 if (await page.getByTestId("lang-en").count()) {
@@ -67,6 +80,7 @@ console.log(
       place: await page.getByTestId("place").textContent().catch(() => null),
       excerpt: text.slice(0, 300),
       existence: await page.getByTestId("existence").innerText().catch(() => null),
+      slider,
       narrative: narrativeJa,
       narrativeEn,
       langMs,

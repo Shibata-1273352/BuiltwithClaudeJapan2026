@@ -9,6 +9,8 @@ import { useEffect, useRef, useState } from "react";
 import type { SeeOutput } from "@tsumugi/core";
 import type { Retrieved } from "@/lib/dag/retrieve";
 import type { ExistenceRow, Thread } from "@/lib/dag/threads";
+import type { TimelineData } from "@/lib/time-river";
+import { TimeRiver } from "./time-river";
 
 type CandidatesEvent = { facet: string; lang: "en" | "ja"; widened: string[]; found: number; notFound: boolean; candidates: Retrieved[] };
 type PlaceEvent = { chosen: { entity: string; path: { id: string; name: { ja: string; en: string } }[] } | null };
@@ -111,7 +113,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "narrative", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
   }, [jpeg, useLocation]);
@@ -128,6 +130,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const firstNarrative = pick<NarrativeEvent & { lang?: "ja" | "en" }>("narrative");
   const narrative = alt[lang] ?? (firstNarrative?.lang === lang || !firstNarrative?.lang ? firstNarrative : undefined);
   const names = pick<NamesEvent>("names");
+  const timelineData = pick<TimelineData>("timeline");
 
   async function switchLang(next: "ja" | "en") {
     setLang(next);
@@ -180,6 +183,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         </p>
       )}
       {notice && <p role="status">{notice.message}</p>}
+      {timelineData && <TimeRiver data={timelineData} />}
       {existence && (
         <div data-testid="existence">
           <h3 className="font-serif text-lg">時：その時、門はあったか</h3>

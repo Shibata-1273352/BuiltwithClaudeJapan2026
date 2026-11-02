@@ -1,9 +1,10 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { judgeExistence, periodsFrom, temporaryAt, toRange, type ExistenceEvent, type Period, type TimeValue } from "@tsumugi/core";
+// Static import: the human-reviewed timeline is part of the build (no runtime filesystem lookup).
+import timelineJson from "../../../../corpus/timeline.json";
 
 type Timeline = {
   reviewed_by: string | null;
+  reviewed_at?: string;
   existence_events: (ExistenceEvent & { original?: string })[];
   conflicts: { id: string; kind: string; about: string; sides: { value: string; evidence: string[] }[]; explanation: { ja: string; en: string } }[];
   source_times: { source: string; times: TimeValue[] }[];
@@ -11,13 +12,9 @@ type Timeline = {
 
 let cached: { t: Timeline; periods: Map<string, Period[]> } | undefined;
 
-function root(): string {
-  return process.env.TSUMUGI_REPO_ROOT ?? path.resolve(process.cwd(), process.cwd().endsWith(path.join("apps", "web")) ? "../.." : ".");
-}
-
 export function timeline() {
   if (cached) return cached;
-  const t = JSON.parse(readFileSync(path.join(root(), "corpus", "timeline.json"), "utf8")) as Timeline;
+  const t = timelineJson as unknown as Timeline;
   const byEntity = new Map<string, ExistenceEvent[]>();
   for (const e of t.existence_events) byEntity.set(e.entity, [...(byEntity.get(e.entity) ?? []), e]);
   const periods = new Map([...byEntity].map(([k, v]) => [k, periodsFrom(v)]));
@@ -38,6 +35,29 @@ export function sourceTime(sourceId: string): TimeValue | null {
     if (v) return v;
   }
   return null;
+}
+
+/** Time-river data for an entity straight from the reviewed timeline (no exploration needed). */
+export function timelineData(entityId: string, name: { ja: string; en: string } | undefined, titleOf: (sourceId: string) => string) {
+  const tl = timeline();
+  return {
+    entity: entityId,
+    name,
+    periods: tl.periods.get(entityId) ?? [],
+    events: tl.t.existence_events.filter((e) => e.entity === entityId),
+    sources: tl.t.source_times.map((s) => {
+      const j = existenceFor(entityId, s.source);
+      return {
+        source: s.source,
+        title: titleOf(s.source),
+        time: j.time ? { kind: j.time.kind, start: j.time.start, end: j.time.end ?? null } : null,
+        relation: j.relation?.kind ?? null,
+        value: j.value,
+        reason: j.reason,
+      };
+    }),
+    reviewed: tl.t.reviewed_by ? { by: tl.t.reviewed_by, at: tl.t.reviewed_at ?? null } : null,
+  };
 }
 
 export type SourceRelation = { kind: "depicts" | "observed_site" | "written_period" | "eyewitness_event"; entity: string; evidence: string[]; note?: string };

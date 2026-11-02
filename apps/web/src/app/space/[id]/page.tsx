@@ -1,7 +1,10 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { sourceTitles } from "@/lib/corpus/titles";
 import { readCacheJson } from "@/lib/data-files";
+import { entities } from "@/lib/entities-server";
+import { timelineData } from "@/lib/timeline-server";
 import type { SceneJson } from "@/lib/scene";
 import { SpaceViewer } from "./space-viewer";
 
@@ -12,7 +15,11 @@ async function Scene({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const scene = await readCacheJson<SceneJson>("scenes", id, "scene.json");
   if (!scene) notFound();
-  return <SpaceViewer id={id} scene={scene} />;
+  // The photo's subject is fixed for the demo scenes; the time slider uses the reviewed timeline (FR-56).
+  const target = "ent:kaminarimon";
+  const titles = sourceTitles();
+  const tl = timelineData(target, entities().get(target)?.name, (s) => titles.get(s) ?? s);
+  return <SpaceViewer id={id} scene={scene} timeline={tl} />;
 }
 
 export default function SpacePage(props: PageProps<"/space/[id]">) {
