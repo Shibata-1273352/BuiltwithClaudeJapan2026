@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "note": "Existence events and source times (REQUIREMENTS.md 4.5). Every value points at passage ids in the corpus. Lunisolar dates are converted to Gregorian ranges; disagreements between sources widen the event's range (its 'unknown' zone) and are also recorded as conflicts. Requirement 11: demo seed data must be human-reviewed — reviewed_by stays null until the user confirms.",
+  "reviewed_by": null,
+  "existence_events": [
+    {
+      "id": "ex:kaminarimon:1767-destroyed",
+      "entity": "ent:kaminarimon",
+      "event": "destroyed",
+      "original": "明和4年（1767）4月9日焼失",
+      "time": { "start": "1767-05-01", "end": "1767-05-31" },
+      "evidence": ["sensoji-official:0:6"],
+      "note": "明和4年4月9日 ≈ late May 1767 (lunisolar); month-level range kept on purpose"
+    },
+    {
+      "id": "ex:kaminarimon:1795-rebuilt",
+      "entity": "ent:kaminarimon",
+      "event": "rebuilt",
+      "original": "寛政7年（1795）3月落慶",
+      "time": { "start": "1795-04-01", "end": "1795-05-31" },
+      "evidence": ["sensoji-official:0:6", "sensoji-official:0:7"],
+      "note": "寛政7年3月 (lunisolar) falls in April–May 1795"
+    },
+    {
+      "id": "ex:kaminarimon:1866-destroyed",
+      "entity": "ent:kaminarimon",
+      "event": "destroyed",
+      "original": "慶応元年（1865）12月12日（浅草寺）／十二月十四日（高村光雲）／1866（観光庁）",
+      "time": { "start": "1866-01-27", "end": "1866-01-30" },
+      "evidence": ["sensoji-official:0:3", "sensoji-official:0:0", "koun-kaiko:10:0", "jta-tagengo-kaminarimon:0:0"],
+      "note": "慶応元年12月12日 ≈ 1866-01-27/28 and 12月14日 ≈ 1866-01-29/30 (lunisolar → Gregorian). '1865' is the era-year label, not a conflict."
+    },
+    {
+      "id": "ex:kaminarimon:interim-temporary",
+      "entity": "ent:kaminarimon",
+      "event": "temporary",
+      "original": "In the interim, temporary gates were constructed",
+      "time": { "start": "1866-01-30", "end": "1960-04-30" },
+      "evidence": ["jta-tagengo-kaminarimon:0:1"],
+      "note": "Temporary gates do not make the permanent Kaminarimon present; this is why the narrative says 恒久的な雷門."
+    },
+    {
+      "id": "ex:kaminarimon:1960-rebuilt",
+      "entity": "ent:kaminarimon",
+      "event": "rebuilt",
+      "original": "昭和35年（1960）5月1日 95年ぶりに再建",
+      "time": { "start": "1960-05-01", "end": "1960-05-01" },
+      "evidence": ["sensoji-official:0:4", "sensoji-official:0:2", "jta-tagengo-kaminarimon:0:2"]
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "cf:kaminarimon:fire-day",
+      "kind": "date",
+      "about": "ex:kaminarimon:1866-destroyed",
+      "sides": [
+        { "value": "慶応元年12月12日、田原町から出火", "evidence": ["sensoji-official:0:3", "sensoji-official:0:0"] },
+        { "value": "慶応元年十二月十四日、浅草三軒町から出火", "evidence": ["koun-kaiko:10:0"] }
+      ],
+      "explanation": {
+        "ja": "焼失の日と火元が、浅草寺の説明（12日・田原町）と高村光雲の回想（14日・三軒町）で異なる。年の違い（1865／1866）は暦の換算によるもので、相違ではない。",
+        "en": "The day and origin of the fire differ between Sensō-ji (12th, Tawaramachi) and Takamura Kōun's memoir (14th, Sangenchō). The 1865/1866 difference is a calendar conversion, not a conflict."
+      }
+    },
+    {
+      "id": "cf:kaminarimon:interim-gates",
+      "kind": "identity",
+      "about": "ex:kaminarimon:interim-temporary",
+      "sides": [
+        { "value": "95年間、雷門は再建されなかった", "evidence": ["sensoji-official:0:1"] },
+        { "value": "その間に仮設の門が建てられた", "evidence": ["jta-tagengo-kaminarimon:0:1"] }
+      ],
+      "explanation": {
+        "ja": "浅草寺は恒久的な門の不在を、観光庁の解説は仮設の門の存在を述べる。対象（恒久的な門か、仮設の門か）が異なる。",
+        "en": "Sensō-ji speaks of the permanent gate's absence; the JTA text of temporary gates in the interim. They describe different objects."
+      }
+    }
+  ],
+  "source_times": [
+    {
+      "source": "bird-unbeaten",
+      "times": [
+        { "kind": "observed_at", "precision": "day", "start": "1878-06-09", "basis": "derived", "evidence": ["bird-unbeaten:6:1", "bird-unbeaten:0:15"], "original": "Letter V dated 'June 9'; preface: left home in April 1878" },
+        { "kind": "first_published_at", "precision": "year", "start": "1880", "basis": "stated", "evidence": [], "original": "first edition 1880 (bibliographic record)" },
+        { "kind": "edition_published_at", "precision": "year", "start": "1911", "basis": "stated", "evidence": [], "original": "Gutenberg #2184 transcribes the 1911 popular edition" }
+      ]
+    },
+    {
+      "source": "kafu-hiyorigeta",
+      "times": [
+        { "kind": "written_at", "precision": "range", "start": "1914-05", "end": "1915-12", "basis": "stated", "evidence": ["kafu-hiyorigeta:0:0"], "original": "大正三年夏のはじめころよりおよそ一歳あまり" },
+        { "kind": "first_published_at", "precision": "year", "start": "1915", "basis": "stated", "evidence": [] }
+      ]
+    },
+    {
+      "source": "koun-kaiko",
+      "times": [
+        { "kind": "depicted_at", "precision": "range", "start": "1866-01-27", "end": "1866-01-30", "basis": "derived", "evidence": ["koun-kaiko:10:0"], "original": "慶応元年丑年の十二月十四日" },
+        { "kind": "first_published_at", "precision": "year", "start": "1929", "basis": "stated", "evidence": [] }
+      ]
+    },
+    {
+      "source": "met-56689",
+      "times": [{ "kind": "depicted_at", "precision": "year", "start": "1856", "basis": "stated", "evidence": ["met-56689:0:3"], "original": "Date: 1856" }]
+    },
+    {
+      "source": "scidmore-jinrikisha",
+      "times": [
+        { "kind": "first_published_at", "precision": "year", "start": "1891", "basis": "stated", "evidence": [] },
+        { "kind": "observed_at", "precision": "unknown", "start": null, "basis": "stated", "evidence": [], "original": "not stated in the text; left unknown on purpose" }
+      ]
+    }
+  ]
+}

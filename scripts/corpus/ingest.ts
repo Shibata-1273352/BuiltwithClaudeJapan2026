@@ -149,6 +149,30 @@ function htmlToText(html: string): string {
     .replace(/\s+/g, " ");
 }
 
+/** Museum record (The Met): one passage per field, "Field: value", so Evidence can point at a field (4.4.6). */
+const MET_FIELDS: [string, string][] = [
+  ["title", "Title"],
+  ["artistDisplayName", "Artist"],
+  ["artistDisplayBio", "Artist bio"],
+  ["objectDate", "Date"],
+  ["medium", "Medium"],
+  ["period", "Period"],
+  ["repository", "Repository"],
+  ["creditLine", "Credit line"],
+];
+
+async function ingestMetFixture(src: any): Promise<Insert> {
+  const raw = readFileSync(path.join(repo, src.fixture));
+  const rec = JSON.parse(raw.toString("utf8"));
+  if (rec.objectID !== src.object_id) throw new Error(`${src.id}: fixture objectID mismatch`);
+  const paragraphs = MET_FIELDS.filter(([k]) => rec[k]).map(([k, label]) => ({ text: `${label}: ${rec[k]}`, notes: [`field=${k}`] }));
+  return {
+    chapters: [{ label: `The Met ${rec.objectID}`, kind: "body", paragraphs }],
+    raw: [raw],
+    meta: { object_url: rec.objectURL, is_public_domain: rec.isPublicDomain, primary_image: rec.primaryImage, fields: MET_FIELDS.map(([k]) => k) },
+  };
+}
+
 async function ingestWebExcerpt(src: any): Promise<Insert> {
   const raw = await fetchCached(src.id, "page.html", src.url);
   const page = htmlToText(raw.toString("utf8"));
@@ -187,7 +211,13 @@ for (const src of manifest.sources) {
   if (only.length && !only.includes(src.id)) continue;
   const t0 = Date.now();
   const ins =
-    src.format === "gutenberg" ? await ingestGutenberg(src) : src.format === "aozora" ? await ingestAozora(src) : await ingestWebExcerpt(src);
+    src.format === "gutenberg"
+      ? await ingestGutenberg(src)
+      : src.format === "aozora"
+        ? await ingestAozora(src)
+        : src.format === "met_fixture"
+          ? await ingestMetFixture(src)
+          : await ingestWebExcerpt(src);
   const r = store(db, src, ins);
   console.log(`${src.id}: ${ins.chapters.length} chapters, ${r.passages} passages, ${r.sentences} sentences (${Date.now() - t0} ms)`);
 }

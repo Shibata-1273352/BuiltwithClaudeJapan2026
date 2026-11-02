@@ -2,12 +2,13 @@
 
 /**
  * Screen 1 "かざす": take/pick a photo → on-device resize, EXIF removal, face mosaic → preview
- * with manual extra blur and retake (FR-01..03). Sending is wired on 11/4; until then the button
- * only shows the prepared size. If preprocessing fails, sending stays disabled (fail closed).
+ * with manual extra blur and retake (FR-01..03), optional location (FR-04), then send and follow
+ * the exploration live. If preprocessing fails, sending stays disabled (fail closed).
  */
 import { useEffect, useRef, useState } from "react";
 import { boxAround, type Box } from "@/lib/capture/geometry";
 import { prepare, render, toJpeg, type Prepared } from "@/lib/capture/preprocess";
+import { ExplorationView } from "./exploration-view";
 
 type State =
   | { kind: "idle" }
@@ -17,7 +18,9 @@ type State =
 
 export function CapturePreview() {
   const [state, setState] = useState<State>({ kind: "idle" });
-  const [jpeg, setJpeg] = useState<{ bytes: number; url: string } | null>(null);
+  const [jpeg, setJpeg] = useState<{ bytes: number; url: string; blob: Blob } | null>(null);
+  const [sent, setSent] = useState<Blob | null>(null);
+  const [useLocation, setUseLocation] = useState(false);
   const out = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -26,7 +29,7 @@ export function CapturePreview() {
     let url: string | null = null;
     toJpeg(out.current).then((b) => {
       url = URL.createObjectURL(b);
-      setJpeg({ bytes: b.size, url });
+      setJpeg({ bytes: b.size, url, blob: b });
     });
     return () => {
       if (url) URL.revokeObjectURL(url);
@@ -36,6 +39,7 @@ export function CapturePreview() {
   async function onFile(f: File | undefined) {
     if (!f) return;
     setJpeg(null);
+    setSent(null);
     setState({ kind: "working" });
     try {
       const prepared = await prepare(f);
@@ -105,16 +109,29 @@ export function CapturePreview() {
             )}
             <button
               type="button"
-              disabled={!jpeg}
+              disabled={!jpeg || Boolean(sent)}
+              onClick={() => jpeg && setSent(jpeg.blob)}
               className="min-h-11 rounded-full bg-toki px-6 font-bold text-night disabled:opacity-40"
               data-testid="send"
             >
               この写真で紡ぐ {jpeg ? `（${state.prepared.width}×${state.prepared.height}, ${Math.round(jpeg.bytes / 1024)}KB）` : ""}
             </button>
           </div>
+          <label className="flex min-h-11 items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={useLocation}
+              disabled={Boolean(sent)}
+              onChange={(e) => setUseLocation(e.target.checked)}
+              className="size-5"
+            />
+            位置情報を使う（許可した場合のみ、座標だけを送ります）
+          </label>
           {jpeg && <a href={jpeg.url} download="tsumugi-upload.jpg" data-testid="jpeg-link" className="sr-only">送信用JPEG</a>}
         </>
       )}
+
+      {sent && <ExplorationView jpeg={sent} useLocation={useLocation} />}
 
       {state.kind === "idle" && (
         <p className="text-sm text-muted">写真は端末の中で縮小・位置情報の除去・顔のぼかしをしてから送ります。</p>

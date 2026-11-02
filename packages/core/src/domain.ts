@@ -56,6 +56,7 @@ export const DisplayState = z.enum([
   "pending",
   "user_confirmed",
 ]);
+export type DisplayState = z.infer<typeof DisplayState>;
 
 /** Normalized box, origin top-left, all values in [0, 1]. */
 export const NormBox = z

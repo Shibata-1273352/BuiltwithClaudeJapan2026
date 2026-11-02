@@ -2,3 +2,6 @@ export * from "./domain";
 export * from "./see";
 export * from "./untrusted";
 export * from "./text";
+export * from "./entities";
+export * from "./time";
+export * from "./claims";

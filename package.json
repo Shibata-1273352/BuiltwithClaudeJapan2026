@@ -28,7 +28,10 @@
     "corpus:ingest": "tsx --env-file=.env scripts/corpus/ingest.ts",
     "corpus:search": "tsx --env-file=.env scripts/corpus/search-cli.ts",
     "corpus:headers": "tsx --env-file=.env scripts/corpus/headers.ts",
-    "setup:web-assets": "tsx scripts/fetch-web-assets.ts"
+    "setup:web-assets": "tsx scripts/fetch-web-assets.ts",
+    "tunnel": "cloudflared tunnel --no-autoupdate --url http://127.0.0.1:${PORT:-3000}",
+    "e2e:explore": "tsx --env-file=.env scripts/e2e-explore.ts",
+    "e2e:capture": "tsx --env-file=.env scripts/e2e-capture.ts"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",
