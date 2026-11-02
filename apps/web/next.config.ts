@@ -8,7 +8,8 @@ const isDev = process.env.NODE_ENV !== "production";
 // ASI05 / 9.4.3: no inline HTML from data, strict CSP, same-origin only.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // 'wasm-unsafe-eval': on-device face detection (MediaPipe WASM, same-origin); does not allow JS eval.
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' blob: data: https://images.metmuseum.org",
   "font-src 'self'",

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored, generated assets (fetched by npm run setup:web-assets)
+    "public/mediapipe/**",
+    "public/models/**",
   ]),
 ]);
 

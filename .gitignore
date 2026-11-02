@@ -39,3 +39,7 @@ infra/neo4j/logs/
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# On-device model assets (fetched by npm run setup:web-assets)
+apps/web/public/models/
+apps/web/public/mediapipe/
