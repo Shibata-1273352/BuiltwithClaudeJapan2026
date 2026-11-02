@@ -101,20 +101,48 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
 
     // 2. Place: map Claude's candidates to the dictionary (FR-07). Unknown place -> honest stop (FR-19).
     const E = entities();
+    let photoUnmatched: { name_ja: string; name_en: string } | null = null;
     const place = await stage(ctx, "place", async () => {
       const candidates = see.places
         .slice()
         .sort((a, b) => a.rank - b.rank)
         .map((p) => ({ rank: p.rank, confidence: p.confidence, reason: p.reason, hierarchy: p.hierarchy, entity: E.matchPlace(p.hierarchy)?.id ?? null }));
       const chosen = candidates.find((c) => c.entity) ?? null;
+      // FR-19: when the photo's most specific subject (e.g. 新大橋) is not registered, the match is
+      // only a broader place (隅田川). Say so, and never let it be taken for a registered structure.
+      // the deepest PLACE level (a print in the photo is an artwork level, not the place)
+      const deepest = chosen?.hierarchy.filter((h) => h.type !== "artwork").at(-1);
+      const unmatched =
+        chosen && deepest && ![deepest.name_ja, deepest.name_en].some((n) => E.matchPlace([{ name_ja: n, name_en: n }])?.id === chosen.entity)
+          ? { name_ja: deepest.name_ja, name_en: deepest.name_en }
+          : null;
+      photoUnmatched = unmatched;
       emit(explorationId, "place", {
         candidates,
         chosen: chosen ? { entity: chosen.entity, rank: chosen.rank, path: E.ancestors(chosen.entity!).map((e) => ({ id: e.id, name: e.name })) } : null,
+        unmatched,
       });
+      if (unmatched && chosen?.entity)
+        emit(explorationId, "notice", {
+          kind: "broader_place",
+          message: `写真の対象（${unmatched.name_ja || unmatched.name_en}）は登録済みの資料にありません。登録済みの上位の場所「${E.get(chosen.entity)?.name.ja}」について探します。`,
+        });
       return chosen?.entity ?? null;
     });
     if (!place) {
-      emit(explorationId, "notice", { kind: "no_known_place", message: "この写真の場所は、登録済みの資料の範囲では特定できませんでした。" });
+      // FR-19: say what was tried — Claude's candidates and the registered sites — and cite nothing
+      const tried = see.places
+        .slice()
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, 3)
+        .map((p) => p.hierarchy.map((h) => h.name_ja || h.name_en).join(" › "));
+      const registered = E.dict.entities.filter((e) => e.type === "structure" || e.type === "site").map((e) => e.name.ja);
+      emit(explorationId, "notice", {
+        kind: "no_known_place",
+        message: `この写真の場所は、登録済みの資料の範囲では特定できませんでした。写真から推定した候補：${tried.join("／") || "なし"}。登録済みの名所：${registered.join("、")}。資料や引用は表示しません。`,
+        tried,
+        registered,
+      });
       emit(explorationId, "done", { status: "no_known_place", claude_calls: ctx.claudeCalls, cost_usd: ctx.costUsd });
       finish("done", { place: null });
       return;
@@ -285,7 +313,9 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         })
         // sources without a known time are not judged; a work's depiction date says nothing about a
         // site it does not depict (Hiroshige's Asakusa print is no evidence about Ueno)
-        .filter((r) => r.time && !(r.time.kind === "depicted_at" && !r.relation));
+        .filter((r) => r.time && !(r.time.kind === "depicted_at" && !r.relation))
+        // a place without a reviewed chronology (e.g. the river) is not judged at all
+        .filter(() => timeline().periods.has(place));
       emit(explorationId, "existence", { entity: place, rows });
       const tl = timeline();
       const conflicts = tl.t.conflicts.filter((c) => tl.t.existence_events.some((e) => e.id === c.about && e.entity === place));
@@ -360,7 +390,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       if (!cards.size) return null;
       ctx.claude();
       const lang = capture.ui_lang === "en" ? "en" : "ja";
-      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id));
+      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id), photoUnmatched);
       logCall(ctx, db, explorationId, r.record);
       const payload = {
         lang,

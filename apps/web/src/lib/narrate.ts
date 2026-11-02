@@ -93,7 +93,12 @@ export async function narrate(
   cards: Map<string, NarrativeClaim & { card: string }>,
   lang: "ja" | "en",
   subjectEntities: string[] = [],
+  unmatchedSubject: { name_ja: string; name_en: string } | null = null,
 ): Promise<NarrateResult> {
+  // FR-19: the photo's own subject is not registered; the story is about the broader place only
+  const subjectNote = unmatchedSubject
+    ? `\nThe photo shows ${unmatchedSubject.name_en || unmatchedSubject.name_ja} (${unmatchedSubject.name_ja}), which is NOT in the evidence. Write about the broader place only. Never say or imply that the photo shows, or that the reader stands at, any structure named in the cards (e.g. another bridge or gate); say that this structure itself has no evidence here.`
+    : "";
   const startedAt = new Date();
   const { data, response } = await claude()
     .beta.messages.create(
@@ -108,7 +113,7 @@ export async function narrate(
         messages: [
           {
             role: "user",
-            content: `Write in ${lang === "ja" ? "Japanese" : "English"}.\nClaim cards:\n${[...cards.values()].map((c) => `- ${c.card}`).join("\n")}`,
+            content: `Write in ${lang === "ja" ? "Japanese" : "English"}.${subjectNote}\nClaim cards:\n${[...cards.values()].map((c) => `- ${c.card}`).join("\n")}`,
           },
         ],
       },
