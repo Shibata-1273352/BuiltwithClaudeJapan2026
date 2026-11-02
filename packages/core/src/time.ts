@@ -52,6 +52,8 @@ export type ExistenceEvent = {
   time: DateRange;
   evidence: string[];
   note?: string;
+  /** sources disagree on this event (kept unresolved, both sides stored as a Conflict) */
+  disputed?: boolean;
 };
 
 export type Period = { state: "present" | "absent"; start: string; end: string; from: string[]; to: string[] };
@@ -90,12 +92,19 @@ export type ExistenceJudgment = {
   value: ExistenceValue;
   /** The period the time falls in (present/absent), for "go to the evidence" (RAG-06). */
   period?: Period;
-  reason: "inside_present" | "inside_absent" | "boundary" | "no_data" | "no_time";
+  reason: "inside_present" | "inside_absent" | "boundary" | "sources_disagree" | "no_data" | "no_time";
+  /** the disputed event whose uncertainty zone the time falls into */
+  disputedEvent?: string;
 };
 
-/** Judge whether the entity existed during `range` (a source's time). */
-export function judgeExistence(periods: Period[], range: DateRange | null): ExistenceJudgment {
+/**
+ * Judge whether the (permanent) structure existed during `range` (a source's time).
+ * Pass `events` to tell a disputed event ("sources disagree on the date") from an ordinary boundary.
+ */
+export function judgeExistence(periods: Period[], range: DateRange | null, events: ExistenceEvent[] = []): ExistenceJudgment {
   if (!range) return { value: "unknown", reason: "no_time" };
+  const disputed = events.find((e) => e.disputed && e.event !== "temporary" && range.start <= e.time.end && range.end >= e.time.start);
+  if (disputed) return { value: "unknown", reason: "sources_disagree", disputedEvent: disputed.id };
   for (const p of periods) {
     if (range.start >= p.start && range.end <= p.end) {
       return { value: p.state, period: p, reason: p.state === "present" ? "inside_present" : "inside_absent" };
@@ -107,6 +116,17 @@ export function judgeExistence(periods: Period[], range: DateRange | null): Exis
   const overlaps = periods.some((p) => range.start <= p.end && range.end >= p.start);
   const withinHistory = range.end >= first && range.start <= last;
   return { value: "unknown", reason: overlaps || withinHistory ? "boundary" : "no_data" };
+}
+
+/**
+ * Temporary structures are tracked as individual events, never as a continuous period: a source
+ * only says a temporary gate was put up in a given year, not that one stood throughout.
+ * Returns the temporary events whose dates overlap the range; otherwise "unknown" (not "absent").
+ */
+export function temporaryAt(events: ExistenceEvent[], range: DateRange | null): { value: "built_that_time" | "unknown"; events: string[] } {
+  if (!range) return { value: "unknown", events: [] };
+  const hit = events.filter((e) => e.event === "temporary" && range.start <= e.time.end && range.end >= e.time.start).map((e) => e.id);
+  return hit.length ? { value: "built_that_time", events: hit } : { value: "unknown", events: [] };
 }
 
 /** Time hierarchy keys (4.4.8): year, decade, and Japanese era for a date. */

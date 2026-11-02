@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { judgeExistence, periodsFrom, toRange, type ExistenceEvent, type Period, type TimeValue } from "@tsumugi/core";
+import { judgeExistence, periodsFrom, temporaryAt, toRange, type ExistenceEvent, type Period, type TimeValue } from "@tsumugi/core";
 
 type Timeline = {
   reviewed_by: string | null;
@@ -40,9 +40,23 @@ export function sourceTime(sourceId: string): TimeValue | null {
   return null;
 }
 
+export type SourceRelation = { kind: "depicts" | "observed_site" | "written_period" | "eyewitness_event"; entity: string; evidence: string[]; note?: string };
+
+export function sourceRelation(sourceId: string): SourceRelation | null {
+  return (timeline().t.source_times.find((x) => x.source === sourceId) as { relation_to_subject?: SourceRelation } | undefined)?.relation_to_subject ?? null;
+}
+
+/**
+ * Existence of the PERMANENT structure at the source's time (a chronology-based inference, not a
+ * statement of the source), plus the temporary-gate status judged separately, plus how the source
+ * relates to the structure (depicts / observed the site / only written then / eyewitness of the event).
+ */
 export function existenceFor(entityId: string, sourceId: string) {
-  const periods = timeline().periods.get(entityId);
+  const { periods, t: tl } = timeline();
+  const p = periods.get(entityId);
   const t = sourceTime(sourceId);
-  if (!periods) return { value: "unknown" as const, reason: "no_data" as const, time: t };
-  return { ...judgeExistence(periods, t ? toRange(t) : null), time: t };
+  const events = tl.existence_events.filter((e) => e.entity === entityId);
+  const range = t ? toRange(t) : null;
+  const base = p ? judgeExistence(p, range, events) : { value: "unknown" as const, reason: "no_data" as const };
+  return { ...base, time: t, temporary: temporaryAt(events, range), relation: sourceRelation(sourceId), basis: "chronology" as const };
 }
