@@ -101,7 +101,15 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ capture_id }),
       });
-      if (!ex.ok) return setStatus(`探索を始められませんでした（${(await ex.json().catch(() => ({}))).error ?? ex.status}）`);
+      if (!ex.ok) {
+        const reason = (await ex.json().catch(() => ({}))).error ?? ex.status;
+        const why: Record<string, string> = {
+          killed: "現在、新しい探索を停止しています（管理者の操作）",
+          hourly_limit: "1時間あたりの探索の上限に達しました。しばらくしてからお試しください",
+          daily_cost: "本日の利用上限に達しました",
+        };
+        return setStatus(`探索を始められませんでした：${why[String(reason)] ?? reason}`);
+      }
       const { events: url, exploration_id } = await ex.json();
       setExpId(exploration_id);
       setStatus("探索中…");
@@ -185,7 +193,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
       )}
       {notice && <p role="status">{notice.message}</p>}
       {timelineData && <TimeRiver data={timelineData} />}
-      {existence && (
+      {existence && existence.rows.length > 0 && (
         <div data-testid="existence">
           <h3 className="font-serif text-lg">時：その時、{timelineData?.name?.ja ?? "それ"}はあったか</h3>
           <ul className="text-sm">
@@ -284,7 +292,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
           主張：採用 {claims.accepted} ・格下げ {claims.downgraded} ・却下 {claims.rejected}（{claims.passages} 節から）
         </p>
       )}
-      {status === "完了" && expId && (
+      {status === "完了" && expId && firstNarrative && (
         <a href={`/note/${expId}?lang=${lang}`} className="inline-flex min-h-11 w-fit items-center rounded-full bg-lantern px-6 font-medium text-night" data-testid="note-link">
           {lang === "ja" ? "旅ノートを開く" : "Open the travel note"}
         </a>

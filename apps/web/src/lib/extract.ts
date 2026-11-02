@@ -48,7 +48,13 @@ export function selectForExtraction(cands: Retrieved[]): Retrieved[] {
   return out;
 }
 
-export async function extractClaims(db: DB, E: Entities, targetId: string, selected: Retrieved[]): Promise<ExtractResult> {
+/**
+ * The request (system + user content) and the code checks, separated so that the live DAG and the
+ * evaluation (Batch API, 10.x) run exactly the same prompt and the same checks.
+ * `relations: false` is the 10.3 ablation "passage only" (no 1-hop relation context).
+ */
+export function buildExtract(db: DB, E: Entities, targetId: string, selected: Retrieved[], opts: { relations?: boolean } = {}) {
+  const withRelations = opts.relations ?? true;
   const sentences: SentenceIndex = new Map();
   const getS = db.prepare("SELECT id, text FROM sentences WHERE passage_id = ? ORDER BY n");
   const entityIds = new Set<string>([...E.ancestors(targetId).map((e) => e.id), ...E.dict.entities.map((e) => e.id)]);
@@ -67,21 +73,55 @@ export async function extractClaims(db: DB, E: Entities, targetId: string, selec
       st ? `source time: ${st.kind} ${st.start}${st.end ? `–${st.end}` : ""} (${st.basis ?? "stated"})` : "source time: unknown",
       `source: ${c.sourceTitle} / ${c.chapterLabel} (${c.sourceType})`,
     ].join("; ");
-    return `passage ${c.passageId}\nrelations: ${relations}\n${wrapUntrusted(c.passageId, rows.map((r) => `[${r.id}] ${r.text}`).join("\n"))}`;
+    return withRelations
+      ? `passage ${c.passageId}\nrelations: ${relations}\n${wrapUntrusted(c.passageId, rows.map((r) => `[${r.id}] ${r.text}`).join("\n"))}`
+      : `passage ${c.passageId}\n${wrapUntrusted(c.passageId, rows.map((r) => `[${r.id}] ${r.text}`).join("\n"))}`;
   });
 
+  const allowedPassages = new Set(selected.map((c) => c.passageId));
+  const passageSource = new Map(selected.map((c) => [c.passageId, c.sourceId]));
+  return {
+    system: SYSTEM,
+    user: `Photo subject: ${targetId}\n\nEntities:\n${entityList}\n\n${blocks.join("\n\n")}`,
+    passages: [...allowedPassages],
+    /** Parse Claude's output and check every proposal in code (FR-14). */
+    finish(text: string | undefined, stopReason: string | null): CheckedClaim[] {
+      let proposals: ExtractionOutput["claims"] = [];
+      if (text && stopReason !== "refusal") {
+        const parsed = ExtractionOutput.safeParse(JSON.parse(text));
+        if (parsed.success) proposals = parsed.data.claims;
+      }
+      return proposals
+        .filter((p) => allowedPassages.has(p.passage_id))
+        .map((p, i) =>
+          checkClaim(p, {
+            sentences,
+            entityIds,
+            namesOf: (id) => [...(E.get(id)?.names.map((n) => n.text) ?? []), E.get(id)?.name.ja ?? "", E.get(id)?.name.en ?? ""].filter(Boolean),
+            existenceAt: (entity, passageId) => existenceFor(entity, passageSource.get(passageId) ?? "").value,
+          }, i),
+        );
+    },
+  };
+}
+
+export const EXTRACT_PARAMS = { max_tokens: 16000, effort: "low" as const }; // latency budget (4.13); checks are in code
+export { ExtractionOutput, SYSTEM as EXTRACT_SYSTEM };
+
+export async function extractClaims(db: DB, E: Entities, targetId: string, selected: Retrieved[]): Promise<ExtractResult> {
+  const req = buildExtract(db, E, targetId, selected);
   const startedAt = new Date();
   const { data, response } = await claude()
     .beta.messages.create(
       {
         model: CLAUDE_MODEL,
-        max_tokens: 16000,
+        max_tokens: EXTRACT_PARAMS.max_tokens,
         betas: ["server-side-fallback-2026-07-01"],
         fallbacks: "default",
         thinking: { type: "adaptive" },
-        output_config: { effort: "low", format: betaZodOutputFormat(ExtractionOutput) }, // latency budget (4.13); checks are in code
-        system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: `Photo subject: ${targetId}\n\nEntities:\n${entityList}\n\n${blocks.join("\n\n")}` }],
+        output_config: { effort: EXTRACT_PARAMS.effort, format: betaZodOutputFormat(ExtractionOutput) },
+        system: [{ type: "text", text: req.system, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: req.user }],
       },
       { timeout: 45_000 },
     )
@@ -105,22 +145,5 @@ export async function extractClaims(db: DB, E: Entities, targetId: string, selec
     requestId: response.headers.get("request-id"),
   };
   const text = data.content.find((b) => b.type === "text")?.text;
-  let proposals: ExtractionOutput["claims"] = [];
-  if (text && data.stop_reason !== "refusal") {
-    const parsed = ExtractionOutput.safeParse(JSON.parse(text));
-    if (parsed.success) proposals = parsed.data.claims;
-  }
-  const allowedPassages = new Set(selected.map((c) => c.passageId));
-  const passageSource = new Map(selected.map((c) => [c.passageId, c.sourceId]));
-  const claims = proposals
-    .filter((p) => allowedPassages.has(p.passage_id))
-    .map((p, i) =>
-      checkClaim(p, {
-        sentences,
-        entityIds,
-        namesOf: (id) => [...(E.get(id)?.names.map((n) => n.text) ?? []), E.get(id)?.name.ja ?? "", E.get(id)?.name.en ?? ""].filter(Boolean),
-        existenceAt: (entity, passageId) => existenceFor(entity, passageSource.get(passageId) ?? "").value,
-      }, i),
-    );
-  return { claims, record, passages: [...allowedPassages] };
+  return { claims: req.finish(text, data.stop_reason), record, passages: req.passages };
 }

@@ -33,7 +33,9 @@
     "e2e:explore": "tsx --env-file=.env scripts/e2e-explore.ts",
     "e2e:capture": "tsx --env-file=.env scripts/e2e-capture.ts",
     "graph:inspect": "tsx --env-file=.env scripts/graph-inspect.ts",
-    "test:security": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.security.config.ts && cd services/inference && uv run pytest -q"
+    "test:security": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.security.config.ts && cd services/inference && uv run pytest -q",
+    "kill": "tsx --env-file=.env scripts/kill-switch.ts",
+    "eval": "tsx --env-file=.env scripts/evaluation/run.ts"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",

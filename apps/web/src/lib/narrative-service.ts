@@ -47,11 +47,13 @@ export function saveNarrative(explorationId: string, p: NarrativePayload): void 
 /** Rebuild the language-independent state from the stored events. */
 export function loadState(explorationId: string) {
   const ev = eventsAfter(explorationId, 0);
-  const place = (ev.find((e) => e.type === "place")?.data as { chosen?: { entity: string } } | undefined)?.chosen?.entity ?? null;
+  const placeEv = ev.find((e) => e.type === "place")?.data as { chosen?: { entity: string }; unmatched?: { name_ja: string; name_en: string } | null } | undefined;
+  const place = placeEv?.chosen?.entity ?? null;
+  const unmatched = placeEv?.unmatched ?? null;
   const claims = ev.filter((e) => e.type === "claims").flatMap((e) => (e.data as { claims: StoredClaim[] }).claims);
   const threads = (ev.find((e) => e.type === "threads")?.data as Thread[] | undefined) ?? [];
   const existence = ((ev.find((e) => e.type === "existence")?.data as { rows: ExistenceRow[] } | undefined)?.rows ?? []) as ExistenceRow[];
-  return { place, claims, threads, existence };
+  return { place, claims, threads, existence, unmatched };
 }
 
 type Result = { payload: NarrativePayload; cached: boolean; record?: CallRecord } | null;
@@ -70,7 +72,7 @@ export function narrativeFor(explorationId: string, lang: "ja" | "en"): Promise<
 }
 
 async function generate(explorationId: string, lang: "ja" | "en"): Promise<Result> {
-  const { place, claims, threads, existence } = loadState(explorationId);
+  const { place, claims, threads, existence, unmatched } = loadState(explorationId);
   if (!place || !threads.length) return null;
   const E = entities();
   const asChecked = claims.map((c) => ({ ...c, negated: false, rationale: "", checks: [] }) as unknown as CheckedClaim);
@@ -83,7 +85,7 @@ async function generate(explorationId: string, lang: "ja" | "en"): Promise<Resul
     (pid) => byId.get(pid)?.source ?? pid,
     (pid) => sourceTime(byId.get(pid)?.source_id ?? "", place),
   );
-  const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id));
+  const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id), unmatched);
   const payload: NarrativePayload = {
     lang,
     sentences: r.sentences.filter((s) => s.ok).map(({ text, claim_ids, assertion_type }) => ({ text, claim_ids, assertion_type })),
