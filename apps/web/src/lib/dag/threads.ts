@@ -129,13 +129,13 @@ export function existenceThreads(rows: ExistenceRow[], E: Entities, targetId: st
     const label =
       r.value === "absent"
         ? {
-            ja: `${r.sourceTitle}（${when}）のとき、${abs.ja}（${name.ja}の年表との照合。${rel.ja}）`,
-            en: `When ${r.sourceTitle} was written (${when}), ${abs.en} (from the chronology of ${name.en}; ${rel.en})`,
+            ja: `${r.sourceTitle}（${when}）のとき、${abs.ja}（${name.ja}の年表との照合${rel.ja ? `。${rel.ja}` : ""}）`,
+            en: `When ${r.sourceTitle} was written (${when}), ${abs.en} (from the chronology of ${name.en}${rel.en ? `; ${rel.en}` : ""})`,
           }
         : r.value === "present"
           ? {
-              ja: `${r.sourceTitle}（${when}）のとき、${name.ja}はあった（${rel.ja}。年表とも整合）`,
-              en: `When ${r.sourceTitle} was made (${when}), ${name.en} stood (${rel.en}; consistent with the chronology)`,
+              ja: `${r.sourceTitle}（${when}）のとき、${name.ja}はあった（${rel.ja ? `${rel.ja}。` : ""}年表とも整合）`,
+              en: `When ${r.sourceTitle} was made (${when}), ${name.en} stood (${rel.en ? `${rel.en}; ` : ""}consistent with the chronology)`,
             }
           : r.reason === "sources_disagree"
             ? {

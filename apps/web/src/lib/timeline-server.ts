@@ -4,6 +4,7 @@ import timelineJson from "../../../../corpus/timeline.json";
 
 type Timeline = {
   reviewed_by: string | null;
+  reviews?: Record<string, { by: string | null; at: string | null }>;
   reviewed_at?: string;
   existence_events: (ExistenceEvent & { original?: string })[];
   conflicts: { id: string; kind: string; about: string; sides: { value: string; evidence: string[] }[]; explanation: { ja: string; en: string } }[];
@@ -59,7 +60,8 @@ export function timelineData(entityId: string, name: { ja: string; en: string } 
         reason: j.reason,
       };
     }),
-    reviewed: tl.t.reviewed_by ? { by: tl.t.reviewed_by, at: tl.t.reviewed_at ?? null } : null,
+    // human review is per site: Kaminarimon's review does not cover Ueno or Azuma Bridge
+    reviewed: tl.t.reviews?.[entityId]?.by ? { by: tl.t.reviews[entityId].by!, at: tl.t.reviews[entityId].at ?? null } : null,
   };
 }
 

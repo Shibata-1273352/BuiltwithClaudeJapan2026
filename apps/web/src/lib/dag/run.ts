@@ -283,7 +283,9 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
             disputedEvent: "disputedEvent" in j ? j.disputedEvent : undefined,
           };
         })
-        .filter((r) => r.time); // sources without a known time are not judged
+        // sources without a known time are not judged; a work's depiction date says nothing about a
+        // site it does not depict (Hiroshige's Asakusa print is no evidence about Ueno)
+        .filter((r) => r.time && !(r.time.kind === "depicted_at" && !r.relation));
       emit(explorationId, "existence", { entity: place, rows });
       const tl = timeline();
       const conflicts = tl.t.conflicts.filter((c) => tl.t.existence_events.some((e) => e.id === c.about && e.entity === place));

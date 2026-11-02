@@ -32,7 +32,7 @@ type NarrativeEvent = {
 type GapEvent = { assessment?: string; gaps?: { facet: string; lang: string; reason: string; terms: string[] }[]; found?: number };
 type ClaimsEvent = { passages: number; accepted: number; downgraded: number; rejected: number };
 
-const EXIST_LABEL: Record<string, string> = { present: "あった", absent: "なかった（恒久的な門）", unknown: "確かめられない" };
+const EXIST_LABEL: Record<string, string> = { present: "あった", absent: "なかった", unknown: "確かめられない" };
 const STATE_LABEL: Record<string, string> = {
   ink: "インク",
   combined: "組み合わせ",
@@ -187,15 +187,19 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
       {timelineData && <TimeRiver data={timelineData} />}
       {existence && (
         <div data-testid="existence">
-          <h3 className="font-serif text-lg">時：その時、門はあったか</h3>
+          <h3 className="font-serif text-lg">時：その時、{timelineData?.name?.ja ?? "それ"}はあったか</h3>
           <ul className="text-sm">
             {existence.rows.map((r) => (
               <li key={r.source}>
                 <span className={r.value === "absent" ? "text-ba" : r.value === "present" ? "text-toki" : "text-muted"}>
-                  {r.reason === "sources_disagree" ? "判定保留（焼失日が史料間で一致しない）" : EXIST_LABEL[r.value]}
+                  {r.reason === "sources_disagree" ? "判定保留（史料間で日付が一致しない）" : EXIST_LABEL[r.value]}
                 </span>{" "}
                 {r.sourceTitle}（{r.time?.kind}: {r.time?.start}
                 {r.time?.end ? `–${r.time.end}` : ""}）
+                {/* the reason in the site's own terms (not yet rebuilt / not yet moved here …) */}
+                {threads?.find((t) => t.id === `th:exist:${r.source}`) && (
+                  <span className="block pl-4 text-xs text-muted">{threads.find((t) => t.id === `th:exist:${r.source}`)!.label[lang]}</span>
+                )}
               </li>
             ))}
           </ul>

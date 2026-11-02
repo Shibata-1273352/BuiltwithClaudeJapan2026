@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { labelRows, segments, yearState, type TimelineData } from "./time-river";
 
 const tl = JSON.parse(readFileSync(path.join(import.meta.dirname, "../../../../corpus/timeline.json"), "utf8"));
-const events = tl.existence_events as ExistenceEvent[];
+const events = (tl.existence_events as ExistenceEvent[]).filter((e) => e.entity === "ent:kaminarimon");
 const d: TimelineData = {
   entity: "ent:kaminarimon",
   name: { ja: "雷門", en: "Kaminarimon" },

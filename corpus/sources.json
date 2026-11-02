@@ -770,6 +770,173 @@
       "url": "https://www.metmuseum.org/art/collection/search/56689",
       "provider": "The Metropolitan Museum of Art Collection API",
       "license": "Record data CC0; image public domain (isPublicDomain=true)"
+    },
+    {
+      "id": "kaneiji-official-history",
+      "type": "official_record",
+      "lang": "ja",
+      "format": "web_excerpt",
+      "title": "寛永寺の歴史（東叡山寛永寺 公式サイト）",
+      "author": "東叡山寛永寺",
+      "url": "https://kaneiji.jp/about2",
+      "license": "Quotation (引用) of short excerpts with attribution",
+      "excerpts": [
+        "寛永寺は、寛永二年（1625）慈眼大師天海大僧正（じげんだいしてんかいだいそうじょう）によって創建されました。",
+        "そして現在の上野公園の中央部分、噴水広場にあたる竹の台には、 間口45ｍ、 奥行42ｍ、高さ32ｍという壮大な根本中堂が建立され、本寺（現東京国立博物館）には、小堀遠州による名園が作庭されました。",
+        "ところが幕末の戊辰戦争では、境内地に彰義隊がたてこもって戦場と化し、官軍の放った火によって、全山の伽藍の大部分が灰燼に帰してしまいました。",
+        "しかし明治十二年（1879）、ようやく寛永寺の復興が認められ、現在地（旧子院大慈院跡）に川越喜多院より本地堂を移築、山内本地堂の用材も加えて、根本中堂として再建されました。",
+        "戊辰戦争で焼失を免れた清水観音堂、輪王寺門跡御本坊表門、徳川将軍霊廟勅額門などが重要文化財に指定され、往時の雰囲気をしのぶことができます。"
+      ]
+    },
+    {
+      "id": "kaneiji-official-chronology",
+      "type": "official_record",
+      "lang": "ja",
+      "format": "web_excerpt",
+      "title": "寛永寺 年表（東叡山寛永寺 公式サイト）",
+      "author": "東叡山寛永寺",
+      "url": "https://kaneiji.jp/about3",
+      "license": "Quotation (引用) of short excerpts with attribution",
+      "note": "a table: each excerpt is one row (西暦 | 和暦 | 出来事). Two other rows on the page have era errors (1735, 1856); not used.",
+      "excerpts": [
+        "1631 寛永8 五重塔・鐘楼・漆喰大仏・祇園堂・清水観音堂建立。",
+        "1698 元禄11 根本中堂落慶、「瑠璃殿」の勅額を賜る。",
+        "1868 慶応4 公現法親王、東叡山を退く。同日兵火により、根本中堂・本坊・多宝塔・輪蔵・鐘楼等、山内の大半を焼失。",
+        "1879 明治12 川越喜多院の本地堂を新たな根本中堂として移築再建。"
+      ]
+    },
+    {
+      "id": "jta-tagengo-kaneiji",
+      "type": "official_record",
+      "lang": "en",
+      "format": "web_excerpt",
+      "title": "Kan'eiji Temple (Japan Tourism Agency multilingual commentary database, R1-00086)",
+      "author": "観光庁 / 上野・下谷地区多言語解説協議会",
+      "url": "https://www.mlit.go.jp/tagengo-db/R1-00086.html",
+      "license": "Quotation of short excerpts with attribution",
+      "excerpts": [
+        "The defeat of the Tokugawa also meant the fall of Kan’eiji: in July 1868, with Edo already in the hands of the revolutionaries, about 2,000 men loyal to the shogunate took up positions within the temple grounds to stage a last stand.",
+        "These loyalists were soundly defeated, and the buildings they had occupied were burned to the ground."
+      ]
+    },
+    {
+      "id": "jta-tagengo-konponchudo",
+      "type": "official_record",
+      "lang": "en",
+      "format": "web_excerpt",
+      "title": "Konpon Chudo, Kan'eiji (Japan Tourism Agency multilingual commentary database, R1-00087)",
+      "author": "観光庁 / 上野・下谷地区多言語解説協議会",
+      "url": "https://www.mlit.go.jp/tagengo-db/R1-00087.html",
+      "license": "Quotation of short excerpts with attribution",
+      "excerpts": [
+        "The Konpon Chudo or main hall of Kan’eiji Temple is a structure more than 350 years old, but has only stood on its current spot since 1879.",
+        "The building was constructed in 1638 as the main hall of Kitain Temple in Kawagoe, a city that is now part of Saitama Prefecture northwest of Tokyo, and served its purpose there for centuries until disaster befell Kan’eiji in 1868."
+      ]
+    },
+    {
+      "id": "ndl-azumabashi",
+      "type": "official_record",
+      "lang": "ja",
+      "format": "web_excerpt",
+      "title": "吾妻橋（国立国会図書館「錦絵でたのしむ江戸の名所」）",
+      "author": "国立国会図書館",
+      "url": "https://www.ndl.go.jp/landmarks/sights/azumabashi/",
+      "license": "Quotation (引用) of short excerpts with attribution",
+      "excerpts": [
+        "安永3（1774）年、6名の町人が江戸幕府の承認を得て架橋。",
+        "名前の由来は、江戸から東へ通じる、または江戸の東にあるという意味の「東橋」からで、みやびな表記「吾妻橋」が好まれた。",
+        "正式に「吾妻橋」となったのは明治9（1876）年。"
+      ]
+    },
+    {
+      "id": "gotokyo-azumabashi",
+      "type": "official_record",
+      "lang": "ja",
+      "format": "web_excerpt",
+      "title": "吾妻橋（東京の観光公式サイト GO TOKYO）",
+      "author": "公益財団法人東京観光財団",
+      "url": "https://www.gotokyo.org/jp/spot/282/index.html",
+      "license": "Quotation (引用) of short excerpts with attribution",
+      "excerpts": [
+        "創架は1774年で、1931年に完成した現在の吾妻橋に架け替えらるまで、何度も架け替えが行われました。"
+      ]
+    },
+    {
+      "id": "tokyo-kensetsu-sumida-bridges",
+      "type": "official_record",
+      "lang": "ja",
+      "format": "pdf_excerpt",
+      "title": "橋のポケットマップ（隅田川編）吾妻橋（東京都建設局）",
+      "author": "東京都建設局",
+      "url": "https://www.kensetsu.metro.tokyo.lg.jp/content/000040368.pdf",
+      "license": "Quotation (引用) of short excerpts with attribution",
+      "note": "the page gives the current bridge as both 昭和５年 and ［１９３１]; kept as written",
+      "excerpts": [
+        "■架設 ：昭和５年［１９３１]",
+        "江戸時代(安永3年[1774])に隅田川に架けられた５番目の橋（千住大橋、両国橋、新大橋、永代橋に次ぐ）である。",
+        "明治９年[1876]に現在の吾妻橋に改名された。",
+        "現在の橋は、関東大震災の復興事業により昭和５年に架設された。",
+        "【明治９年の吾妻橋】隅田川の橋梁は、明治になり新政府により架け替えが相次いだ。西洋式の木橋が導入され、方杖（ほうづえ）式の橋脚が特徴である。",
+        "【明治20年の吾妻橋】隅田川で初めての鉄橋（プラットトラス橋）として架設された。",
+        "関東大震災で木造の床は焼失した。"
+      ]
+    },
+    {
+      "id": "tokyo-kensetsu-lightup",
+      "type": "official_record",
+      "lang": "ja",
+      "format": "pdf_excerpt",
+      "title": "隅田川橋梁のライトアップ 吾妻橋（東京都建設局）",
+      "author": "東京都建設局",
+      "url": "https://www.kensetsu.metro.tokyo.lg.jp/content/000048924.pdf",
+      "license": "Quotation (引用) of short excerpts with attribution",
+      "note": "「1774 年（安永 7 年）」: 1774 is 安永3; the era is a typo on the page, quoted as written",
+      "excerpts": [
+        "橋名は「大川橋」と呼ばれていましたが、明治の時代に入り「吾妻橋」と改名されました。",
+        "●竣工：1930 年（昭和 5 年）"
+      ]
+    },
+    {
+      "id": "met-37387",
+      "type": "museum_record",
+      "lang": "en",
+      "format": "met_fixture",
+      "title": "Illustration of the Opening of Azuma Bridge in Tokyo (Tokyo meisho no uchi azuma bashi shinchiku no zu)",
+      "author": "Inoue Yasuji",
+      "first_published": 1887,
+      "object_id": 37387,
+      "fixture": "fixtures/met/37387.json",
+      "url": "https://www.metmuseum.org/art/collection/search/37387",
+      "provider": "The Metropolitan Museum of Art Collection API",
+      "license": "Record data CC0; image public domain (isPublicDomain=true)"
+    },
+    {
+      "id": "met-37282",
+      "type": "museum_record",
+      "lang": "en",
+      "format": "met_fixture",
+      "title": "Azuma Bridge from Komagatadō Temple (One Hundred Famous Views of Edo)",
+      "author": "Utagawa Hiroshige",
+      "first_published": 1857,
+      "object_id": 37282,
+      "fixture": "fixtures/met/37282.json",
+      "url": "https://www.metmuseum.org/art/collection/search/37282",
+      "provider": "The Metropolitan Museum of Art Collection API",
+      "license": "Record data CC0; image public domain (isPublicDomain=true)"
+    },
+    {
+      "id": "met-45257",
+      "type": "museum_record",
+      "lang": "en",
+      "format": "met_fixture",
+      "title": "A Boating Party under Azuma Bridge",
+      "author": "Torii Kiyonaga",
+      "first_published": 1785,
+      "object_id": 45257,
+      "fixture": "fixtures/met/45257.json",
+      "url": "https://www.metmuseum.org/art/collection/search/45257",
+      "provider": "The Metropolitan Museum of Art Collection API",
+      "license": "Record data CC0; image public domain (isPublicDomain=true)"
     }
   ]
 }

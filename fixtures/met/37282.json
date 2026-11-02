@@ -1,0 +1,111 @@
+{
+  "objectID": 37282,
+  "isHighlight": false,
+  "accessionNumber": "JP1023",
+  "accessionYear": "1914",
+  "isPublicDomain": true,
+  "primaryImage": "https://images.metmuseum.org/CRDImages/as/original/DP121530.jpg",
+  "primaryImageSmall": "https://images.metmuseum.org/CRDImages/as/web-large/DP121530.jpg",
+  "additionalImages": [],
+  "constituents": [
+    {
+      "constituentID": 164764,
+      "role": "Artist",
+      "name": "Utagawa Hiroshige",
+      "constituentULAN_URL": "http://vocab.getty.edu/page/ulan/500019641",
+      "constituentWikidata_URL": "https://www.wikidata.org/wiki/Q200798",
+      "gender": ""
+    },
+    {
+      "constituentID": 12657,
+      "role": "Artist",
+      "name": "Uoya Eikichi",
+      "constituentULAN_URL": "(not assigned)",
+      "constituentWikidata_URL": "https://www.wikidata.org/wiki/Q84498310",
+      "gender": ""
+    }
+  ],
+  "department": "Asian Art",
+  "objectName": "Woodblock print",
+  "title": "“Azuma Bridge from Komagatadō Temple,” from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei, Komagatadō Azumabashi)",
+  "culture": "Japan",
+  "period": "Edo period (1615–1868)",
+  "dynasty": "",
+  "reign": "",
+  "portfolio": "",
+  "artistRole": "Artist",
+  "artistPrefix": "",
+  "artistDisplayName": "Utagawa Hiroshige",
+  "artistDisplayBio": "Japanese, Tokyo (Edo) 1797–1858 Tokyo (Edo)",
+  "artistSuffix": "",
+  "artistAlphaSort": "Utagawa, Hiroshige",
+  "artistNationality": "Japanese",
+  "artistBeginDate": "1797",
+  "artistEndDate": "1858",
+  "artistGender": "",
+  "artistWikidata_URL": "https://www.wikidata.org/wiki/Q200798",
+  "artistULAN_URL": "http://vocab.getty.edu/page/ulan/500019641",
+  "objectDate": "1857",
+  "objectBeginDate": 1857,
+  "objectEndDate": 1857,
+  "medium": "Woodblock print; ink and color on paper",
+  "dimensions": "H. 13 3/8 in. (34 cm); W. 8 3/4 in. (22.2 cm)",
+  "measurements": [
+    {
+      "elementName": "Overall",
+      "elementDescription": null,
+      "elementMeasurements": {
+        "Height": 34,
+        "Width": 22.2
+      }
+    }
+  ],
+  "creditLine": "Gift of Estate of Samuel Isham, 1914",
+  "geographyType": "",
+  "city": "",
+  "state": "",
+  "county": "",
+  "country": "",
+  "region": "",
+  "subregion": "",
+  "locale": "",
+  "locus": "",
+  "excavation": "",
+  "river": "",
+  "classification": "Prints",
+  "rightsAndReproduction": "",
+  "linkResource": "",
+  "metadataDate": "2025-10-17T04:51:23.97Z",
+  "repository": "Metropolitan Museum of Art, New York, NY",
+  "objectURL": "https://www.metmuseum.org/art/collection/search/37282",
+  "tags": [
+    {
+      "term": "Houses",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300005433",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q3947"
+    },
+    {
+      "term": "Rivers",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300008707",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q4022"
+    },
+    {
+      "term": "Trees",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300132410",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q10884"
+    },
+    {
+      "term": "Flags",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300195678",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q14660"
+    },
+    {
+      "term": "Boats",
+      "AAT_URL": "http://vocab.getty.edu/page/aat/300178749",
+      "Wikidata_URL": "https://www.wikidata.org/wiki/Q35872"
+    }
+  ],
+  "objectWikidata_URL": "",
+  "isTimelineWork": false,
+  "GalleryNumber": ""
+}

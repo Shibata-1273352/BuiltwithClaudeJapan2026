@@ -4,5 +4,17 @@
       "en": ["Asakusa", "Kwan-non", "Kwannon", "Kannon", "Kaminari", "Thunder", "Senso", "Kinryu", "Nio", "Ni-ô"],
       "ja": ["浅草", "観音", "雷門", "仲見世", "仲店", "浅草寺", "金龍山", "仁王門", "二王門"]
     }
+  },
+  "ueno": {
+    "terms": {
+      "en": ["Uyeno", "Uyéno", "Ueno", "Kan'eiji", "Kan’eiji", "Konpon Chudo", "Toyeizan"],
+      "ja": ["上野", "寛永寺", "東叡山", "根本中堂", "中堂", "清水堂", "清水観音堂", "彰義隊"]
+    }
+  },
+  "azumabashi": {
+    "terms": {
+      "en": ["Adzuma", "Azuma", "Sumida", "Sumidagawa"],
+      "ja": ["吾妻橋", "大川橋", "隅田川"]
+    }
   }
 }

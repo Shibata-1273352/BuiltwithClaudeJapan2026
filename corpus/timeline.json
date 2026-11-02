@@ -116,6 +116,105 @@
         "jta-tagengo-kaminarimon:0:2"
       ],
       "structure": "permanent"
+    },
+    {
+      "id": "ex:konponchudo-old:1698-built",
+      "entity": "ent:konponchudo-old",
+      "event": "built",
+      "original": "1698 元禄11 根本中堂落慶",
+      "time": {
+        "start": "1698-01-01",
+        "end": "1698-12-31"
+      },
+      "evidence": [
+        "kaneiji-official-chronology:0:1",
+        "kaneiji-official-history:0:1"
+      ],
+      "note": "completion (落慶) of the hall at 竹の台 (today's fountain plaza of Ueno Park); year only"
+    },
+    {
+      "id": "ex:konponchudo-old:1868-destroyed",
+      "entity": "ent:konponchudo-old",
+      "event": "destroyed",
+      "original": "1868 慶応4 …同日兵火により、根本中堂…焼失（寛永寺）／in July 1868 … burned to the ground（観光庁）／慶応四年辰年の五月十五日 上野の戦争（高村光雲）",
+      "time": {
+        "start": "1868-07-04",
+        "end": "1868-07-04"
+      },
+      "evidence": [
+        "kaneiji-official-chronology:0:2",
+        "kaneiji-official-history:0:2",
+        "jta-tagengo-kaneiji:0:0",
+        "jta-tagengo-kaneiji:0:1",
+        "koun-kaiko:18:0"
+      ],
+      "note": "Kan'ei-ji gives the year and 'the same day' as 公現法親王 left; the Tourism Agency gives July 1868; the day is the battle of Ueno, 慶応4年5月15日 = 1868-07-04 (NAOJ), from Kōun. No source states the hour or a later day."
+    },
+    {
+      "id": "ex:konponchudo:1879-moved_in",
+      "entity": "ent:konponchudo",
+      "event": "moved_in",
+      "original": "明治十二年（1879）…川越喜多院より本地堂を移築…根本中堂として再建されました（寛永寺）／has only stood on its current spot since 1879（観光庁）",
+      "time": {
+        "start": "1879-01-01",
+        "end": "1879-12-31"
+      },
+      "evidence": [
+        "kaneiji-official-history:0:3",
+        "kaneiji-official-chronology:0:3",
+        "jta-tagengo-konponchudo:0:0"
+      ],
+      "note": "the building was built in 1638 as the 本地堂 of 喜多院 in Kawagoe (jta-tagengo-konponchudo:0:1); at Ueno it begins in 1879, on the site of the former sub-temple 大慈院, not at 竹の台. Kan'ei-ji adds that timber of Ueno's own 本地堂 was used (山内本地堂の用材も加えて)."
+    },
+    {
+      "id": "ex:azumabashi:1774-built",
+      "entity": "ent:azumabashi",
+      "event": "built",
+      "original": "安永3（1774）年、6名の町人が江戸幕府の承認を得て架橋（国立国会図書館）／創架は1774年（GO TOKYO）",
+      "time": {
+        "start": "1774-01-01",
+        "end": "1774-12-31"
+      },
+      "evidence": [
+        "ndl-azumabashi:0:0",
+        "gotokyo-azumabashi:0:0",
+        "tokyo-kensetsu-sumida-bridges:0:1"
+      ],
+      "note": "year only. The lighting brochure writes 1774 年（安永 7 年）: 安永7 is 1778, a typo on that page (1774 = 安永3)."
+    },
+    {
+      "id": "ex:azumabashi:1887-rebuilt",
+      "entity": "ent:azumabashi",
+      "event": "rebuilt",
+      "original": "【明治20年の吾妻橋】隅田川で初めての鉄橋（プラットトラス橋）として架設された（東京都建設局）",
+      "time": {
+        "start": "1887-01-01",
+        "end": "1887-12-31"
+      },
+      "evidence": [
+        "tokyo-kensetsu-sumida-bridges:0:5",
+        "met-37387:0:0",
+        "met-37387:0:3"
+      ],
+      "note": "year only (明治20年 is Gregorian 1887). Inoue Yasuji's print of the opening is dated 1887 by The Met."
+    },
+    {
+      "id": "ex:azumabashi:1930-rebuilt",
+      "entity": "ent:azumabashi",
+      "event": "rebuilt",
+      "original": "昭和５年に架設（東京都建設局）／竣工：1930 年（昭和 5 年）（同）／■架設 ：昭和５年［１９３１]（同）／1931年に完成した現在の吾妻橋（GO TOKYO）",
+      "time": {
+        "start": "1930-01-01",
+        "end": "1931-12-31"
+      },
+      "evidence": [
+        "tokyo-kensetsu-sumida-bridges:0:3",
+        "tokyo-kensetsu-lightup:0:1",
+        "tokyo-kensetsu-sumida-bridges:0:0",
+        "gotokyo-azumabashi:0:0"
+      ],
+      "note": "the present bridge (reconstruction after the Great Kantō Earthquake). 1930 vs 1931 is unresolved; the pocket map itself writes 昭和５年［１９３１].",
+      "disputed": true
     }
   ],
   "conflicts": [
@@ -170,6 +269,60 @@
         "en": "Sensō-ji speaks of the permanent gate's absence; the JTA text of temporary gates in the interim. They describe different objects."
       },
       "status": "kept_both"
+    },
+    {
+      "id": "cf:azumabashi:present-bridge-year",
+      "kind": "date",
+      "about": "ex:azumabashi:1930-rebuilt",
+      "sides": [
+        {
+          "value": "昭和５年に架設／竣工：1930 年（昭和 5 年）",
+          "evidence": [
+            "tokyo-kensetsu-sumida-bridges:0:3",
+            "tokyo-kensetsu-lightup:0:1"
+          ],
+          "gregorian": "1930"
+        },
+        {
+          "value": "1931年に完成／［１９３１]",
+          "evidence": [
+            "gotokyo-azumabashi:0:0",
+            "tokyo-kensetsu-sumida-bridges:0:0"
+          ],
+          "gregorian": "1931"
+        }
+      ],
+      "explanation": {
+        "ja": "現在の吾妻橋の完成年が、東京都建設局の資料（昭和5年＝1930年）とGO TOKYO（1931年）で異なる。建設局のポケットマップ自身も「昭和５年［１９３１]」と書いており、竣工と開通の違いの可能性もあるが、資料からは決められない。",
+        "en": "The year the present Azuma Bridge was completed differs between the Tokyo Construction Bureau (Shōwa 5 = 1930) and GO TOKYO (1931). The Bureau's pocket map itself writes 'Shōwa 5 [1931]'. It may be completion vs opening, but the sources do not say."
+      },
+      "status": "unresolved"
+    },
+    {
+      "id": "cf:azumabashi:1878-material",
+      "kind": "description",
+      "about": "ex:azumabashi:1887-rebuilt",
+      "sides": [
+        {
+          "value": "one of the few stone bridges in Tôkiyô (Bird, 1878)",
+          "evidence": [
+            "bird-unbeaten:6:4"
+          ],
+          "gregorian": "1878"
+        },
+        {
+          "value": "【明治９年の吾妻橋】…西洋式の木橋が導入され（東京都建設局）",
+          "evidence": [
+            "tokyo-kensetsu-sumida-bridges:0:4"
+          ],
+          "gregorian": "1876"
+        }
+      ],
+      "explanation": {
+        "ja": "1878年にバードは吾妻橋を「東京で数少ない石橋」と書いたが、東京都建設局は明治9年（1876年）の吾妻橋を西洋式の木橋としている。橋脚・橋台の材料を指した可能性もあるが、資料からは決められない。",
+        "en": "In 1878 Bird called Azuma Bridge 'one of the few stone bridges in Tôkiyô', while the Tokyo Construction Bureau describes the 1876 bridge as a Western-style wooden bridge. She may have meant the piers, but the sources do not say."
+      },
+      "status": "unresolved"
     }
   ],
   "source_times": [
@@ -232,6 +385,39 @@
               "original": "Letter V dated 'June 9'; preface: left home in April 1878"
             }
           ]
+        },
+        "ent:azumabashi": {
+          "times": [
+            {
+              "kind": "observed_at",
+              "precision": "day",
+              "start": "1878-06-09",
+              "basis": "derived",
+              "evidence": [
+                "bird-unbeaten:6:1",
+                "bird-unbeaten:0:15"
+              ],
+              "original": "Letter V dated 'June 9'; preface: left home in April 1878"
+            }
+          ],
+          "relation": {
+            "kind": "written_period",
+            "entity": "ent:azumabashi",
+            "evidence": [
+              "bird-unbeaten:6:4"
+            ],
+            "note": "she went to the broad street leading to the bridge and calls it a stone bridge; crossing it is not stated"
+          }
+        },
+        "ent:konponchudo": {
+          "relation": {
+            "kind": "written_period",
+            "entity": "ent:ueno",
+            "evidence": [
+              "bird-unbeaten:9:4"
+            ],
+            "note": "only mentions that minor shoguns are buried in Uyeno"
+          }
         }
       }
     },
@@ -266,6 +452,26 @@
               "kafu-hiyorigeta:5:8"
             ],
             "note": "Written while the permanent gate was gone; Kafū himself notes 雷門は既に焼失."
+          }
+        },
+        "ent:azumabashi": {
+          "relation": {
+            "kind": "written_period",
+            "entity": "ent:azumabashi",
+            "evidence": [
+              "kafu-hiyorigeta:6:5"
+            ],
+            "note": "compares the iron 永代橋 with 吾妻橋 and 両国橋 (then the 1887 iron bridge)"
+          }
+        },
+        "ent:konponchudo": {
+          "relation": {
+            "kind": "written_period",
+            "entity": "ent:kaneiji",
+            "evidence": [
+              "kafu-hiyorigeta:5:1"
+            ],
+            "note": "mentions only that 上野寛永寺's buildings burned early in war"
           }
         }
       }
@@ -304,6 +510,78 @@
               "original": "慶応元年丑年の十二月十四日 = 1866-01-30 (NAOJ)"
             }
           ]
+        },
+        "ent:konponchudo-old": {
+          "times": [
+            {
+              "kind": "depicted_at",
+              "precision": "day",
+              "start": "1868-07-04",
+              "calendar": "japanese_lunisolar",
+              "basis": "derived",
+              "evidence": [
+                "koun-kaiko:18:0"
+              ],
+              "original": "慶応四年辰年の五月十五日（NAOJ: 1868-07-04）"
+            }
+          ],
+          "relation": {
+            "kind": "eyewitness_event",
+            "entity": "ent:konponchudo-old",
+            "event": "ex:konponchudo-old:1868-destroyed",
+            "evidence": [
+              "koun-kaiko:18:23",
+              "koun-kaiko:18:24"
+            ],
+            "note": "he watched black flames rise from the hill from a distance; that it was the 中堂 he learned afterwards (後で、知ったことですが) — hearsay, not seeing the hall burn"
+          }
+        },
+        "ent:konponchudo": {
+          "times": [
+            {
+              "kind": "depicted_at",
+              "precision": "day",
+              "start": "1868-07-04",
+              "calendar": "japanese_lunisolar",
+              "basis": "derived",
+              "evidence": [
+                "koun-kaiko:18:0"
+              ],
+              "original": "慶応四年辰年の五月十五日（NAOJ: 1868-07-04）"
+            }
+          ],
+          "relation": {
+            "kind": "eyewitness_event",
+            "entity": "ent:konponchudo-old",
+            "event": "ex:konponchudo-old:1868-destroyed",
+            "evidence": [
+              "koun-kaiko:18:23"
+            ],
+            "note": "he recalls the burning of the former hall at 竹の台; the present hall was still at 喜多院"
+          }
+        },
+        "ent:azumabashi": {
+          "times": [
+            {
+              "kind": "depicted_at",
+              "precision": "day",
+              "start": "1868-07-04",
+              "calendar": "japanese_lunisolar",
+              "basis": "derived",
+              "evidence": [
+                "koun-kaiko:18:0"
+              ],
+              "original": "慶応四年辰年の五月十五日（NAOJ: 1868-07-04）"
+            }
+          ],
+          "relation": {
+            "kind": "eyewitness_event",
+            "entity": "ent:azumabashi",
+            "evidence": [
+              "koun-kaiko:18:28"
+            ],
+            "note": "recounts the bridge as a checkpoint guarded by government troops on the day of the battle"
+          }
         }
       }
     },
@@ -364,6 +642,84 @@
           }
         }
       }
+    },
+    {
+      "source": "met-37387",
+      "times": [
+        {
+          "kind": "depicted_at",
+          "precision": "year",
+          "start": "1887",
+          "basis": "stated",
+          "evidence": [
+            "met-37387:0:3"
+          ],
+          "original": "The Met: Date 1887"
+        }
+      ],
+      "subjects": {
+        "ent:azumabashi": {
+          "relation": {
+            "kind": "depicts",
+            "entity": "ent:azumabashi",
+            "evidence": [
+              "met-37387:0:0"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "source": "met-37282",
+      "times": [
+        {
+          "kind": "depicted_at",
+          "precision": "year",
+          "start": "1857",
+          "basis": "stated",
+          "evidence": [
+            "met-37282:0:3"
+          ],
+          "original": "The Met: Date 1857"
+        }
+      ],
+      "subjects": {
+        "ent:azumabashi": {
+          "relation": {
+            "kind": "depicts",
+            "entity": "ent:azumabashi",
+            "evidence": [
+              "met-37282:0:0"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "source": "met-45257",
+      "times": [
+        {
+          "kind": "depicted_at",
+          "precision": "year",
+          "start": "1785",
+          "basis": "estimated",
+          "evidence": [
+            "met-45257:0:3"
+          ],
+          "original": "The Met: Date 1785 (ca.)"
+        }
+      ],
+      "subjects": {
+        "ent:azumabashi": {
+          "relation": {
+            "kind": "depicts",
+            "entity": "ent:azumabashi",
+            "evidence": [
+              "met-45257:0:0"
+            ]
+          }
+        }
+      }
     }
   ],
   "verification": {
@@ -397,6 +753,11 @@
       {
         "original": "慶応2年1月1日",
         "gregorian": "1866-02-15"
+      },
+      {
+        "original": "慶応4年5月15日",
+        "gregorian": "1868-07-04",
+        "checked_at": "2026-11-03"
       }
     ],
     "corrections": [
@@ -418,5 +779,23 @@
       ]
     }
   },
-  "reviewed_at": "2026-11-03"
+  "reviewed_at": "2026-11-03",
+  "reviews": {
+    "ent:kaminarimon": {
+      "by": "Shibata-1273352 (human review)",
+      "at": "2026-11-03"
+    },
+    "ent:konponchudo": {
+      "by": null,
+      "at": null
+    },
+    "ent:konponchudo-old": {
+      "by": null,
+      "at": null
+    },
+    "ent:azumabashi": {
+      "by": null,
+      "at": null
+    }
+  }
 }

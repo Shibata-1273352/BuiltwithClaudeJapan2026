@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { expand, judgeExistence, periodsFrom, temporaryAt, timeKeys, toRange, type ExistenceEvent } from "./time";
 
 const timeline = JSON.parse(readFileSync(path.join(import.meta.dirname, "..", "..", "..", "corpus", "timeline.json"), "utf8"));
-const events: ExistenceEvent[] = timeline.existence_events;
+const events: ExistenceEvent[] = timeline.existence_events.filter((e: ExistenceEvent) => e.entity === "ent:kaminarimon");
 const periods = periodsFrom(events, "2026-11-02");
 const at = (start: string, precision: "day" | "month" | "year" | "range" = "day", end?: string) =>
   judgeExistence(periods, toRange({ precision, start, end }));
