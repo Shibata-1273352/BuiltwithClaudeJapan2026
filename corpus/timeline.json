@@ -1,7 +1,7 @@
 {
   "version": 1,
   "note": "Existence events and source times (REQUIREMENTS.md 4.5). Every value points at passage ids in the corpus. Lunisolar dates are converted to Gregorian ranges; disagreements between sources widen the event's range (its 'unknown' zone) and are also recorded as conflicts. Requirement 11: demo seed data must be human-reviewed — reviewed_by stays null until the user confirms.",
-  "reviewed_by": null,
+  "reviewed_by": "Shibata-1273352 (human review)",
   "existence_events": [
     {
       "id": "ex:kaminarimon:1767-destroyed",
@@ -371,16 +371,17 @@
       "Kōun depicted_at: 1866-01-30 (day)",
       "temporary-gate continuous period removed (review 2026-11-03)"
     ],
-    "human_review": "pending: reviewed_by stays null until the user signs off (REQUIREMENTS.md 11)",
+    "human_review": "approved by Shibata-1273352 on 2026-11-03",
     "review": {
       "reviewed_at": "2026-11-03",
       "by": "user (human review, conditional approval)",
-      "result": "dates OK; three model/judgment fixes required before sign-off",
+      "result": "approved after the three fixes (2026-11-03)",
       "fixes_applied": [
         "temporary gates are individual events (1868, 1905, 1928), not a continuous 1866-1960 period; permanent and temporary existence are judged separately",
         "each source records its relation to the gate (depicts / observed_site / written_period / eyewitness_event); 'absent' is shown as a chronology-based inference",
         "Bird edition pinned (Gutenberg #2184, 1911, version hash); fire date 1866-01-28 vs 01-30 kept unresolved and the Kōun judgment is 'pending: sources disagree'"
       ]
     }
-  }
+  },
+  "reviewed_at": "2026-11-03"
 }
