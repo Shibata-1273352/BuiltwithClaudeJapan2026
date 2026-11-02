@@ -40,6 +40,14 @@ describe("selectFaces (detections recorded from the Nakamise test photo)", () =>
 });
 
 describe("nms", () => {
+  it("drops a large low-score box (Kaminarimon street, 0.51 of a 768 tile at 0.63) but keeps the face", () => {
+    const kept = selectFaces([
+      { x: 1127, y: 1311, w: 394, h: 394, score: 0.627, tile: 768, full: false },
+      { x: 111, y: 1872, w: 97, h: 97, score: 0.68, tile: 384, full: false },
+      { x: 119, y: 1872, w: 100, h: 100, score: 0.638, tile: 256, full: false },
+    ]);
+    expect(kept.map((b) => [b.x, b.y])).toEqual([[111, 1872]]);
+  });
   it("merges duplicates from overlapping tiles", () => {
     const a = { x: 100, y: 100, w: 50, h: 50, score: 0.9 };
     const b = { x: 104, y: 102, w: 48, h: 50, score: 0.7 };

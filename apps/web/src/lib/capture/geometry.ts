@@ -80,6 +80,8 @@ export const FACE_RULES = {
   minScore: 0.6, // on the test photo every detection >= 0.63 was a face; signs/lanterns scored 0.53–0.59
   minScoreFull: 0.7, // the full-image pass produced large false positives on signboards
   maxSizeOfTile: 0.6, // a "face" filling most of a tile is usually a sign or lantern
+  largeOfTile: 0.4, // boxes bigger than this share of the tile need a higher score:
+  minScoreLarge: 0.7, // on the Kaminarimon photo a 0.51-of-tile box (0.63) sat on the bright street; faces were <= 0.4
   aspect: [0.6, 1.7] as const,
 };
 
@@ -93,6 +95,7 @@ export function selectFaces(raw: RawDetection[], rules = FACE_RULES): (Box & { s
     const ar = d.w / d.h;
     return (
       d.score >= (d.full ? rules.minScoreFull : rules.minScore) &&
+      (Math.max(d.w, d.h) <= rules.largeOfTile * d.tile || d.score >= rules.minScoreLarge) &&
       Math.max(d.w, d.h) <= rules.maxSizeOfTile * d.tile &&
       ar >= rules.aspect[0] &&
       ar <= rules.aspect[1]
