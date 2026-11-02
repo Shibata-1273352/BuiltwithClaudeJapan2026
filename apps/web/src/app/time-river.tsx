@@ -23,9 +23,22 @@ const SHORT: Record<string, string> = {
   "kafu-hiyorigeta": "荷風",
   "koun-kaiko": "光雲",
   "scidmore-jinrikisha": "シドモア",
+  "met-37282": "広重",
+  "met-37387": "安治",
+  "met-45257": "清長",
 };
-const EVENT_LABEL: Record<string, string> = { destroyed: "焼失", rebuilt: "再建", built: "建立", temporary: "仮設" };
-const QUICK = [1856, 1866, 1878, 1905, 1914, 1960, 2026];
+const EVENT_LABEL: Record<string, string> = { destroyed: "焼失", rebuilt: "再建", built: "建立", moved_in: "移築", temporary: "仮設" };
+/** The demo years of Kaminarimon (6.1); other sites get the years of their sources and events. */
+const QUICK_KAMINARIMON = [1856, 1866, 1878, 1905, 1914, 1960, 2026];
+function quickYears(d: TimelineData): number[] {
+  if (d.entity === "ent:kaminarimon") return QUICK_KAMINARIMON;
+  const ys = [
+    ...d.sources.map((s) => Number(s.time?.start?.slice(0, 4))),
+    ...d.events.map((e) => Number(e.time.end.slice(0, 4)) + 1),
+    new Date().getFullYear(),
+  ].filter((y) => y >= FROM && y <= TO);
+  return [...new Set(ys)].sort((a, b) => a - b).slice(0, 9);
+}
 const COLOR = { present: "var(--thread-toki)", absent: "var(--thread-ba)", unknown: "var(--muted)", withheld: "var(--muted)" } as const;
 
 export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; initialYear?: number }) {
@@ -141,7 +154,7 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
         data-testid="year-slider"
       />
       <div className="flex flex-wrap gap-2">
-        {QUICK.map((q) => (
+        {quickYears(data).map((q) => (
           <button
             key={q}
             type="button"
@@ -161,7 +174,7 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
       </p>
       {evidenceText.length > 0 && (
         <p className="text-sm text-muted">
-          根拠（浅草寺の再建史との照合）：{evidenceText.join(" ／ ")}
+          根拠（{data.name?.ja ?? ""}の年表との照合）：{evidenceText.join(" ／ ")}
         </p>
       )}
     </section>

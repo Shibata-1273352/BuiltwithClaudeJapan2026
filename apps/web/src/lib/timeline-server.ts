@@ -49,7 +49,13 @@ export function timelineData(entityId: string, name: { ja: string; en: string } 
     name,
     periods: tl.periods.get(entityId) ?? [],
     events: tl.t.existence_events.filter((e) => e.entity === entityId),
-    sources: tl.t.source_times.map((s) => {
+    // a work's depiction date says nothing about a site it does not depict (same rule as the DAG)
+    sources: tl.t.source_times
+      .filter((s) => {
+        const j = existenceFor(entityId, s.source);
+        return !(j.time?.kind === "depicted_at" && !j.relation);
+      })
+      .map((s) => {
       const j = existenceFor(entityId, s.source);
       return {
         source: s.source,

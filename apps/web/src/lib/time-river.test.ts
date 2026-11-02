@@ -21,7 +21,7 @@ describe("time slider (FR-56, RAG-11)", () => {
   it("1878: the permanent gate is absent (thread breaks), with evidence to jump to", () => {
     const s = yearState(d, 1878);
     expect(s.state).toBe("absent");
-    expect(s.label.ja).toBe("1878年：恒久的な雷門は、焼失後まだ再建されていなかった");
+    expect(s.label.ja).toBe("1878年：恒久的な雷門は焼失後まだ再建されていなかった");
     expect(s.evidence).toEqual(["ex:kaminarimon:1866-destroyed", "ex:kaminarimon:1960-rebuilt"]);
   });
   it("1905: still absent, and the temporary gate of that year is noted", () => {

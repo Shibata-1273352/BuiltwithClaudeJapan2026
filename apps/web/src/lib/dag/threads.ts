@@ -2,7 +2,7 @@
  * Threads (REQUIREMENTS.md 3, 4.6): one per accepted claim and one per derived existence claim.
  * Code decides the display state; Claude never does.
  */
-import { displayState, type CheckedClaim, type DisplayState, type Entities } from "@tsumugi/core";
+import { absenceReason, DISPUTED_WHAT, displayState, type CheckedClaim, type DisplayState, type Entities } from "@tsumugi/core";
 import type { Retrieved } from "./retrieve";
 
 export type Layer = "toki" | "ba" | "koto" | "ma";
@@ -53,32 +53,21 @@ function relationText(r: ExistenceRow, E: Entities, targetId: string, name: Name
     case "eyewitness_event":
       return events.find((e) => e.id === rel.event)?.event === "destroyed"
         ? { ja: "焼失そのものの回想", en: "a recollection of the fire itself" }
-        : { ja: "出来事そのものの回想", en: "a recollection of the event itself" };
+        : { ja: `その日の出来事の回想（${name.ja}を見たとは書いていない）`, en: `a recollection of the events of that day (not a statement that the writer saw ${name.en})` };
   }
 }
 
-const year = (e: Ev | undefined) => e?.time.start.slice(0, 4) ?? "?";
-
 /** Why the structure was absent, from the events that bound the absent period (4.5.2). */
 function absenceText(r: ExistenceRow, name: Name, events: Ev[], permanent: boolean): Name {
-  const from = events.find((e) => r.period?.from.includes(e.id));
-  const to = events.find((e) => r.period?.to.includes(e.id));
-  const p = permanent ? { ja: "恒久的な", en: "the permanent " } : { ja: "", en: "" };
-  if (from?.event === "destroyed" && to)
-    return { ja: `${p.ja}${name.ja}は焼失後まだ再建されていなかった`, en: `${p.en}${name.en} had not yet been rebuilt after the fire` };
-  if (from?.event === "destroyed") return { ja: `${p.ja}${name.ja}は焼失していた`, en: `${p.en}${name.en} had been destroyed` };
-  if (!from && to?.event === "moved_in")
-    return { ja: `${name.ja}はまだここに移されていなかった（${year(to)}年に移築）`, en: `${name.en} had not yet been moved here (moved in ${year(to)})` };
-  if (!from && to) return { ja: `${name.ja}はまだ建てられていなかった（${year(to)}年に建造）`, en: `${name.en} had not yet been built (built in ${year(to)})` };
-  return { ja: `${p.ja}${name.ja}はなかった`, en: `${p.en}${name.en} was not there` };
+  return absenceReason(
+    events.find((e) => r.period?.from.includes(e.id)),
+    events.find((e) => r.period?.to.includes(e.id)),
+    name,
+    permanent,
+  );
 }
 
-const DISPUTED: Record<string, Name> = {
-  destroyed: { ja: "焼失日", en: "the date of the fire" },
-  rebuilt: { ja: "再建・架け替えの日付", en: "the date of the rebuilding" },
-  built: { ja: "建造の日付", en: "the date of construction" },
-  moved_in: { ja: "移築の日付", en: "the date of the move" },
-};
+const DISPUTED = DISPUTED_WHAT;
 
 /**
  * Each claim keeps its own subject: a claim about Sensō-ji is shown as being about Sensō-ji (its
