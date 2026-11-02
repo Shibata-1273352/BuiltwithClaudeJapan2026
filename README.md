@@ -108,6 +108,29 @@ Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compo
 
 45,000 requests/min, 10M input tokens/min, 2M output tokens/min. One "see" call costs about $0.05.
 
+## Evaluation (`npm run eval`, REQUIREMENTS.md 10)
+
+A limited, hand-made evaluation set (3 sites; gold annotated by Claude Code, **human review pending**). It checks citation agreement and mis-bindings of entity and era; it does not prove a zero hallucination rate. Full tables: [`evaluation/results/2026-11-03.md`](evaluation/results/2026-11-03.md). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
+
+| Method (4.9) | Recall@10 en / ja | Entity identification | Relation (observed ≠ mentions) | Support (proxy) |
+| --- | --- | --- | --- | --- |
+| A full-text only | 71% / 45% | – | – | – |
+| B names + relation co-occurrence + RRF (no vector channel) | 71% / 41% | – | – | – |
+| C B + Claude selection, no code checks | 53% / 48% | 96% (n=24) | 100% (n=13) | 94% |
+| D B + Claim/Evidence checked by code | as B | 100% (n=18) | 100% (n=16) | 86% |
+| D+ D + gap round (adopted) | candidates 71% / 52% | 100% (n=20) | 100% (n=20) | 79% |
+
+| Ablation (10.3) | With | Without |
+| --- | --- | --- |
+| Context headers (Recall@10 en / ja) | 71% / 41% | 63% / 41% |
+| Time range: existence accuracy / era mis-bindings | 100% / 0 | 41% / 6 (judged by publication date) |
+| Relation context: identification / support (proxy) | 100% / 86% | 100% / 91% |
+| Gap round: candidate recall en / ja | 71% / 52% | 71% / 50% |
+
+Also: citations exactly match the canonical text 100% (n=44); fabricated citations rejected 4/4; narration sentences written beyond the claims and caught by the checks 1 of 20, shown 0; holds where the gold says hold 5/5; RAG-08 16/16 live explorations; live runs median 42.6 s, $0.17, 0 failures of 24. The run used the Message Batches API (23 requests, $0.38).
+
+What the numbers do **not** show yet: on this small set Claude's raw proposals were already 100% on the listed forbidden claims, so the value of the code checks shows up in citations, time and narration rather than in relation precision; and the relation context did not improve the support proxy. Both need harder cases.
+
 ## Security notes (OWASP Agentic Top 10, see REQUIREMENTS.md 9.4)
 
 - Access token → HttpOnly / Secure / SameSite=Strict cookie; cross-origin state-changing requests rejected; strict CSP.
