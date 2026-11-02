@@ -45,7 +45,7 @@ const STATE_LABEL: Record<string, string> = {
 
 type Ev = { seq: number; type: string; data: unknown };
 
-const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", "extract:en": "抽出（英）", "extract:ja": "抽出（日）", extract2: "追加の抽出", gap: "不足の評価（並行）", existence: "存在判定", narrate: "紡ぐ" };
+const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", "extract:en": "抽出（英）", "extract:ja": "抽出（日）", extract2: "追加の抽出", gap: "不足の評価（並行）", space: "間",  existence: "存在判定", narrate: "紡ぐ" };
 const FACET_LABEL: Record<string, string> = {
   place_description: "場所の記述",
   naming: "呼び名",
@@ -113,7 +113,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "space", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
   }, [jpeg, useLocation]);
@@ -131,6 +131,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const narrative = alt[lang] ?? (firstNarrative?.lang === lang || !firstNarrative?.lang ? firstNarrative : undefined);
   const names = pick<NamesEvent>("names");
   const timelineData = pick<TimelineData>("timeline");
+  const space = pick<{ ok: boolean; url?: string; aligned?: boolean; message?: string }>("space");
 
   async function switchLang(next: "ja" | "en") {
     setLang(next);
@@ -277,6 +278,17 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
       {claims && (
         <p className="text-sm text-muted" data-testid="claims">
           主張：採用 {claims.accepted} ・格下げ {claims.downgraded} ・却下 {claims.rejected}（{claims.passages} 節から）
+        </p>
+      )}
+      {space && (
+        <p className="text-sm" data-testid="space-link">
+          {space.ok && space.url ? (
+            <a className="underline decoration-lantern underline-offset-4" href={space.url}>
+              間（ま）で見る{space.aligned ? "：広重の絵と位置合わせ済み" : ""}
+            </a>
+          ) : (
+            <span className="text-muted">{space.message ?? "空間解析：簡易表示"}</span>
+          )}
         </p>
       )}
       {threads && (

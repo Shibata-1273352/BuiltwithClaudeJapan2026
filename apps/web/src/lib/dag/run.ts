@@ -21,6 +21,7 @@ import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
+import { requestScene } from "../inference";
 import { narrativeFor, saveNarrative } from "../narrative-service";
 import { findNames, namePatterns, type CheckedClaim, type FoundName } from "@tsumugi/core";
 import { existenceFor, sourceTime, timeline } from "../timeline-server";
@@ -118,6 +119,27 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       finish("done", { place: null });
       return;
     }
+
+    // 間 (parallel, 4.3/4.10): masks, depth, layers and alignment on the inference server. Started as
+    // soon as the place is known (it picks the artifact to align to) and awaited only at the end.
+    const artifactFor = (entityId: string): string | null => {
+      const rel = E.dict.relations.find((r) => r.type === "DEPICTS" && r.to === entityId);
+      const met = rel ? E.get(rel.from)?.external_ids?.met : undefined;
+      return met ? `met-${met}` : null;
+    };
+    const spaceStarted = Date.now();
+    emit(explorationId, "stage", { stage: "space", status: "start", remaining_ms: ctx.remaining() });
+    const spacePromise = requestScene(capture.image_path, capture.id, artifactFor(place), Math.max(5_000, Math.min(30_000, ctx.remaining() - 5_000))).then((r) => {
+      emit(explorationId, "stage", { stage: "space", status: "done", ms: Date.now() - spaceStarted });
+      emit(
+        explorationId,
+        "space",
+        r.ok
+          ? { ok: true, scene_id: r.scene.scene_id, url: `/space/${r.scene.scene_id}`, elements: Object.keys(r.scene.elements), aligned: Boolean(r.scene.alignment?.ok), ms: r.scene.elapsed_ms }
+          : { ok: false, reason: r.reason, message: "空間解析：簡易表示" }, // FR-34
+      );
+      return r.ok;
+    });
 
     // 3. Plan (FR-08)
     const plan = await stage(ctx, "plan", async () => {
@@ -348,6 +370,8 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return r.sentences;
     });
 
+    const spaceOk = await spacePromise; // bounded by its own timeout
+
     // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.
     const graph = await stage(ctx, "graph", async () => {
       const corpus = openDb({ readonly: true });
@@ -381,6 +405,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
 
     const summary = {
       graph_saved: graph,
+      space: spaceOk ? `/space/${capture.id}` : "degraded",
       narrative_sentences: narrative?.filter((s) => s.ok).length ?? 0,
       narrative_dropped: narrative?.filter((s) => !s.ok).length ?? 0,
       status: "threads",

@@ -19,6 +19,7 @@ export type EventType =
   | "threads"
   | "names"
   | "timeline"
+  | "space"
   | "narrative"
   | "graph"
   | "ai_call"

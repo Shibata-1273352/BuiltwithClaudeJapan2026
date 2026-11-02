@@ -179,6 +179,42 @@ async def segment(
                       elapsed_ms=round((time.perf_counter() - t0) * 1000), masks=masks)
 
 
+class SceneOut(BaseModel):
+    scene_id: str
+    elements: dict
+    alignment: dict | None = None
+    timings_ms: dict
+    elapsed_ms: int
+
+
+SCENE_ID_RE = r"^[a-z0-9][a-z0-9_-]{0,63}$"
+ARTIFACT_ID_RE = r"^[a-z0-9][a-z0-9-]{0,63}$"
+
+
+@app.post("/scene", response_model=SceneOut, dependencies=[Depends(require_token)])
+async def scene(
+    image: UploadFile = File(...),
+    scene_id: Annotated[str, Form(pattern=SCENE_ID_RE)] = ...,
+    artifact: Annotated[str | None, Form(pattern=ARTIFACT_ID_RE)] = None,
+) -> SceneOut:
+    """Layers for the 間 view (4.10): masks, depth, plate, anchors, alignment to an artifact.
+    Written to $DATA_DIR/cache/scenes/<scene_id>/ for the web app to serve."""
+    from scripts.build_scene import Models, build_photo_scene
+
+    img = await read_image(image)
+    sm, sp = _load("sam3")
+    dm, dp = _load("depth")
+    t0 = time.perf_counter()
+    s = build_photo_scene(Models.from_loaded(device, sm, sp, dm, dp), img, scene_id, artifact)
+    return SceneOut(
+        scene_id=scene_id,
+        elements=s["elements"],
+        alignment=s.get("alignment"),
+        timings_ms=s["timings_ms"],
+        elapsed_ms=round((time.perf_counter() - t0) * 1000),
+    )
+
+
 @app.post("/depth", response_model=DepthOut, dependencies=[Depends(require_token)])
 async def depth(image: UploadFile = File(...)) -> DepthOut:
     img = await read_image(image)
