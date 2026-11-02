@@ -313,7 +313,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         const getS = corpus.prepare("SELECT id, text FROM sentences WHERE passage_id = ? ORDER BY n");
         const rows: (FoundName & { source: string; sourceTitle: string; time: string | null; sentence: string })[] = [];
         for (const r of all) {
-          const st = sourceTime(r.sourceId);
+          const st = sourceTime(r.sourceId, place);
           for (const s of getS.all(r.passageId) as { id: string; text: string }[]) {
             for (const n of findNames(s.id, s.text, r.lang, patterns)) {
               rows.push({ ...n, source: r.sourceId, sourceTitle: r.sourceTitle, time: st?.start ?? null, sentence: s.text });
@@ -353,7 +353,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         threads,
         existence,
         (pid) => byPassage.get(pid)?.sourceTitle ?? pid,
-        (pid) => sourceTime(byPassage.get(pid)?.sourceId ?? ""),
+        (pid) => sourceTime(byPassage.get(pid)?.sourceId ?? "", place),
       );
       if (!cards.size) return null;
       ctx.claude();

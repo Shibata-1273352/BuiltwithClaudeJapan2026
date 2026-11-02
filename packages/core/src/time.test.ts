@@ -79,7 +79,7 @@ describe("review 2026-11-03 fixes", () => {
     const bird = timeline.source_times.find((s: { source: string }) => s.source === "bird-unbeaten");
     expect(bird.edition.provider).toBe("Project Gutenberg #2184");
     expect(bird.edition.version_hash).toMatch(/^[0-9a-f]{64}$/);
-    expect(bird.relation_to_subject).toMatchObject({ kind: "observed_site", entity: "ent:sensoji" });
+    expect(bird.subjects["ent:kaminarimon"].relation).toMatchObject({ kind: "observed_site", entity: "ent:sensoji" });
   });
 });
 

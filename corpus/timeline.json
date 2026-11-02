@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Existence events and source times (REQUIREMENTS.md 4.5). Every value points at passage ids in the corpus. Lunisolar dates are converted to Gregorian ranges; disagreements between sources widen the event's range (its 'unknown' zone) and are also recorded as conflicts. Requirement 11: demo seed data must be human-reviewed — reviewed_by stays null until the user confirms.",
+  "note": "Existence events and source times (REQUIREMENTS.md 4.5). Every value points at passage ids in the corpus. Lunisolar dates are converted to Gregorian ranges; disagreements between sources widen the event's range (its 'unknown' zone) and are also recorded as conflicts. Requirement 11: demo seed data must be human-reviewed — reviewed_by stays null until the user confirms. Source times: `times` hold the source's own times (written/depicted/published); `subjects[entity]` hold what the source says about one site (its own observed/depicted time and its relation).",
   "reviewed_by": "Shibata-1273352 (human review)",
   "existence_events": [
     {
@@ -177,15 +177,14 @@
       "source": "bird-unbeaten",
       "times": [
         {
-          "kind": "observed_at",
-          "precision": "day",
-          "start": "1878-06-09",
+          "kind": "written_at",
+          "precision": "year",
+          "start": "1878",
           "basis": "derived",
           "evidence": [
-            "bird-unbeaten:6:1",
             "bird-unbeaten:0:15"
           ],
-          "original": "Letter V dated 'June 9'; preface: left home in April 1878"
+          "original": "letters written during the 1878 journey (preface: left home in April 1878)"
         },
         {
           "kind": "first_published_at",
@@ -204,19 +203,36 @@
           "original": "Gutenberg #2184 transcribes the 1911 popular edition"
         }
       ],
-      "relation_to_subject": {
-        "kind": "observed_site",
-        "entity": "ent:sensoji",
-        "evidence": [
-          "bird-unbeaten:6:2"
-        ],
-        "note": "Bird observed and described Sensō-ji and its deity; the text is not evidence that she saw Kaminarimon."
-      },
       "edition": {
         "provider": "Project Gutenberg #2184",
         "edition": "1911 popular edition (John Murray), abridged",
         "version_hash": "8b6f02e3e20410afe52a49bcb4fd2c88fc2df41ee619c02afaab42cf2b3ff9c6",
         "note": "Letter numbering differs between editions; 'Letter V' and passage ids refer to this edition only."
+      },
+      "subjects": {
+        "ent:kaminarimon": {
+          "relation": {
+            "kind": "observed_site",
+            "entity": "ent:sensoji",
+            "evidence": [
+              "bird-unbeaten:6:2"
+            ],
+            "note": "Bird observed and described Sensō-ji and its deity; the text is not evidence that she saw Kaminarimon."
+          },
+          "times": [
+            {
+              "kind": "observed_at",
+              "precision": "day",
+              "start": "1878-06-09",
+              "basis": "derived",
+              "evidence": [
+                "bird-unbeaten:6:1",
+                "bird-unbeaten:0:15"
+              ],
+              "original": "Letter V dated 'June 9'; preface: left home in April 1878"
+            }
+          ]
+        }
       }
     },
     {
@@ -241,28 +257,22 @@
           "evidence": []
         }
       ],
-      "relation_to_subject": {
-        "kind": "written_period",
-        "entity": "ent:kaminarimon",
-        "evidence": [
-          "kafu-hiyorigeta:5:8"
-        ],
-        "note": "Written while the permanent gate was gone; Kafū himself notes 雷門は既に焼失."
+      "subjects": {
+        "ent:kaminarimon": {
+          "relation": {
+            "kind": "written_period",
+            "entity": "ent:kaminarimon",
+            "evidence": [
+              "kafu-hiyorigeta:5:8"
+            ],
+            "note": "Written while the permanent gate was gone; Kafū himself notes 雷門は既に焼失."
+          }
+        }
       }
     },
     {
       "source": "koun-kaiko",
       "times": [
-        {
-          "kind": "depicted_at",
-          "precision": "day",
-          "start": "1866-01-30",
-          "basis": "derived",
-          "evidence": [
-            "koun-kaiko:10:0"
-          ],
-          "original": "慶応元年丑年の十二月十四日 = 1866-01-30 (NAOJ)"
-        },
         {
           "kind": "first_published_at",
           "precision": "year",
@@ -271,13 +281,29 @@
           "evidence": []
         }
       ],
-      "relation_to_subject": {
-        "kind": "eyewitness_event",
-        "entity": "ent:kaminarimon",
-        "evidence": [
-          "koun-kaiko:10:0"
-        ],
-        "note": "An eyewitness memoir of the fire itself (published 1929)."
+      "subjects": {
+        "ent:kaminarimon": {
+          "relation": {
+            "kind": "eyewitness_event",
+            "entity": "ent:kaminarimon",
+            "evidence": [
+              "koun-kaiko:10:0"
+            ],
+            "note": "An eyewitness memoir of the fire itself (published 1929)."
+          },
+          "times": [
+            {
+              "kind": "depicted_at",
+              "precision": "day",
+              "start": "1866-01-30",
+              "basis": "derived",
+              "evidence": [
+                "koun-kaiko:10:0"
+              ],
+              "original": "慶応元年丑年の十二月十四日 = 1866-01-30 (NAOJ)"
+            }
+          ]
+        }
       }
     },
     {
@@ -294,14 +320,18 @@
           "original": "Date: 1856"
         }
       ],
-      "relation_to_subject": {
-        "kind": "depicts",
-        "entity": "ent:kaminarimon",
-        "evidence": [
-          "met-56689:0:0",
-          "sensoji-official:0:8"
-        ],
-        "note": "The print shows the Kaminarimon lantern in the foreground; Sensō-ji states the Kansei-era gate was a favourite subject of Hiroshige."
+      "subjects": {
+        "ent:kaminarimon": {
+          "relation": {
+            "kind": "depicts",
+            "entity": "ent:kaminarimon",
+            "evidence": [
+              "met-56689:0:0",
+              "sensoji-official:0:8"
+            ],
+            "note": "The print shows the Kaminarimon lantern in the foreground; Sensō-ji states the Kansei-era gate was a favourite subject of Hiroshige."
+          }
+        }
       }
     },
     {
@@ -323,11 +353,15 @@
           "original": "not stated in the text; left unknown on purpose"
         }
       ],
-      "relation_to_subject": {
-        "kind": "observed_site",
-        "entity": "ent:sensoji",
-        "evidence": [],
-        "note": "Observation time not stated; not judged."
+      "subjects": {
+        "ent:kaminarimon": {
+          "relation": {
+            "kind": "observed_site",
+            "entity": "ent:sensoji",
+            "evidence": [],
+            "note": "Observation time not stated; not judged."
+          }
+        }
       }
     }
   ],
