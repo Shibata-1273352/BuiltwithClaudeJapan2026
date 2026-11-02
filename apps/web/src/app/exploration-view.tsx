@@ -187,7 +187,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
             {existence.rows.map((r) => (
               <li key={r.source}>
                 <span className={r.value === "absent" ? "text-ba" : r.value === "present" ? "text-toki" : "text-muted"}>
-                  {EXIST_LABEL[r.value]}
+                  {r.reason === "sources_disagree" ? "判定保留（焼失日が史料間で一致しない）" : EXIST_LABEL[r.value]}
                 </span>{" "}
                 {r.sourceTitle}（{r.time?.kind}: {r.time?.start}
                 {r.time?.end ? `–${r.time.end}` : ""}）
