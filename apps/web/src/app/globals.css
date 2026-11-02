@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* REQUIREMENTS.md 6.1: night indigo; four threads = gold / vermilion / light indigo / sakura-nezumi */
+:root {
+  --ai-night: #0e1426;
+  --paper: #f3ecdf;
+  --muted: #b8bfd3; /* >= 4.5:1 on --ai-night */
+  --thread-toki: #e2b65a;
+  --thread-ba: #e0603f;
+  --thread-koto: #a9c6e8;
+  --thread-ma: #c9a7ad;
+  --lantern: #f0a24a;
+}
+
+@theme inline {
+  --color-night: var(--ai-night);
+  --color-paper: var(--paper);
+  --color-muted: var(--muted);
+  --color-toki: var(--thread-toki);
+  --color-ba: var(--thread-ba);
+  --color-koto: var(--thread-koto);
+  --color-ma: var(--thread-ma);
+  --color-lantern: var(--lantern);
+  --font-sans: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --font-serif: "Hiragino Mincho ProN", "Noto Serif JP", "Times New Roman", serif;
+}
+
+body {
+  background: var(--ai-night);
+  color: var(--paper);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

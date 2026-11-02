@@ -1,0 +1,32 @@
+# Neo4j Community Edition (GPLv3) runs as a separate, unmodified official image (REQUIREMENTS.md 4.4.8, 12).
+# Start:  npm run graph:up   (reads NEO4J_PASSWORD from the repo-root .env)
+name: tsumugi
+services:
+  neo4j:
+    # neo4j:5.26.32-community (multi-arch index; arm64 + amd64), pinned by digest (ASI04)
+    image: neo4j:5-community@sha256:249a1ec6e3c52d82101a5ed33d6ed2b5ed5b0017b21a28c0bfebc335e87fb177
+    container_name: tsumugi-neo4j
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7474:7474" # browser, localhost only
+      - "127.0.0.1:7687:7687" # bolt, localhost only
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}
+      NEO4J_server_memory_heap_initial__size: 1G
+      NEO4J_server_memory_heap_max__size: 1G
+      NEO4J_server_memory_pagecache_size: 512M
+      NEO4J_dbms_usage__report_enabled: "false"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/7687' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+    mem_limit: 2g
+
+volumes:
+  neo4j-data:
+  neo4j-logs:

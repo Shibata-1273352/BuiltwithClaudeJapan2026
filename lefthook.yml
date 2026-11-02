@@ -1,0 +1,5 @@
+# Pre-commit secret scan (REQUIREMENTS.md 9.4.3, 11). Install hooks: npx lefthook install
+pre-commit:
+  commands:
+    gitleaks:
+      run: gitleaks git --staged --redact --no-banner
