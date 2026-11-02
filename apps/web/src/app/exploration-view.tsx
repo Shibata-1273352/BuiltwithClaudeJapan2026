@@ -280,6 +280,11 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
           主張：採用 {claims.accepted} ・格下げ {claims.downgraded} ・却下 {claims.rejected}（{claims.passages} 節から）
         </p>
       )}
+      {status === "完了" && expId && (
+        <a href={`/note/${expId}?lang=${lang}`} className="inline-flex min-h-11 w-fit items-center rounded-full bg-lantern px-6 font-medium text-night" data-testid="note-link">
+          {lang === "ja" ? "旅ノートを開く" : "Open the travel note"}
+        </a>
+      )}
       {space && (
         <p className="text-sm" data-testid="space-link">
           {space.ok && space.url ? (
