@@ -76,6 +76,8 @@ npm run met -- 56689                              # The Met endpoints + fixture
 | Neo4j | `neo4j:5-community` 5.26.32, pinned by digest | GPLv3, run unmodified as a separate container (not bundled) |
 | The Met Collection API | search `v1.1/search`, objects `v1/objects/{id}` | Data CC0; images only when `isPublicDomain` |
 
+**SAM License summary** (read 2026-11-02, version of 2025-11-19): non-exclusive, worldwide, royalty-free license to use, modify and redistribute — **no non-commercial or research-only restriction**. Conditions: redistribution must ship the license text; publications using SAM must acknowledge it; no use subject to ITAR or prohibited by trade controls (military, weapons, espionage, nuclear); no reverse engineering. TSUMUGI does not redistribute the weights.
+
 Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compose.yml`.
 
 ### Claude API limits observed (2026-11-02)
