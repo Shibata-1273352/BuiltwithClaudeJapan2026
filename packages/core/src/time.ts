@@ -9,10 +9,10 @@
  */
 
 export type Precision = "day" | "month" | "year" | "range" | "unknown";
-export type TimeKind = "observed_at" | "written_at" | "first_published_at" | "edition_published_at" | "depicted_at" | "event_at";
+export type TimeValueKind = "observed_at" | "written_at" | "first_published_at" | "edition_published_at" | "depicted_at" | "event_at";
 
 export type TimeValue = {
-  kind: TimeKind;
+  kind: TimeValueKind;
   precision: Precision;
   start: string | null; // "1878", "1878-06", "1878-06-09"
   end?: string | null; // for range precision
@@ -84,10 +84,10 @@ function shift(iso: string, days: number): string {
 const dayAfter = (iso: string) => shift(iso, 1);
 const dayBefore = (iso: string) => shift(iso, -1);
 
-export type Existence = "present" | "absent" | "unknown";
+export type ExistenceValue = "present" | "absent" | "unknown";
 
 export type ExistenceJudgment = {
-  value: Existence;
+  value: ExistenceValue;
   /** The period the time falls in (present/absent), for "go to the evidence" (RAG-06). */
   period?: Period;
   reason: "inside_present" | "inside_absent" | "boundary" | "no_data" | "no_time";

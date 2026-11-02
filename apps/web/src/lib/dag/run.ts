@@ -1,7 +1,7 @@
 /**
  * Exploration DAG (REQUIREMENTS.md 4.3). Code fixes the order of stages; Claude only makes the
- * bounded judgment inside a stage, and code validates it. Day-3 scope: received → see → place →
- * plan → retrieve → done. Extraction / claims / existence / narrative are added on 11/5–11/6.
+ * bounded judgment inside a stage, and code validates it. Stages: received → see → place → plan →
+ * retrieve → extract → existence → threads → done. Gap evaluation and narrative come next.
  *
  * Budgets (4.3, 4.13): 90 s wall-clock deadline, at most 14 Claude calls per exploration.
  * Retries happen only within the remaining time; at the deadline we finish with what is verified.
@@ -16,6 +16,11 @@ import { store } from "../store";
 import { emit } from "./events";
 import { buildPlan } from "./plan";
 import { retrieveFacet, type Retrieved } from "./retrieve";
+import { claimThreads, existenceThreads, type ExistenceRow } from "./threads";
+import { extractClaims, selectForExtraction } from "../extract";
+import { existenceFor, timeline } from "../timeline-server";
+import type { CallRecord } from "../claude";
+import type { DB } from "../corpus/db";
 
 export const BUDGET = { deadlineMs: 90_000, maxClaudeCalls: 14 } as const;
 
@@ -36,6 +41,18 @@ export class RunContext {
     if (this.claudeCalls >= BUDGET.maxClaudeCalls) throw new Error("claude call budget exhausted");
     this.claudeCalls++;
   }
+}
+
+function logCall(ctx: RunContext, db: DB, explorationId: string, record: CallRecord): void {
+  ctx.costUsd += record.costUsd;
+  db.prepare("INSERT INTO ai_calls (exploration_id, stage, record_json, cost_usd, ts) VALUES (?,?,?,?,?)").run(
+    explorationId,
+    record.stage,
+    JSON.stringify(record),
+    record.costUsd,
+    new Date().toISOString(),
+  );
+  emit(explorationId, "ai_call", { ...record, rateLimit: undefined }); // presentation mode (FR-46)
 }
 
 async function stage<T>(ctx: RunContext, name: string, fn: () => Promise<T>): Promise<T> {
@@ -67,15 +84,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
       ctx.claude();
       const img = await readFile(capture.image_path);
       const r = await seePhoto({ base64: img.toString("base64"), mediaType: "image/jpeg" });
-      ctx.costUsd += r.record.costUsd;
-      db.prepare("INSERT INTO ai_calls (exploration_id, stage, record_json, cost_usd, ts) VALUES (?,?,?,?,?)").run(
-        explorationId,
-        "see",
-        JSON.stringify(r.record),
-        r.record.costUsd,
-        new Date().toISOString(),
-      );
-      emit(explorationId, "ai_call", { ...r.record, rateLimit: undefined });
+      logCall(ctx, db, explorationId, r.record);
       if (!r.validation.ok) throw new Error(`see output rejected: ${r.validation.errors.join("; ")}`);
       emit(explorationId, "see", r.validation.value);
       return r.validation.value as SeeOutput;
@@ -136,17 +145,85 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
       }
     });
 
+    // 5. Extract evidence and propose claims (Claude), checked by code (FR-13, FR-14, FR-57)
+    const byPassage = new Map(retrieved.map((r) => [r.passageId, r]));
+    const extraction = await stage(ctx, "extract", async () => {
+      const selected = selectForExtraction(retrieved);
+      if (!selected.length) return { claims: [] };
+      ctx.claude();
+      const corpus = openDb({ readonly: true });
+      try {
+        const r = await extractClaims(corpus, E, place, selected);
+        logCall(ctx, db, explorationId, r.record);
+        emit(explorationId, "claims", {
+          passages: r.passages.length,
+          accepted: r.claims.filter((c) => c.status === "accepted").length,
+          downgraded: r.claims.filter((c) => c.status === "downgraded").length,
+          rejected: r.claims.filter((c) => c.status === "rejected").length,
+          claims: r.claims.map((c) => ({
+            id: c.id,
+            passage_id: c.passage_id,
+            source: byPassage.get(c.passage_id)?.sourceTitle,
+            lang: byPassage.get(c.passage_id)?.lang,
+            subject: c.subject,
+            predicate: c.predicate,
+            object: c.object,
+            value: c.value,
+            relation: c.relation,
+            status: c.status,
+            failed_checks: c.checks.filter((k) => !k.ok).map((k) => k.name),
+            excerpt: c.excerpt,
+            sentence_ids: c.sentence_ids,
+          })),
+        });
+        return { claims: r.claims };
+      } finally {
+        corpus.close();
+      }
+    });
+
+    // 6. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
+    const existence = await stage(ctx, "existence", async () => {
+      const sources = [...new Set(retrieved.map((r) => r.sourceId))];
+      const rows: ExistenceRow[] = sources
+        .map((s) => {
+          const j = existenceFor(place, s);
+          const title = retrieved.find((r) => r.sourceId === s)?.sourceTitle ?? s;
+          return {
+            source: s,
+            sourceTitle: title,
+            time: j.time ? { kind: j.time.kind, start: j.time.start, end: j.time.end ?? null, basis: j.time.basis } : null,
+            value: j.value,
+            reason: j.reason,
+            period: "period" in j && j.period ? j.period : undefined,
+            timeEvidence: j.time?.evidence ?? [],
+          };
+        })
+        .filter((r) => r.time); // sources without a known time are not judged
+      emit(explorationId, "existence", { entity: place, rows });
+      const tl = timeline();
+      const conflicts = tl.t.conflicts.filter((c) => tl.t.existence_events.some((e) => e.id === c.about && e.entity === place));
+      if (conflicts.length) emit(explorationId, "conflicts", conflicts);
+      return rows;
+    });
+
+    const threads = [...existenceThreads(existence, E, place), ...claimThreads(extraction.claims, E, place, byPassage)];
+    emit(explorationId, "threads", threads);
+
     const summary = {
-      status: "retrieved",
+      status: "threads",
       place,
       candidates: retrieved.length,
+      claims: extraction.claims.length,
+      threads: threads.length,
+      states: threads.reduce<Record<string, number>>((m, t) => ((m[t.state] = (m[t.state] ?? 0) + 1), m), {}),
       bySource: Object.fromEntries(
         [...new Set(retrieved.map((r) => r.sourceId))].map((s) => [s, retrieved.filter((r) => r.sourceId === s).length]),
       ),
       claude_calls: ctx.claudeCalls,
       cost_usd: Math.round(ctx.costUsd * 1e4) / 1e4,
       elapsed_ms: Date.now() - ctx.started,
-      next: "extraction / claims / existence / narrative (11/5–11/6)",
+      next: "gap evaluation / narrative (11/5–11/6)",
     };
     emit(explorationId, "done", summary);
     finish("done", summary);

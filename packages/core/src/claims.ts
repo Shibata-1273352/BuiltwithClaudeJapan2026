@@ -17,13 +17,18 @@ export const ProposedClaim = z.object({
   predicate: z.enum(PREDICATES),
   object: z.string().nullable().describe("entity id from the given list, or null"),
   value: z.string().nullable().describe("for named_as: the exact name as written in the sentence; else null"),
-  relation: z.enum(["supports", "contradicts", "context_only"]),
+  relation: z
+    .enum(["supports", "contradicts", "context_only"])
+    .describe(
+      "how the cited sentences relate to THIS claim: supports = they state it; contradicts = they deny it; context_only = only background. Not the relation to the photo.",
+    ),
   negated: z.boolean().describe("true if the sentence denies or says the writer did not see/go"),
   rationale: z.string().describe("one short sentence"),
 });
 export type ProposedClaim = z.infer<typeof ProposedClaim>;
 
 export const ExtractionOutput = z.object({ claims: z.array(ProposedClaim) });
+export type ExtractionOutput = z.infer<typeof ExtractionOutput>;
 
 export type SentenceIndex = Map<string, { passageId: string; text: string; lang: "en" | "ja" }>;
 
@@ -103,7 +108,8 @@ export function checkClaim(p: ProposedClaim, ctx: CheckContext, idx: number): Ch
 }
 
 /** Display states (4.6). */
-export type DisplayState = "ink" | "combined" | "absent" | "conflict" | "pencil" | "pending" | "user_confirmed";
+import type { DisplayState } from "./domain";
+export type { DisplayState };
 
 export function displayState(input: {
   derivation: "direct" | "derived" | "interpretive";

@@ -8,15 +8,29 @@
 import { useEffect, useRef, useState } from "react";
 import type { SeeOutput } from "@tsumugi/core";
 import type { Retrieved } from "@/lib/dag/retrieve";
+import type { ExistenceRow, Thread } from "@/lib/dag/threads";
 
 type CandidatesEvent = { facet: string; lang: "en" | "ja"; widened: string[]; found: number; notFound: boolean; candidates: Retrieved[] };
 type PlaceEvent = { chosen: { entity: string; path: { id: string; name: { ja: string; en: string } }[] } | null };
 type StageEvent = { stage: string; status: string; ms: number };
 type CallEvent = { usage: { input: number; output: number }; costUsd: number };
+type ExistenceEvent = { rows: ExistenceRow[] };
+type ClaimsEvent = { passages: number; accepted: number; downgraded: number; rejected: number };
+
+const EXIST_LABEL: Record<string, string> = { present: "あった", absent: "なかった（恒久的な門）", unknown: "確かめられない" };
+const STATE_LABEL: Record<string, string> = {
+  ink: "インク",
+  combined: "組み合わせ",
+  absent: "不在",
+  conflict: "相違",
+  pencil: "鉛筆",
+  pending: "確認待ち",
+  user_confirmed: "あなたの確認",
+};
 
 type Ev = { seq: number; type: string; data: unknown };
 
-const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索" };
+const STAGE_LABEL: Record<string, string> = { see: "視る", place: "場所", plan: "検索プラン", retrieve: "検索", extract: "証拠の抽出", existence: "存在判定" };
 const FACET_LABEL: Record<string, string> = {
   place_description: "場所の記述",
   naming: "呼び名",
@@ -79,7 +93,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "claims", "existence", "conflicts", "threads", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
   }, [jpeg, useLocation]);
@@ -91,6 +105,9 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const stages = events.filter((e) => e.type === "stage").map((e) => e.data as StageEvent).filter((s) => s.status === "done");
   const call = pick<CallEvent>("ai_call");
   const notice = pick<{ message: string }>("notice");
+  const existence = pick<ExistenceEvent>("existence");
+  const claims = pick<ClaimsEvent>("claims");
+  const threads = pick<Thread[]>("threads");
 
   return (
     <section className="flex w-full flex-col gap-4 rounded-lg border border-muted/30 p-4" data-testid="exploration">
@@ -123,6 +140,39 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         </p>
       )}
       {notice && <p role="status">{notice.message}</p>}
+      {existence && (
+        <div data-testid="existence">
+          <h3 className="font-serif text-lg">時：その時、門はあったか</h3>
+          <ul className="text-sm">
+            {existence.rows.map((r) => (
+              <li key={r.source}>
+                <span className={r.value === "absent" ? "text-ba" : r.value === "present" ? "text-toki" : "text-muted"}>
+                  {EXIST_LABEL[r.value]}
+                </span>{" "}
+                {r.sourceTitle}（{r.time?.kind}: {r.time?.start}
+                {r.time?.end ? `–${r.time.end}` : ""}）
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {claims && (
+        <p className="text-sm text-muted" data-testid="claims">
+          主張：採用 {claims.accepted} ・格下げ {claims.downgraded} ・却下 {claims.rejected}（{claims.passages} 節から）
+        </p>
+      )}
+      {threads && (
+        <div data-testid="threads">
+          <h3 className="font-serif text-lg">糸</h3>
+          <ul className="text-sm">
+            {threads.map((t) => (
+              <li key={t.id}>
+                <span className="text-muted">[{STATE_LABEL[t.state] ?? t.state}]</span> {t.label.ja}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {cands.map((c, i) => (
         <div key={i}>
           <h4 className="text-sm font-bold">
