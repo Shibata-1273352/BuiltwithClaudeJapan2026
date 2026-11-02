@@ -70,20 +70,31 @@ Prefer gaps that would change what the audience learns (e.g. no Japanese descrip
 Write "assessment" and "reason" in Japanese for the audience.
 ${UNTRUSTED_POLICY}`;
 
-export async function evaluateGaps(E: Entities, targetId: string, summary: string): Promise<{ out: GapOutput | null; record: CallRecord }> {
+/** The gap request, shared by the live DAG and the evaluation (Batch API). */
+export function buildGap(E: Entities, targetId: string, summary: string) {
   const ents = E.dict.entities.map((e) => `- ${e.id} (${e.type}): ${e.name.ja} / ${e.name.en}`).join("\n");
+  return { system: SYSTEM, user: `Photo subject: ${targetId}\nEntities:\n${ents}\n\nFirst search:\n${summary}`, max_tokens: 4000, effort: "low" as const };
+}
+
+export function parseGap(text: string | undefined, stopReason: string | null): GapOutput | null {
+  const parsed = text && stopReason !== "refusal" ? GapOutput.safeParse(JSON.parse(text)) : null;
+  return parsed?.success ? parsed.data : null;
+}
+
+export async function evaluateGaps(E: Entities, targetId: string, summary: string): Promise<{ out: GapOutput | null; record: CallRecord }> {
+  const req = buildGap(E, targetId, summary);
   const startedAt = new Date();
   const { data, response } = await claude()
     .beta.messages.create(
       {
         model: CLAUDE_MODEL,
-        max_tokens: 4000,
+        max_tokens: req.max_tokens,
         betas: ["server-side-fallback-2026-07-01"],
         fallbacks: "default",
         thinking: { type: "adaptive" },
-        output_config: { effort: "low", format: betaZodOutputFormat(GapOutput) },
-        system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: `Photo subject: ${targetId}\nEntities:\n${ents}\n\nFirst search:\n${summary}` }],
+        output_config: { effort: req.effort, format: betaZodOutputFormat(GapOutput) },
+        system: [{ type: "text", text: req.system, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: req.user }],
       },
       { timeout: 30_000 },
     )
@@ -106,8 +117,7 @@ export async function evaluateGaps(E: Entities, targetId: string, summary: strin
     requestId: response.headers.get("request-id"),
   };
   const text = data.content.find((b) => b.type === "text")?.text;
-  const parsed = text && data.stop_reason !== "refusal" ? GapOutput.safeParse(JSON.parse(text)) : null;
-  return { out: parsed?.success ? parsed.data : null, record };
+  return { out: parseGap(text, data.stop_reason), record };
 }
 
 /** Run the validated extra searches; returns only passages not seen in round 1. */

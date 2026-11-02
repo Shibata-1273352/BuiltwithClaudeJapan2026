@@ -46,7 +46,13 @@ function matchedEntity(E: Entities, matched: string[]): string | null {
   return ents[0]?.id ?? null;
 }
 
-export function retrieveFacet(db: DB, E: Entities, plan: FacetPlan, lang: Lang): { candidates: Retrieved[]; widened: string[]; tried: string[] } {
+export function retrieveFacet(
+  db: DB,
+  E: Entities,
+  plan: FacetPlan,
+  lang: Lang,
+  opts: { useHeader?: boolean } = {}, // RAG-12 ablation: index without context headers
+): { candidates: Retrieved[]; widened: string[]; tried: string[] } {
   const meta = sourceMeta(db);
   const allowed = (c: Candidate) => plan.sourceTypes.includes((meta.get(c.sourceId)?.type ?? "book") as never);
   const lists: Candidate[][] = [];
@@ -59,7 +65,7 @@ export function retrieveFacet(db: DB, E: Entities, plan: FacetPlan, lang: Lang):
     if (scope.relation === "ancestor_place" && found >= SELECT_LIMITS.minBeforeWidening) continue; // widen only if needed
     tried.push(scope.entity);
     if (scope.relation === "ancestor_place") widened.push(scope.entity);
-    const a = searchEntities(db, t.slice(0, 12), lang).filter(allowed);
+    const a = searchEntities(db, t.slice(0, 12), lang, { useHeader: opts.useHeader ?? true }).filter(allowed);
     const b = plan.vocab[lang].length ? searchRelation(db, t.slice(0, 12), plan.vocab[lang], lang).filter(allowed) : [];
     lists.push(a, b);
     if (scope.relation === "same") found += a.length + b.length;

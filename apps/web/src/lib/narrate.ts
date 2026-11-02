@@ -88,6 +88,31 @@ export function nameIndex(E: Entities): Map<string, string> {
   return m;
 }
 
+/** The narration request and its code checks, shared by the live DAG and the evaluation (Batch API). */
+export function buildNarrate(
+  E: Entities,
+  cards: Map<string, NarrativeClaim & { card: string }>,
+  lang: "ja" | "en",
+  subjectEntities: string[] = [],
+  unmatchedSubject: { name_ja: string; name_en: string } | null = null,
+) {
+  // FR-19: the photo's own subject is not registered; the story is about the broader place only
+  const subjectNote = unmatchedSubject
+    ? `\nThe photo shows ${unmatchedSubject.name_en || unmatchedSubject.name_ja} (${unmatchedSubject.name_ja}), which is NOT in the evidence. Write about the broader place only. Never say or imply that the photo shows, or that the reader stands at, any structure named in the cards (e.g. another bridge or gate); say that this structure itself has no evidence here.`
+    : "";
+  return {
+    system: SYSTEM,
+    user: `Write in ${lang === "ja" ? "Japanese" : "English"}.${subjectNote}\nClaim cards:\n${[...cards.values()].map((c) => `- ${c.card}`).join("\n")}`,
+    max_tokens: 6000,
+    effort: "low" as const,
+    /** every sentence checked against the cards (4.8); failing ones are kept with their problems */
+    finish(text: string | undefined, stopReason: string | null): CheckedSentence[] {
+      const parsed = text && stopReason !== "refusal" ? NarrativeOutput.safeParse(JSON.parse(text)) : null;
+      return parsed?.success ? checkNarrative(parsed.data.sentences, cards, nameIndex(E), subjectEntities) : [];
+    },
+  };
+}
+
 export async function narrate(
   E: Entities,
   cards: Map<string, NarrativeClaim & { card: string }>,
@@ -95,27 +120,19 @@ export async function narrate(
   subjectEntities: string[] = [],
   unmatchedSubject: { name_ja: string; name_en: string } | null = null,
 ): Promise<NarrateResult> {
-  // FR-19: the photo's own subject is not registered; the story is about the broader place only
-  const subjectNote = unmatchedSubject
-    ? `\nThe photo shows ${unmatchedSubject.name_en || unmatchedSubject.name_ja} (${unmatchedSubject.name_ja}), which is NOT in the evidence. Write about the broader place only. Never say or imply that the photo shows, or that the reader stands at, any structure named in the cards (e.g. another bridge or gate); say that this structure itself has no evidence here.`
-    : "";
+  const req = buildNarrate(E, cards, lang, subjectEntities, unmatchedSubject);
   const startedAt = new Date();
   const { data, response } = await claude()
     .beta.messages.create(
       {
         model: CLAUDE_MODEL,
-        max_tokens: 6000,
+        max_tokens: req.max_tokens,
         betas: ["server-side-fallback-2026-07-01"],
         fallbacks: "default",
         thinking: { type: "adaptive" },
-        output_config: { effort: "low", format: betaZodOutputFormat(NarrativeOutput) },
-        system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-        messages: [
-          {
-            role: "user",
-            content: `Write in ${lang === "ja" ? "Japanese" : "English"}.${subjectNote}\nClaim cards:\n${[...cards.values()].map((c) => `- ${c.card}`).join("\n")}`,
-          },
-        ],
+        output_config: { effort: req.effort, format: betaZodOutputFormat(NarrativeOutput) },
+        system: [{ type: "text", text: req.system, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: req.user }],
       },
       { timeout: 30_000 },
     )
@@ -138,7 +155,5 @@ export async function narrate(
     requestId: response.headers.get("request-id"),
   };
   const text = data.content.find((b) => b.type === "text")?.text;
-  const parsed = text && data.stop_reason !== "refusal" ? NarrativeOutput.safeParse(JSON.parse(text)) : null;
-  const sentences = parsed?.success ? checkNarrative(parsed.data.sentences, cards, nameIndex(E), subjectEntities) : [];
-  return { sentences, record, lang };
+  return { sentences: req.finish(text, data.stop_reason), record, lang };
 }
