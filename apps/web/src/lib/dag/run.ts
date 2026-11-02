@@ -21,7 +21,8 @@ import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
-import type { CheckedClaim } from "@tsumugi/core";
+import { narrativeFor, saveNarrative } from "../narrative-service";
+import { findNames, namePatterns, type CheckedClaim, type FoundName } from "@tsumugi/core";
 import { existenceFor, sourceTime, timeline } from "../timeline-server";
 import type { CallRecord } from "../claude";
 import type { DB } from "../corpus/db";
@@ -162,15 +163,18 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       try {
         const r = await extractClaims(corpus, E, place, selected);
         logCall(ctx, db, explorationId, r.record);
+        // claim ids are unique across rounds; the same ids are used by threads, narrative and graph (RAG-08)
+        const claims = r.claims.map((c) => ({ ...c, id: `${c.id}:r${round}` }));
         emit(explorationId, "claims", {
           round,
           passages: r.passages.length,
-          accepted: r.claims.filter((c) => c.status === "accepted").length,
-          downgraded: r.claims.filter((c) => c.status === "downgraded").length,
-          rejected: r.claims.filter((c) => c.status === "rejected").length,
-          claims: r.claims.map((c) => ({
+          accepted: claims.filter((c) => c.status === "accepted").length,
+          downgraded: claims.filter((c) => c.status === "downgraded").length,
+          rejected: claims.filter((c) => c.status === "rejected").length,
+          claims: claims.map((c) => ({
             id: c.id,
             passage_id: c.passage_id,
+            source_id: byPassage.get(c.passage_id)?.sourceId,
             source: byPassage.get(c.passage_id)?.sourceTitle,
             lang: byPassage.get(c.passage_id)?.lang,
             subject: c.subject,
@@ -184,8 +188,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
             sentence_ids: c.sentence_ids,
           })),
         });
-        // keep claim ids unique across rounds
-        return r.claims.map((c) => ({ ...c, id: `${c.id}:r${round}` }));
+        return claims;
       } finally {
         corpus.close();
       }
@@ -256,6 +259,39 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return rows;
     });
 
+    // 7b. 言の地層: name usages found in the canonical sentences (code only, FR-24, RAG-01)
+    await stage(ctx, "names", async () => {
+      const corpus = openDb({ readonly: true });
+      try {
+        const patterns = namePatterns(E);
+        const getS = corpus.prepare("SELECT id, text FROM sentences WHERE passage_id = ? ORDER BY n");
+        const rows: (FoundName & { source: string; sourceTitle: string; time: string | null; sentence: string })[] = [];
+        for (const r of all) {
+          const st = sourceTime(r.sourceId);
+          for (const s of getS.all(r.passageId) as { id: string; text: string }[]) {
+            for (const n of findNames(s.id, s.text, r.lang, patterns)) {
+              rows.push({ ...n, source: r.sourceId, sourceTitle: r.sourceTitle, time: st?.start ?? null, sentence: s.text });
+            }
+          }
+        }
+        // one row per (entity, written form, source); keep the first sentence as the example
+        const seen = new Set<string>();
+        const usages = rows.filter((u) => {
+          const k = `${u.entity}|${u.text}|${u.source}`;
+          return seen.has(k) ? false : (seen.add(k), true);
+        });
+        const byEntity = Object.fromEntries(
+          [...new Set(usages.map((u) => u.entity))].map((id) => [
+            id,
+            { name: E.get(id)?.name, type: E.get(id)?.type, usages: usages.filter((u) => u.entity === id) },
+          ]),
+        );
+        emit(explorationId, "names", byEntity);
+      } finally {
+        corpus.close();
+      }
+    });
+
     const threads = [...existenceThreads(existence, E, place), ...claimThreads(extraction.claims, E, place, byPassage)];
     emit(explorationId, "threads", threads);
 
@@ -278,11 +314,13 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       const lang = capture.ui_lang === "en" ? "en" : "ja";
       const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id));
       logCall(ctx, db, explorationId, r.record);
-      emit(explorationId, "narrative", {
+      const payload = {
         lang,
         sentences: r.sentences.filter((s) => s.ok).map(({ text, claim_ids, assertion_type }) => ({ text, claim_ids, assertion_type })),
         dropped: r.sentences.filter((s) => !s.ok).map(({ text, problems }) => ({ text, problems })),
-      });
+      } as const;
+      saveNarrative(explorationId, { ...payload, sentences: [...payload.sentences], dropped: [...payload.dropped] }); // cache (FR-40)
+      emit(explorationId, "narrative", payload);
       return r.sentences;
     });
 
@@ -337,6 +375,11 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       next: "language switch, presentation mode, time slider",
     };
     emit(explorationId, "done", summary);
+    // Pre-generate the other language in the background so switching is instant (FR-40: 8 s target).
+    if (narrative?.some((s) => s.ok)) {
+      const other = capture.ui_lang === "en" ? "ja" : "en";
+      void narrativeFor(explorationId, other).catch((e) => console.error(`[narrative ${explorationId} ${other}]`, e));
+    }
     finish("done", summary);
   } catch (e) {
     const deadline = e instanceof Deadline;

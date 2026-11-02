@@ -6,3 +6,4 @@ export * from "./entities";
 export * from "./time";
 export * from "./claims";
 export * from "./narrative";
+export * from "./names";

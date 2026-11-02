@@ -62,6 +62,13 @@ export function migrateApp(d: DB): void {
       ts TEXT NOT NULL
     );
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS narratives (
+      exploration_id TEXT NOT NULL REFERENCES explorations(id) ON DELETE CASCADE,
+      lang TEXT NOT NULL CHECK (lang IN ('ja','en')),
+      json TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (exploration_id, lang)
+    );
   `);
 }
 

@@ -15,6 +15,14 @@ type PlaceEvent = { chosen: { entity: string; path: { id: string; name: { ja: st
 type StageEvent = { stage: string; status: string; ms: number };
 type CallEvent = { usage: { input: number; output: number }; costUsd: number };
 type ExistenceEvent = { rows: ExistenceRow[] };
+type NamesEvent = Record<
+  string,
+  {
+    name?: { ja: string; en: string };
+    type?: string;
+    usages: { text: string; lang: "en" | "ja"; specificity: string; sourceTitle: string; time: string | null; sentence: string; sentenceId: string }[];
+  }
+>;
 type NarrativeEvent = {
   sentences?: { text: string; claim_ids: string[]; assertion_type: string }[];
   dropped?: { text: string; problems: string[] }[];
@@ -59,6 +67,10 @@ function getPosition(): Promise<{ lat: number; lon: number } | "denied" | "unava
 export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation: boolean }) {
   const [events, setEvents] = useState<Ev[]>([]);
   const [status, setStatus] = useState<string>("送信の準備中…");
+  const [expId, setExpId] = useState<string | null>(null);
+  const [lang, setLang] = useState<"ja" | "en">("ja");
+  const [alt, setAlt] = useState<Partial<Record<"ja" | "en", NarrativeEvent>>>({});
+  const [langBusy, setLangBusy] = useState(false);
   const [locStatus, setLocStatus] = useState<string>(useLocation ? "位置情報：確認中" : "位置情報：使わない");
   const started = useRef(false);
 
@@ -88,7 +100,8 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         body: JSON.stringify({ capture_id }),
       });
       if (!ex.ok) return setStatus(`探索を始められませんでした（${(await ex.json().catch(() => ({}))).error ?? ex.status}）`);
-      const { events: url } = await ex.json();
+      const { events: url, exploration_id } = await ex.json();
+      setExpId(exploration_id);
       setStatus("探索中…");
       es = new EventSource(url);
       const on = (e: MessageEvent) => {
@@ -98,7 +111,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "narrative", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "narrative", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
   }, [jpeg, useLocation]);
@@ -112,7 +125,24 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const notice = pick<{ message: string }>("notice");
   const existence = pick<ExistenceEvent>("existence");
   const gap = pick<GapEvent>("gap");
-  const narrative = pick<NarrativeEvent>("narrative");
+  const firstNarrative = pick<NarrativeEvent & { lang?: "ja" | "en" }>("narrative");
+  const narrative = alt[lang] ?? (firstNarrative?.lang === lang || !firstNarrative?.lang ? firstNarrative : undefined);
+  const names = pick<NamesEvent>("names");
+
+  async function switchLang(next: "ja" | "en") {
+    setLang(next);
+    if (!expId || alt[next] || firstNarrative?.lang === next) return;
+    setLangBusy(true);
+    try {
+      const r = await fetch(`/api/explorations/${expId}/narrative?lang=${next}`);
+      if (r.ok) {
+        const j = (await r.json()) as NarrativeEvent;
+        setAlt((m) => ({ ...m, [next]: j }));
+      }
+    } finally {
+      setLangBusy(false);
+    }
+  }
   const claimEvents = events.filter((e) => e.type === "claims").map((e) => e.data as ClaimsEvent);
   const claims = claimEvents.length
     ? claimEvents.reduce((a, b) => ({ passages: a.passages + b.passages, accepted: a.accepted + b.accepted, downgraded: a.downgraded + b.downgraded, rejected: a.rejected + b.rejected }))
@@ -166,13 +196,57 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
           </ul>
         </div>
       )}
+      {firstNarrative && (
+        <div className="flex gap-2" role="group" aria-label="物語の言語">
+          {(["ja", "en"] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              data-testid={`lang-${l}`}
+              aria-pressed={lang === l}
+              onClick={() => switchLang(l)}
+              className={`min-h-11 rounded-full border px-4 ${lang === l ? "border-toki text-toki" : "border-muted text-muted"}`}
+            >
+              {l === "ja" ? "日本語" : "English"}
+            </button>
+          ))}
+          {langBusy && <span className="self-center text-sm text-muted">…</span>}
+        </div>
+      )}
+      {names && (
+        <div data-testid="names">
+          <h3 className="font-serif text-lg">言：誰が、何を、どう呼んだか</h3>
+          {Object.entries(names).map(([id, g]) => (
+            <div key={id} className="mb-2">
+              <p className="text-sm font-bold">
+                {g.name?.ja} <span className="font-normal text-muted">（{g.type}）</span>
+              </p>
+              <ul className="text-sm">
+                {g.usages.slice(0, 5).map((u, i) => (
+                  <li key={i}>
+                    <span lang={u.lang} className="text-koto">
+                      {u.text}
+                    </span>
+                    {u.specificity === "ambiguous" ? <span className="text-muted">（曖昧）</span> : null}{" "}
+                    <span className="text-muted">
+                      — {u.sourceTitle}
+                      {u.time ? `（${u.time.slice(0, 4)}）` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
       {narrative?.sentences && (
         <div data-testid="narrative">
           <h3 className="font-serif text-lg">紡ぐ</h3>
-          <p className="font-serif leading-relaxed">
+          <p className="font-serif leading-relaxed" lang={lang}>
             {narrative.sentences.map((s, i) => (
               <span key={i} title={s.claim_ids.join(", ")} className={s.assertion_type === "interpretive" ? "italic text-muted" : undefined}>
                 {s.text}
+                {lang === "en" && i < narrative.sentences!.length - 1 ? " " : ""}
               </span>
             ))}
           </p>

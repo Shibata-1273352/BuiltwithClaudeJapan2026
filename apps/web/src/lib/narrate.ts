@@ -22,6 +22,7 @@ Use ONLY the claim cards given. Every sentence must cite the claim ids it relies
 - Never say a writer saw something the cards do not say they saw. A card about the temple is not about the gate.
 - For an "absent" card, say exactly that the permanent gate had not yet been rebuilt after the fire. Never write "there was no gate", "門のない", or "gateless": temporary gates stood in the interim. This applies to interpretive sentences too.
 - Keep untranslatable words in the original (観音, Kwan-non, 雷門) and do not invent dates or names.
+- In English, never leave bare Japanese script: write the romanization with the original in parentheses at first mention, e.g. "Kaminarimon (雷門)", "Hiyori Geta (日和下駄)"; afterwards the romanization alone. Keep a writer's own spelling as written (Kwan-non).
 - No quotations; the app shows original quotes separately.
 - assertion_type: direct for what a source states, derived for combined reasoning (existence cards), interpretive for your framing (use sparingly, no new facts).
 ${UNTRUSTED_POLICY}`;
