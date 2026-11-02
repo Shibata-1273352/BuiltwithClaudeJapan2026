@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE_MAX_AGE_S, COOKIE_NAME, decideAccess } from "@/lib/auth";
+import { COOKIE_MAX_AGE_S, COOKIE_NAME, SESSION_COOKIE, decideAccess, requestHosts } from "@/lib/auth";
 
 export function proxy(request: NextRequest) {
   const d = decideAccess({
@@ -8,12 +8,27 @@ export function proxy(request: NextRequest) {
     cookieToken: request.cookies.get(COOKIE_NAME)?.value,
     originHeader: request.headers.get("origin"),
     expectedToken: process.env.ACCESS_TOKEN,
+    secFetchSite: request.headers.get("sec-fetch-site"),
+    allowedHosts: requestHosts(request.headers),
   });
 
-  if (d.kind === "allow") return NextResponse.next();
+  if (d.kind === "allow") {
+    const res = NextResponse.next();
+    // Per-browser session id: captures and explorations are only visible to the session that made them (ASI06).
+    if (!request.cookies.get(SESSION_COOKIE)?.value) {
+      res.cookies.set(SESSION_COOKIE, crypto.randomUUID(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
+        maxAge: COOKIE_MAX_AGE_S,
+      });
+    }
+    return res;
+  }
 
   if (d.kind === "set-cookie-and-redirect") {
-    const res = NextResponse.redirect(d.location);
+    const res = new NextResponse(null, { status: 307, headers: { Location: d.location } }); // relative (tunnel-safe)
     res.cookies.set(COOKIE_NAME, d.token, {
       httpOnly: true,
       secure: true,
