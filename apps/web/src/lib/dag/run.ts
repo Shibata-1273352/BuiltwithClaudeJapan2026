@@ -18,6 +18,8 @@ import { buildPlan } from "./plan";
 import { retrieveFacet, type Retrieved } from "./retrieve";
 import { claimThreads, existenceThreads, type ExistenceRow } from "./threads";
 import { extractClaims, selectForExtraction } from "../extract";
+import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
+import type { CheckedClaim } from "@tsumugi/core";
 import { existenceFor, timeline } from "../timeline-server";
 import type { CallRecord } from "../claude";
 import type { DB } from "../corpus/db";
@@ -64,7 +66,10 @@ async function stage<T>(ctx: RunContext, name: string, fn: () => Promise<T>): Pr
   return out;
 }
 
-export async function runExploration(explorationId: string, capture: CaptureRow): Promise<void> {
+export type RunOptions = { gapRound: boolean };
+
+/** opts.gapRound=false is method D, true is D+ (4.9); D+ is the adopted default. */
+export async function runExploration(explorationId: string, capture: CaptureRow, opts: RunOptions = { gapRound: true }): Promise<void> {
   const ctx = new RunContext(explorationId);
   const db = store();
   const finish = (status: "done" | "failed" | "deadline", result: unknown) => {
@@ -146,16 +151,17 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
     });
 
     // 5. Extract evidence and propose claims (Claude), checked by code (FR-13, FR-14, FR-57)
-    const byPassage = new Map(retrieved.map((r) => [r.passageId, r]));
-    const extraction = await stage(ctx, "extract", async () => {
-      const selected = selectForExtraction(retrieved);
-      if (!selected.length) return { claims: [] };
+    const all: Retrieved[] = [...retrieved];
+    const byPassage = new Map(all.map((r) => [r.passageId, r]));
+    const extractRound = async (round: number, selected: Retrieved[]): Promise<CheckedClaim[]> => {
+      if (!selected.length) return [];
       ctx.claude();
       const corpus = openDb({ readonly: true });
       try {
         const r = await extractClaims(corpus, E, place, selected);
         logCall(ctx, db, explorationId, r.record);
         emit(explorationId, "claims", {
+          round,
           passages: r.passages.length,
           accepted: r.claims.filter((c) => c.status === "accepted").length,
           downgraded: r.claims.filter((c) => c.status === "downgraded").length,
@@ -176,19 +182,60 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
             sentence_ids: c.sentence_ids,
           })),
         });
-        return { claims: r.claims };
+        // keep claim ids unique across rounds
+        return r.claims.map((c) => ({ ...c, id: `${c.id}:r${round}` }));
       } finally {
         corpus.close();
       }
-    });
+    };
+    const claims1 = await stage(ctx, "extract", () => extractRound(1, selectForExtraction(retrieved)));
 
-    // 6. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
+    // 6. Gap evaluation and one extra round (Claude decides what is missing; code validates) — FR-20
+    const claims2 = opts.gapRound
+      ? await stage(ctx, "gap", async () => {
+          if (ctx.remaining() < 35_000) {
+            emit(explorationId, "gap", { skipped: "time", assessment: "残り時間が少ないため、追加の探索は行いませんでした。" });
+            return [];
+          }
+          ctx.claude();
+          const summary = summarizeForGap(plan, retrieved, claims1, retrieved.map((r) => ({ source: r.sourceId, value: existenceFor(place, r.sourceId).value })));
+          const g = await evaluateGaps(E, place, summary);
+          logCall(ctx, db, explorationId, g.record);
+          if (!g.out) {
+            emit(explorationId, "gap", { skipped: "invalid_output" });
+            return [];
+          }
+          const gaps = validateGaps(g.out, E);
+          const corpus = openDb({ readonly: true });
+          let found: Retrieved[] = [];
+          try {
+            found = g.out.enough ? [] : searchGaps(corpus, E, place, gaps, plan, new Set(all.map((r) => r.passageId)));
+          } finally {
+            corpus.close();
+          }
+          emit(explorationId, "gap", {
+            assessment: g.out.assessment,
+            enough: g.out.enough,
+            gaps: gaps.map((x) => ({ facet: x.facet, lang: x.lang, entity: x.entity, reason: x.reason, terms: x.terms, rejectedTerms: x.rejectedTerms })),
+            found: found.length,
+            candidates: found.map((c) => ({ ...c, text: c.text.slice(0, 300) })),
+          });
+          for (const f of found) {
+            all.push(f);
+            byPassage.set(f.passageId, f);
+          }
+          return found.length ? extractRound(2, selectForExtraction(found)) : [];
+        })
+      : [];
+    const extraction = { claims: [...claims1, ...claims2] };
+
+    // 7. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
     const existence = await stage(ctx, "existence", async () => {
-      const sources = [...new Set(retrieved.map((r) => r.sourceId))];
+      const sources = [...new Set(all.map((r) => r.sourceId))];
       const rows: ExistenceRow[] = sources
         .map((s) => {
           const j = existenceFor(place, s);
-          const title = retrieved.find((r) => r.sourceId === s)?.sourceTitle ?? s;
+          const title = all.find((r) => r.sourceId === s)?.sourceTitle ?? s;
           return {
             source: s,
             sourceTitle: title,
@@ -213,17 +260,18 @@ export async function runExploration(explorationId: string, capture: CaptureRow)
     const summary = {
       status: "threads",
       place,
-      candidates: retrieved.length,
+      candidates: all.length,
+      gap_round: opts.gapRound,
       claims: extraction.claims.length,
       threads: threads.length,
       states: threads.reduce<Record<string, number>>((m, t) => ((m[t.state] = (m[t.state] ?? 0) + 1), m), {}),
       bySource: Object.fromEntries(
-        [...new Set(retrieved.map((r) => r.sourceId))].map((s) => [s, retrieved.filter((r) => r.sourceId === s).length]),
+        [...new Set(all.map((r) => r.sourceId))].map((s) => [s, all.filter((r) => r.sourceId === s).length]),
       ),
       claude_calls: ctx.claudeCalls,
       cost_usd: Math.round(ctx.costUsd * 1e4) / 1e4,
       elapsed_ms: Date.now() - ctx.started,
-      next: "gap evaluation / narrative (11/5–11/6)",
+      next: "narrative (11/6)",
     };
     emit(explorationId, "done", summary);
     finish("done", summary);

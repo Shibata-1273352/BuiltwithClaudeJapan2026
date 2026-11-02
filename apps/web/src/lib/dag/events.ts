@@ -12,6 +12,7 @@ export type EventType =
   | "place"
   | "plan"
   | "candidates"
+  | "gap"
   | "claims"
   | "existence"
   | "conflicts"
