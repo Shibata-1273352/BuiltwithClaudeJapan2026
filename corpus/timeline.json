@@ -15,7 +15,8 @@
       "evidence": [
         "sensoji-official:0:6"
       ],
-      "note": "明和4年4月9日 = 1767-05-06 (NAOJ 日本の暦日データベース)"
+      "note": "明和4年4月9日 = 1767-05-06 (NAOJ 日本の暦日データベース)",
+      "structure": "permanent"
     },
     {
       "id": "ex:kaminarimon:1795-rebuilt",
@@ -30,7 +31,8 @@
         "sensoji-official:0:6",
         "sensoji-official:0:7"
       ],
-      "note": "寛政7年3月 = 1795-04-19 .. 1795-05-18 (3月 has 30 days; NAOJ). Day not stated in the source, so the whole month is the event zone."
+      "note": "寛政7年3月 = 1795-04-19 .. 1795-05-18 (3月 has 30 days; NAOJ). Day not stated in the source, so the whole month is the event zone.",
+      "structure": "permanent"
     },
     {
       "id": "ex:kaminarimon:1866-destroyed",
@@ -47,21 +49,57 @@
         "koun-kaiko:10:0",
         "jta-tagengo-kaminarimon:0:0"
       ],
-      "note": "慶応元年12月12日 = 1866-01-28 (Sensō-ji) and 12月14日 = 1866-01-30 (Kōun) per NAOJ. 1865 is the era-year label, not a conflict."
+      "note": "慶応元年12月12日 = 1866-01-28 (Sensō-ji) and 12月14日 = 1866-01-30 (Kōun) per NAOJ. 1865 is the era-year label, not a conflict.",
+      "structure": "permanent",
+      "disputed": true
     },
     {
-      "id": "ex:kaminarimon:interim-temporary",
+      "id": "ex:kaminarimon:1868-temporary",
       "entity": "ent:kaminarimon",
       "event": "temporary",
-      "original": "In the interim, temporary gates were constructed",
+      "structure": "temporary",
+      "original": "the gate created to commemorate the establishment of Tokyo as Japan’s capital (1868)",
       "time": {
-        "start": "1866-01-31",
-        "end": "1960-04-30"
+        "start": "1868-01-01",
+        "end": "1868-12-31"
       },
       "evidence": [
+        "jta-tagengo-kaminarimon:0:3",
         "jta-tagengo-kaminarimon:0:1"
       ],
-      "note": "Temporary gates do not make the permanent Kaminarimon present; this is why the narrative says 恒久的な雷門."
+      "note": "A temporary gate is attested for this year only; no claim is made about the years in between."
+    },
+    {
+      "id": "ex:kaminarimon:1905-temporary",
+      "entity": "ent:kaminarimon",
+      "event": "temporary",
+      "structure": "temporary",
+      "original": "the arch-shaped gate built to commemorate Japan’s victory in the Russo-Japanese War (1905)",
+      "time": {
+        "start": "1905-01-01",
+        "end": "1905-12-31"
+      },
+      "evidence": [
+        "jta-tagengo-kaminarimon:0:3",
+        "jta-tagengo-kaminarimon:0:1"
+      ],
+      "note": "A temporary gate is attested for this year only; no claim is made about the years in between."
+    },
+    {
+      "id": "ex:kaminarimon:1928-temporary",
+      "entity": "ent:kaminarimon",
+      "event": "temporary",
+      "structure": "temporary",
+      "original": "the gate built to celebrate the enthronement of Emperor Showa (1928)",
+      "time": {
+        "start": "1928-01-01",
+        "end": "1928-12-31"
+      },
+      "evidence": [
+        "jta-tagengo-kaminarimon:0:3",
+        "jta-tagengo-kaminarimon:0:1"
+      ],
+      "note": "A temporary gate is attested for this year only; no claim is made about the years in between."
     },
     {
       "id": "ex:kaminarimon:1960-rebuilt",
@@ -76,7 +114,8 @@
         "sensoji-official:0:4",
         "sensoji-official:0:2",
         "jta-tagengo-kaminarimon:0:2"
-      ]
+      ],
+      "structure": "permanent"
     }
   ],
   "conflicts": [
@@ -90,24 +129,27 @@
           "evidence": [
             "sensoji-official:0:3",
             "sensoji-official:0:0"
-          ]
+          ],
+          "gregorian": "1866-01-28"
         },
         {
           "value": "慶応元年十二月十四日、浅草三軒町から出火",
           "evidence": [
             "koun-kaiko:10:0"
-          ]
+          ],
+          "gregorian": "1866-01-30"
         }
       ],
       "explanation": {
         "ja": "焼失の日と火元が、浅草寺の説明（12日・田原町）と高村光雲の回想（14日・三軒町）で異なる。年の違い（1865／1866）は暦の換算によるもので、相違ではない。",
         "en": "The day and origin of the fire differ between Sensō-ji (12th, Tawaramachi) and Takamura Kōun's memoir (14th, Sangenchō). The 1865/1866 difference is a calendar conversion, not a conflict."
-      }
+      },
+      "status": "unresolved"
     },
     {
       "id": "cf:kaminarimon:interim-gates",
       "kind": "identity",
-      "about": "ex:kaminarimon:interim-temporary",
+      "about": "ex:kaminarimon:1868-temporary",
       "sides": [
         {
           "value": "95年間、雷門は再建されなかった",
@@ -116,16 +158,18 @@
           ]
         },
         {
-          "value": "その間に仮設の門が建てられた",
+          "value": "その間に仮設の門が建てられた（1868・1905・1928年の例）",
           "evidence": [
-            "jta-tagengo-kaminarimon:0:1"
+            "jta-tagengo-kaminarimon:0:1",
+            "jta-tagengo-kaminarimon:0:3"
           ]
         }
       ],
       "explanation": {
         "ja": "浅草寺は恒久的な門の不在を、観光庁の解説は仮設の門の存在を述べる。対象（恒久的な門か、仮設の門か）が異なる。",
         "en": "Sensō-ji speaks of the permanent gate's absence; the JTA text of temporary gates in the interim. They describe different objects."
-      }
+      },
+      "status": "kept_both"
     }
   ],
   "source_times": [
@@ -159,7 +203,21 @@
           "evidence": [],
           "original": "Gutenberg #2184 transcribes the 1911 popular edition"
         }
-      ]
+      ],
+      "relation_to_subject": {
+        "kind": "observed_site",
+        "entity": "ent:sensoji",
+        "evidence": [
+          "bird-unbeaten:6:2"
+        ],
+        "note": "Bird observed and described Sensō-ji and its deity; the text is not evidence that she saw Kaminarimon."
+      },
+      "edition": {
+        "provider": "Project Gutenberg #2184",
+        "edition": "1911 popular edition (John Murray), abridged",
+        "version_hash": "8b6f02e3e20410afe52a49bcb4fd2c88fc2df41ee619c02afaab42cf2b3ff9c6",
+        "note": "Letter numbering differs between editions; 'Letter V' and passage ids refer to this edition only."
+      }
     },
     {
       "source": "kafu-hiyorigeta",
@@ -182,7 +240,15 @@
           "basis": "stated",
           "evidence": []
         }
-      ]
+      ],
+      "relation_to_subject": {
+        "kind": "written_period",
+        "entity": "ent:kaminarimon",
+        "evidence": [
+          "kafu-hiyorigeta:5:8"
+        ],
+        "note": "Written while the permanent gate was gone; Kafū himself notes 雷門は既に焼失."
+      }
     },
     {
       "source": "koun-kaiko",
@@ -204,7 +270,15 @@
           "basis": "stated",
           "evidence": []
         }
-      ]
+      ],
+      "relation_to_subject": {
+        "kind": "eyewitness_event",
+        "entity": "ent:kaminarimon",
+        "evidence": [
+          "koun-kaiko:10:0"
+        ],
+        "note": "An eyewitness memoir of the fire itself (published 1929)."
+      }
     },
     {
       "source": "met-56689",
@@ -219,7 +293,16 @@
           ],
           "original": "Date: 1856"
         }
-      ]
+      ],
+      "relation_to_subject": {
+        "kind": "depicts",
+        "entity": "ent:kaminarimon",
+        "evidence": [
+          "met-56689:0:0",
+          "sensoji-official:0:8"
+        ],
+        "note": "The print shows the Kaminarimon lantern in the foreground; Sensō-ji states the Kansei-era gate was a favourite subject of Hiroshige."
+      }
     },
     {
       "source": "scidmore-jinrikisha",
@@ -239,7 +322,13 @@
           "evidence": [],
           "original": "not stated in the text; left unknown on purpose"
         }
-      ]
+      ],
+      "relation_to_subject": {
+        "kind": "observed_site",
+        "entity": "ent:sensoji",
+        "evidence": [],
+        "note": "Observation time not stated; not judged."
+      }
     }
   ],
   "verification": {
@@ -279,8 +368,19 @@
       "1767 fire: was month range noted as late May; is 1767-05-06",
       "1795 rebuild: tightened to the actual month 04-19..05-18",
       "1866 fire: start was 01-27 (estimate); is 01-28",
-      "Kōun depicted_at: 1866-01-30 (day)"
+      "Kōun depicted_at: 1866-01-30 (day)",
+      "temporary-gate continuous period removed (review 2026-11-03)"
     ],
-    "human_review": "pending: reviewed_by stays null until the user signs off (REQUIREMENTS.md 11)"
+    "human_review": "pending: reviewed_by stays null until the user signs off (REQUIREMENTS.md 11)",
+    "review": {
+      "reviewed_at": "2026-11-03",
+      "by": "user (human review, conditional approval)",
+      "result": "dates OK; three model/judgment fixes required before sign-off",
+      "fixes_applied": [
+        "temporary gates are individual events (1868, 1905, 1928), not a continuous 1866-1960 period; permanent and temporary existence are judged separately",
+        "each source records its relation to the gate (depicts / observed_site / written_period / eyewitness_event); 'absent' is shown as a chronology-based inference",
+        "Bird edition pinned (Gutenberg #2184, 1911, version hash); fire date 1866-01-28 vs 01-30 kept unresolved and the Kōun judgment is 'pending: sources disagree'"
+      ]
+    }
   }
 }

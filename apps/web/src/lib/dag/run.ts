@@ -249,6 +249,10 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
             reason: j.reason,
             period: "period" in j && j.period ? j.period : undefined,
             timeEvidence: j.time?.evidence ?? [],
+            relation: j.relation,
+            basis: j.basis,
+            temporary: j.temporary,
+            disputedEvent: "disputedEvent" in j ? j.disputedEvent : undefined,
           };
         })
         .filter((r) => r.time); // sources without a known time are not judged
