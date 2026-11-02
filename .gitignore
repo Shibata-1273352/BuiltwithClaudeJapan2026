@@ -1,0 +1,38 @@
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Data, weights, caches (never commit: user photos, model weights, corpora)
+data/
+weights/
+cache/
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Neo4j local volumes / dumps
+infra/neo4j/data/
+infra/neo4j/logs/
+*.dump
