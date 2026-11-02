@@ -22,9 +22,13 @@ const slug = route.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") || "home";
 const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 try {
   // The cookie is Secure; set it directly for the http://127.0.0.1 test server.
-  const ctx = await browser.newContext({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 1 });
+  const wide = rest.includes("--wide"); // 1920x1080 (presentation mode, FR-46)
+  const ctx = await browser.newContext({ viewport: wide ? { width: 1920, height: 1080 } : { width: 1600, height: 1000 }, deviceScaleFactor: 1 });
   const u = new URL(base);
   await ctx.addCookies([{ name: "tsumugi_token", value: token, domain: u.hostname, path: "/", httpOnly: true, sameSite: "Strict" }]);
+  if (rest.includes("--presenter") && process.env.PRESENTER_TOKEN) {
+    await ctx.addCookies([{ name: "tsumugi_presenter", value: process.env.PRESENTER_TOKEN, domain: u.hostname, path: "/", httpOnly: true, sameSite: "Strict" }]);
+  }
   const page = await ctx.newPage();
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(String(e)));

@@ -9,6 +9,7 @@ import { OrbitControls, useTexture } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import * as THREE from "three";
+import { yearState, type TimelineData } from "@/lib/time-river";
 import {
   CAMERA_Z,
   LAYER_Z,
@@ -63,7 +64,8 @@ function LayerPlane({
     (Array.isArray(t) ? t : [t]).forEach((x) => (x.colorSpace = THREE.SRGBColorSpace));
   });
   const ref = useRef<THREE.Mesh>(null);
-  useFrame(() => {
+  const mat = useRef<THREE.MeshBasicMaterial>(null);
+  useFrame((_, dt) => {
     const m = ref.current;
     if (!m) return;
     const t = split === 0 ? 0 : reduced ? 1 : Math.min(1, (performance.now() - split) / SPLIT_MS);
@@ -71,11 +73,14 @@ function LayerPlane({
     const s = depthCompensation(z);
     m.position.set(rect.x * s, rect.y * s, z);
     m.scale.set(rect.w * s, rect.h * s, 1);
+    // fade toward the target opacity (time slider), ~600 ms; immediate with reduced motion
+    const mm = mat.current;
+    if (mm) mm.opacity = reduced ? opacity : mm.opacity + (opacity - mm.opacity) * Math.min(1, dt * 6);
   });
   return (
     <mesh ref={ref} renderOrder={renderOrder}>
       <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial map={tex} transparent opacity={opacity} depthWrite={false} toneMapped={false} />
+      <meshBasicMaterial ref={mat} map={tex} transparent opacity={opacity} depthWrite={false} toneMapped={false} />
     </mesh>
   );
 }
@@ -96,10 +101,20 @@ function Fps({ onFps }: { onFps: (n: number) => void }) {
   return null;
 }
 
-export function SpaceViewer({ id, scene }: { id: string; scene: SceneJson }) {
+/** Layers that belong to the permanent gate; they follow the time slider (FR-56). */
+const GATE_LAYERS = new Set(["lantern", "lantern_base", "gate"]);
+const GATE_OPACITY = { present: 1, absent: 0.06, unknown: 0.35, withheld: 0.35 } as const;
+const STATE_JA = { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" } as const;
+
+export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJson; timeline?: TimelineData }) {
   const reduced = usePrefersReducedMotion();
   const [split, setSplit] = useState(0);
   const [overlay, setOverlay] = useState(0);
+  const [year, setYear] = useState(2026);
+  const ys = timeline ? yearState(timeline, year) : null;
+  const gateOpacity = ys ? GATE_OPACITY[ys.state] : 1;
+  // Before the 1866 fire the Kansei-era gate Hiroshige painted stood: open the print automatically.
+  const overlayEff = ys && ys.state === "present" && year < 1866 ? Math.max(overlay, 0.85) : overlay;
   const [fps, setFps] = useState(0);
   const world = useMemo(() => photoWorldSize(scene.size), [scene.size]);
   const file = (f: string) => `/api/cache/scenes/${id}/${f}`;
@@ -126,17 +141,18 @@ export function SpaceViewer({ id, scene }: { id: string; scene: SceneJson }) {
               targetZ={LAYER_Z[el.layer]}
               split={split}
               reduced={reduced}
+              opacity={GATE_LAYERS.has(key) ? gateOpacity : 1}
               renderOrder={i + 1}
             />
           ))}
-          {align && artRect && overlay > 0 && (
+          {align && artRect && overlayEff > 0 && (
             <LayerPlane
               url={`/api/cache/artifacts/${align.artifact}/image.jpg`}
               rect={artRect}
               targetZ={LAYER_Z.foreground + 0.05}
               split={split}
               reduced={reduced}
-              opacity={overlay}
+              opacity={overlayEff}
               renderOrder={100}
             />
           )}
@@ -158,6 +174,36 @@ export function SpaceViewer({ id, scene }: { id: string; scene: SceneJson }) {
           {split ? "平面に戻す" : "層に割る"}
         </button>
 
+        {timeline && ys && (
+          <label className="flex flex-col gap-2" data-testid="space-time">
+            <span className="flex items-baseline justify-between">
+              <span>時をめくる</span>
+              <span className="font-serif text-3xl tabular-nums">{year}</span>
+            </span>
+            <input
+              type="range"
+              min={1750}
+              max={2026}
+              step={1}
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+              className="min-h-11 accent-[var(--thread-toki)]"
+              aria-label="年を選ぶ"
+              data-testid="space-year"
+            />
+            <span className="flex flex-wrap gap-2">
+              {[1856, 1878, 1905, 1960, 2026].map((q) => (
+                <button key={q} type="button" onClick={() => setYear(q)} className="min-h-11 rounded-full border border-muted/50 px-3 text-sm tabular-nums">
+                  {q}
+                </button>
+              ))}
+            </span>
+            <span className="text-sm" data-testid="space-year-state" data-state={ys.state}>
+              [{STATE_JA[ys.state]}] {ys.label.ja}
+            </span>
+          </label>
+        )}
+
         {align && (
           <label className="flex flex-col gap-2">
             <span>
@@ -174,6 +220,7 @@ export function SpaceViewer({ id, scene }: { id: string; scene: SceneJson }) {
               aria-label="広重の絵を重ねる割合"
             />
             <span className="text-sm text-muted">
+              {overlayEff > overlay ? "1866年の焼失より前は、広重が描いた門の時代として自動で重ねています。" : ""}
               位置合わせ：大提灯の下端と左端（資料側のアンカーは事前注記：{align.artifact_anchors_annotated_by}）
             </span>
           </label>

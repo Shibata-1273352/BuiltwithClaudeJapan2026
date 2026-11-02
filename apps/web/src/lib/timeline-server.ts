@@ -37,6 +37,29 @@ export function sourceTime(sourceId: string): TimeValue | null {
   return null;
 }
 
+/** Time-river data for an entity straight from the reviewed timeline (no exploration needed). */
+export function timelineData(entityId: string, name: { ja: string; en: string } | undefined, titleOf: (sourceId: string) => string) {
+  const tl = timeline();
+  return {
+    entity: entityId,
+    name,
+    periods: tl.periods.get(entityId) ?? [],
+    events: tl.t.existence_events.filter((e) => e.entity === entityId),
+    sources: tl.t.source_times.map((s) => {
+      const j = existenceFor(entityId, s.source);
+      return {
+        source: s.source,
+        title: titleOf(s.source),
+        time: j.time ? { kind: j.time.kind, start: j.time.start, end: j.time.end ?? null } : null,
+        relation: j.relation?.kind ?? null,
+        value: j.value,
+        reason: j.reason,
+      };
+    }),
+    reviewed: tl.t.reviewed_by ? { by: tl.t.reviewed_by, at: tl.t.reviewed_at ?? null } : null,
+  };
+}
+
 export type SourceRelation = { kind: "depicts" | "observed_site" | "written_period" | "eyewitness_event"; entity: string; evidence: string[]; note?: string };
 
 export function sourceRelation(sourceId: string): SourceRelation | null {

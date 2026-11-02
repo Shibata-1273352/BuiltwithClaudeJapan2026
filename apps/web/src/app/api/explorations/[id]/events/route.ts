@@ -1,4 +1,5 @@
 import { eventsAfter, subscribe, TERMINAL, type StoredEvent } from "@/lib/dag/events";
+import { isPresenter } from "@/lib/presenter";
 import { sessionId } from "@/lib/session";
 import { store } from "@/lib/store";
 
@@ -10,9 +11,10 @@ import { store } from "@/lib/store";
 export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id]/events">) {
   const { id } = await ctx.params;
   const sid = await sessionId();
-  if (!sid || !/^exp_[0-9a-f]{20}$/.test(id)) return new Response(null, { status: 404 });
+  const presenter = await isPresenter(); // read-only presentation mode (FR-46)
+  if ((!sid && !presenter) || !/^exp_[0-9a-f]{20}$/.test(id)) return new Response(null, { status: 404 });
   const owner = store().prepare("SELECT session_id FROM explorations WHERE id = ?").get(id) as { session_id: string } | undefined;
-  if (!owner || owner.session_id !== sid) return new Response(null, { status: 404 });
+  if (!owner || (!presenter && owner.session_id !== sid)) return new Response(null, { status: 404 });
 
   const url = new URL(req.url);
   const after = Number(req.headers.get("last-event-id") ?? url.searchParams.get("after") ?? 0) || 0;
