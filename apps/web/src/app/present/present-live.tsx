@@ -1,4 +1,5 @@
 "use client";
+import { EVENT_TYPES } from "@/lib/dag/event-types";
 
 /**
  * Presentation mode (FR-46, 6.5 2:15–2:40): what Claude decided and what code verified, live.
@@ -64,7 +65,7 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
         const ev = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
         setEvents((p) => (p.some((x) => x.seq === ev.seq) ? p : [...p, ev]));
       };
-      for (const t of ["stage", "see", "place", "candidates", "gap", "claims", "existence", "names", "threads", "narrative", "space", "visual", "graph", "ai_call", "done", "failed"])
+      for (const t of EVENT_TYPES)
         es.addEventListener(t, on);
       return () => es?.close();
     }
@@ -83,7 +84,7 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
           const ev = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
           setEvents((p) => (p.some((x) => x.seq === ev.seq) ? p : [...p, ev]));
         };
-        for (const t of ["stage", "see", "place", "candidates", "gap", "claims", "existence", "names", "threads", "narrative", "space", "visual", "graph", "ai_call", "done", "failed"])
+        for (const t of EVENT_TYPES)
           es.addEventListener(t, on);
       } catch {
         setError("通信に失敗しました");

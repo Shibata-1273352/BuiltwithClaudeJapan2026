@@ -22,7 +22,7 @@ const page = await ctx.newPage();
 const errors: string[] = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 const t0 = Date.now();
-await page.goto(`${base}/replay/${id}`, { waitUntil: "domcontentloaded" });
+await page.goto(`${base}/replay/${id}?view=list`, { waitUntil: "domcontentloaded" });
 const banner = await page.getByTestId("replay-banner").textContent({ timeout: 10_000 });
 const statusEarly = await page.getByTestId("exploration-status").textContent();
 await page.waitForFunction(() => document.querySelector('[data-testid="exploration-status"]')?.textContent?.includes("完了"), null, { timeout: 120_000 });

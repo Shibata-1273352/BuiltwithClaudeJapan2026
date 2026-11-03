@@ -12,6 +12,7 @@ import { openDb } from "../corpus/db";
 import type { CaptureRow } from "../captures";
 import { entities } from "../entities-server";
 import { seePhoto } from "../see";
+import { guessViewpoint } from "../viewpoint";
 import { store } from "../store";
 import { emit } from "./events";
 import { buildPlan } from "./plan";
@@ -21,6 +22,7 @@ import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
+import { findAssociations } from "../associations";
 import { requestScene, requestVisual } from "../inference";
 import { existenceRows } from "../existence-rows";
 import { narrativeFor, saveNarrative } from "../narrative-service";
@@ -156,6 +158,35 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       const met = rel ? E.get(rel.from)?.external_ids?.met : undefined;
       return met ? `met-${met}` : null;
     };
+    // FR-35 視点の見立て (pencil): Claude's guess for the photo; the artwork's is a hand-written note.
+    // Shown with its premises; never a claim, a thread or a graph node.
+    const viewpointPromise = (async () => {
+      const rel = E.dict.relations.find((r) => r.type === "DEPICTS" && r.to === place);
+      const art = rel ? E.get(rel.from) : undefined;
+      let visitor = null;
+      if (ctx.remaining() > 25_000) {
+        try {
+          ctx.claude();
+          emit(explorationId, "stage", { stage: "viewpoint", status: "start", remaining_ms: ctx.remaining() });
+          const t = Date.now();
+          const img = await readFile(capture.image_path);
+          const name = E.get(place)?.name;
+          const r = await guessViewpoint({ base64: img.toString("base64"), mediaType: "image/jpeg" }, `${name?.ja ?? place} (${name?.en ?? ""}; ${place})`);
+          logCall(ctx, db, explorationId, r.record);
+          emit(explorationId, "stage", { stage: "viewpoint", status: "done", ms: Date.now() - t });
+          visitor = r.value;
+        } catch (e) {
+          console.error(`[viewpoint ${explorationId}]`, e instanceof Error ? e.message : e); // optional: the run goes on
+        }
+      }
+      if (visitor || art?.viewpoint_note) {
+        emit(explorationId, "viewpoint", {
+          state: "pencil",
+          visitor,
+          artwork: art?.viewpoint_note ? { entity: art.id, name: art.name, ...art.viewpoint_note } : null,
+        });
+      }
+    })();
     const spaceStarted = Date.now();
     emit(explorationId, "stage", { stage: "space", status: "start", remaining_ms: ctx.remaining() });
     const spacePromise = requestScene(capture.image_path, capture.id, artifactFor(place), Math.max(5_000, Math.min(30_000, ctx.remaining() - 5_000))).then((r) => {
@@ -186,6 +217,22 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return true;
     });
 
+    // the year axis needs a year per source: its own time for this site, else (marked) its publication year
+    const published = (() => {
+      const db = openDb({ readonly: true });
+      try {
+        return new Map((db.prepare("SELECT id, first_published FROM sources").all() as { id: string; first_published: number | null }[]).map((r) => [r.id, r.first_published]));
+      } finally {
+        db.close();
+      }
+    })();
+    const yearOfSource = (id: string): { year: number | null; yearKind: "source_time" | "published" | null } => {
+      const t = Number(sourceTime(id, place)?.start?.slice(0, 4));
+      if (t) return { year: t, yearKind: "source_time" };
+      const pub = published.get(id);
+      return pub ? { year: pub, yearKind: "published" } : { year: null, yearKind: null };
+    };
+
     // 3. Plan (FR-08)
     const plan = await stage(ctx, "plan", async () => {
       const p = buildPlan(E, place);
@@ -210,7 +257,8 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
               tried: r.tried,
               found: r.candidates.length,
               notFound: r.candidates.length === 0,
-              candidates: r.candidates.map((c) => ({ ...c, text: c.text.slice(0, 400) })),
+              // year: the source's own time for this site, so the live stage can place it on the year axis
+              candidates: r.candidates.map((c) => ({ ...c, text: c.text.slice(0, 400), ...yearOfSource(c.sourceId) })),
             });
           }
         }
@@ -397,6 +445,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     });
 
     const spaceOk = await spacePromise; // bounded by its own timeout
+    await viewpointPromise; // started right after the place; long done by now
 
     // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.
     const graph = await stage(ctx, "graph", async () => {
@@ -428,6 +477,18 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       if (!r.ok) console.error(`[graph ${explorationId}]`, r.error);
       return r.ok;
     });
+
+    // 10. 連想の糸 (FR-59, pencil): what the graph associates with this place beyond this run's
+    // passages. Bounded (2 s); nothing is shown if Neo4j is down. Never a claim or a thread.
+    if (graph && ctx.remaining() > 3_000) {
+      const corpus = openDb({ readonly: true });
+      try {
+        const a = await findAssociations(place, new Set(all.map((r) => r.passageId)), corpus, Math.min(2_000, ctx.remaining() - 1_000));
+        emit(explorationId, "associations", a.ok ? { ok: true, items: a.items, ms: a.ms } : { ok: false, items: [] });
+      } finally {
+        corpus.close();
+      }
+    }
 
     const summary = {
       graph_saved: graph,

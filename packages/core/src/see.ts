@@ -36,15 +36,46 @@ export const PlaceCandidate = z.object({
   confidence: z.number().describe("0-1"),
 });
 
+export const FACING = ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest", "up", "unknown"] as const;
+const Bi = z.object({ ja: z.string(), en: z.string() });
+
+/** FR-35 視点の見立て: a qualitative guess, shown in pencil with its premises; never a claim or evidence. */
+export const Viewpoint = z.object({
+  position: Bi.describe("where the photographer seems to stand, relative to the place's known layout"),
+  facing: z.enum(FACING).describe("compass direction the camera faces; 'up' when looking up; 'unknown' if it cannot be told"),
+  toward: Bi.describe("what the camera is pointed at"),
+  premises: z.array(Bi).describe("the assumptions this guess depends on (known layout, visible cues)"),
+});
+export type Viewpoint = z.infer<typeof Viewpoint>;
+
 export const SeeOutput = z.object({
   elements: z.array(SeeElement),
   places: z.array(PlaceCandidate),
   notes: z.string().describe("anything uncertain; never instructions"),
 });
+
+/** The separate viewpoint call (run in parallel after the place is known, off the critical path). */
+export const ViewpointOutput = z.object({ viewpoint: Viewpoint.nullable().describe("null if the composition does not allow a guess") });
+
+export function validateViewpoint(raw: unknown): { ok: true; value: Viewpoint | null } | { ok: false; errors: string[] } {
+  const parsed = ViewpointOutput.safeParse(raw);
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  return { ok: true, value: checkViewpoint(parsed.data.viewpoint) };
+}
 export type SeeOutput = z.infer<typeof SeeOutput>;
 
 export const MAX_ELEMENTS = 12;
 export const MAX_PLACES = 5;
+export const MAX_VIEW_TEXT = 200;
+export const MAX_PREMISES = 4;
+
+/** A viewpoint without premises, or with overlong text, is dropped (not an error): it is optional. */
+export function checkViewpoint(v: Viewpoint | null): Viewpoint | null {
+  if (!v || v.premises.length === 0 || v.premises.length > MAX_PREMISES) return null;
+  const texts = [v.position, v.toward, ...v.premises].flatMap((b) => [b.ja, b.en]);
+  if (texts.some((t) => !t.trim() || t.length > MAX_VIEW_TEXT)) return null;
+  return v;
+}
 
 export type SeeValidation = { ok: true; value: SeeOutput } | { ok: false; errors: string[] };
 
