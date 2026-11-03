@@ -39,8 +39,9 @@ Requirements: macOS on Apple Silicon (16GB+), Node 22+, [uv](https://docs.astral
 
 ```bash
 # 1. env
-cp .env.example .env          # fill in ANTHROPIC_API_KEY, and random values for ACCESS_TOKEN / NEO4J_PASSWORD / INFERENCE_TOKEN
+cp .env.example .env          # fill in ANTHROPIC_API_KEY, and random values for ACCESS_TOKEN / NEO4J_PASSWORD / INFERENCE_TOKEN / PRESENTER_TOKEN
 mkdir -p "$HOME/tsumugi-data"  # and set DATA_DIR to it
+# optional for local development: LOCAL_NO_AUTH=1 (no token for a browser on this machine; tunnels still need it)
 
 # 2. Node
 npm install
@@ -48,13 +49,13 @@ npx lefthook install          # pre-commit secret scan
 
 # 3. Neo4j
 npm run graph:up
-npm run graph:init            # 11 constraints + seed; idempotent
+npm run graph:init            # 11 constraints + seed (17 entities, 3 sites); idempotent
 
 # 4. Inference server (Python 3.12 via uv)
 cd services/inference
 uv sync
 hf auth login                 # SAM 3 is gated: accept the license on huggingface.co/facebook/sam3 first
-uv run python scripts/download_models.py   # pinned revisions, safetensors only
+uv run python scripts/download_models.py   # SAM 3, Depth Anything V2, SigLIP so400m — pinned revisions, safetensors only
 cd ../..
 npm run inference             # http://127.0.0.1:8100
 
@@ -63,29 +64,40 @@ npm run corpus:ingest          # downloads, verifies excerpts, builds $DATA_DIR/
 npm run corpus:headers -- --all   # Claude context headers per chapter (~$7 for the current corpus)
 npm run corpus:search          # retrieval smoke test
 
-# 6. Spatial assets (artifact preprocessing, then a photo scene)
+# 6. Samples (public domain / CC0, corpus/samples.json) and spatial assets
+npm run setup:samples          # -> $DATA_DIR/samples/*.jpg + PROVENANCE.json
 (cd services/inference && uv run python scripts/build_scene.py artifact met-56689 "$DATA_DIR/samples/met_56689.jpg")
-(cd services/inference && uv run python scripts/build_scene.py photo "$DATA_DIR/samples/<photo>.jpg" --artifact met-56689)
+(cd services/inference && uv run python scripts/build_scene.py photo "$DATA_DIR/samples/kaminarimon_cc0.jpg" --artifact met-56689)
 
 # 6b. Visual search (FR-58, P1): gallery from Wikimedia Commons (polite, ~1 request/s), then the index
 npx tsx --env-file=.env scripts/visual/collect.ts
-(cd services/inference && uv run python scripts/visual_index.py build)
+(cd services/inference && uv run python scripts/visual_lanterns.py)      # SAM 3 finds the lanterns in each print (~15 min)
+(cd services/inference && uv run python scripts/visual_index.py build)   # ~10 min
 (cd services/inference && uv run python scripts/visual_index.py check kaminarimon_cc0)   # lantern -> lantern print in the top 5?
 
 # 7. Web
 npm run setup:web-assets       # on-device face detection model + WASM into apps/web/public (not committed)
 npm run build && npm run start -w web -- -p 3000
-# 3D scene: http://localhost:3000/space/<photo-stem>
-# open http://localhost:3000/?token=<ACCESS_TOKEN> once; it becomes an HttpOnly cookie
+# open http://localhost:3000/?token=<ACCESS_TOKEN> once (it becomes an HttpOnly cookie), or use LOCAL_NO_AUTH=1 locally
+# 3D scene: http://localhost:3000/space/kaminarimon_cc0 · time: /time · notes: /notes · presenter: /api/presenter?key=<PRESENTER_TOKEN> then /present
+# on site: npm run tunnel (HTTPS for the phone camera); if live fails, replay a recording: /replay/<exploration id>
 ```
 
 ## Checks
 
 ```bash
-npm test                      # vitest (schemas, access control)
+npm test                      # vitest (184 tests)
 npm run typecheck && npm run lint
-(cd services/inference && uv run pytest)   # inference server: token, input validation
+(cd services/inference && uv run pytest)   # inference server: token, input validation, visual search
+npm run test:security         # SEC-01..10 (SEC-01..03 call Claude; SEC_SKIP_LLM=1 to skip; SEC-08 needs Neo4j)
 npm run secrets:scan          # gitleaks
+npm run eval -- --no-llm      # evaluation without Claude; drop --no-llm for the Batch API run (~$0.4)
+npm run kill -- status        # kill switch: on | off | status
+
+# end to end against a running server (real Claude, ~$0.2 each; replay needs none)
+npm run e2e:explore -- http://127.0.0.1:3000 "$DATA_DIR/samples/kaminarimon_cc0.jpg"
+npm run e2e:capture -- http://127.0.0.1:3000 "$DATA_DIR/samples/kaminarimon_cc0.jpg"
+npx tsx --env-file=.env scripts/e2e-replay.ts http://127.0.0.1:3000 <exploration id>
 
 npm run see -- "$DATA_DIR/samples/<photo>.jpg"   # FR-06: Claude reads the photo
 npm run met -- 56689                              # The Met endpoints + fixture
@@ -121,6 +133,9 @@ Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compo
 | ID | Feature | Status |
 | --- | --- | --- |
 | FR-58 | **Visual search — lantern to lantern**: the lantern SAM 3 cut from the photo is embedded with SigLIP so400m (fp16) and compared with 118 public-domain Hiroshige prints (full image, overlapping tiles, and the lanterns SAM 3 finds in each print). Hiroshige's *Kinryūzan Temple in Asakusa* comes first. Shown as "similar images, not evidence", with the matching region outlined. | Done ([verification](docs/verification/visual-search.md); one gold print, one photo — an acceptance check, not an accuracy estimate) |
+| FR-27 | Tap a name in 言の地層 to compare how each source writes it, by language, with the original sentence (name highlighted) | Done |
+| FR-36 | 人の層: fade the crowd in 間 (SAM 3 people mask; people are also removed from the background plate, whose fill is an estimate) | Done (SAM 3 instead of YOLOX) |
+| FR-37 | Phones: 3D when the device keeps 30 fps, otherwise the 2D view (photo + aligned print); `?2d=1` forces it | Done (fallback; iPhone fps not measured yet) |
 | FR-43 | Travel note list (`/notes`) | Done |
 | FR-44 | あなたの確認: confirm a pencil / pending thread in the note (double line; evidence unchanged) | Done |
 | FR-45 | Guide らぶちゃん: one non-assertive line chosen by code from the state (never written by Claude, no facts) | Done |

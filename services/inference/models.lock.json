@@ -12,7 +12,9 @@
   "siglip": {
     "repo": "google/siglip-base-patch16-224",
     "revision": "7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed",
-    "license": "Apache-2.0 (FR-58 visual search; safetensors)"
+    "license": "Apache-2.0 (FR-58 visual search; safetensors)",
+    "download": false,
+    "note": "kept for the record: tried first for FR-58 (Kinryūzan ranked ~21st of 118); not used"
   },
   "siglip_large": {
     "repo": "google/siglip-so400m-patch14-384",
@@ -22,11 +24,15 @@
   "siglip2": {
     "repo": "google/siglip2-base-patch16-224",
     "revision": "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2",
-    "license": "Apache-2.0 (FR-58 candidate: multilingual text incl. Japanese; no remote code)"
+    "license": "Apache-2.0 (FR-58 candidate: multilingual text incl. Japanese; no remote code)",
+    "download": false,
+    "note": "candidate considered, not tested (so400m met FR-58)"
   },
   "rinna_clip": {
     "repo": "rinna/japanese-clip-vit-b-16",
     "revision": "ce22bc39e6f5dcb449e082954211acfb00c2227b",
-    "license": "Apache-2.0 (FR-58 candidate: Japanese image-text; no remote code)"
+    "license": "Apache-2.0 (FR-58 candidate: Japanese image-text; no remote code)",
+    "download": false,
+    "note": "candidate considered, not tested (so400m met FR-58)"
   }
 }

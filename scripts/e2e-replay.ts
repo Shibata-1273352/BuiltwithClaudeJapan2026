@@ -31,11 +31,28 @@ const hasNarrative = (await page.getByTestId("narrative").count()) > 0;
 const hasVisual = (await page.getByTestId("visual").count()) > 0;
 const bannerAtEnd = await page.getByTestId("replay-banner").isVisible();
 await page.screenshot({ path: path.join(outDir, "replay.png"), fullPage: true });
+// FR-27: tap a name in 言の地層 and compare how each source writes it (pick the entity with most usages)
+let compare: { en: number; ja: number } | null = null;
+const chips = page.getByTestId("name-chip");
+if (await chips.count()) {
+  const n = await chips.count();
+  for (let i = 0; i < n && !compare; i++) {
+    await chips.nth(i).click();
+    const box = page.getByTestId("name-compare");
+    const txt = (await box.innerText().catch(() => "")) ?? "";
+    const en = Number(/English（(\d+)）/.exec(txt)?.[1] ?? 0);
+    const ja = Number(/日本語（(\d+)）/.exec(txt)?.[1] ?? 0);
+    if (en > 0 && ja > 0) {
+      compare = { en, ja };
+      await box.screenshot({ path: path.join(outDir, "name-compare.png") });
+    } else await chips.nth(i).click();
+  }
+}
 
 const p2 = await ctx.newPage();
 await p2.goto(`${base}/present?replay=${id}`, { waitUntil: "domcontentloaded" });
 const presentBanner = await p2.getByTestId("replay-banner").textContent({ timeout: 10_000 });
 await p2.waitForFunction(() => /秒/.test(document.querySelector('[data-testid="present-totals"]')?.textContent ?? ""), null, { timeout: 120_000 });
 await p2.screenshot({ path: path.join(outDir, "present-replay.png") });
-console.log(JSON.stringify({ banner, statusEarly, ms, hasNarrative, hasVisual, bannerAtEnd, presentBanner, errors }, null, 2));
+console.log(JSON.stringify({ banner, statusEarly, ms, hasNarrative, hasVisual, bannerAtEnd, compare, presentBanner, errors }, null, 2));
 await browser.close();

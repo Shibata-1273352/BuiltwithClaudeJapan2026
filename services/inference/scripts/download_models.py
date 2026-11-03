@@ -11,6 +11,8 @@ from huggingface_hub import snapshot_download
 LOCK = json.loads((Path(__file__).resolve().parent.parent / "models.lock.json").read_text())
 
 for key, m in LOCK.items():
+    if m.get("download") is False:  # recorded candidates that are not used
+        continue
     path = snapshot_download(
         repo_id=m["repo"],
         revision=m["revision"],
