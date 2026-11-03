@@ -16,7 +16,7 @@ const L = dict({
   ja: {
     title: "根拠グラフ（Neo4j に書いたもの）",
     cols: ["資料", "根拠（原文の文）", "主張", "時・場所"],
-    counts: (s: Sketch["counts"]) => `資料 ${s.source} · 根拠 ${s.evidence} · 主張 ${s.claim} · 年 ${s.time} · 関係 ${s.edges}`,
+    counts: (s: Sketch["counts"]) => `資料 ${s.source} · 根拠 ${s.evidence} · 書いた主張 ${s.claim}（年表の主張を含む）· 年 ${s.time} · 関係 ${s.edges}`,
     capped: "主張が多いため、先頭の一部だけを描いています。",
     contra: "反証",
     context: "文脈のみ",
@@ -24,7 +24,7 @@ const L = dict({
   en: {
     title: "Evidence Graph (what was written to Neo4j)",
     cols: ["Sources", "Evidence (original sentences)", "Claims", "Time · place"],
-    counts: (s: Sketch["counts"]) => `${s.source} sources · ${s.evidence} evidence · ${s.claim} claims · ${s.time} years · ${s.edges} relations`,
+    counts: (s: Sketch["counts"]) => `${s.source} sources · ${s.evidence} evidence · ${s.claim} claims written (incl. timeline claims) · ${s.time} years · ${s.edges} relations`,
     capped: "Many claims: only the first ones are drawn.",
     contra: "contradicts",
     context: "context only",

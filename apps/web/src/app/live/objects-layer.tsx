@@ -140,7 +140,7 @@ function TouchObject({
       )}
       {!cut && <span aria-hidden className="pointer-events-none absolute inset-0 rounded-md border border-paper/0 transition-colors group-hover:border-paper/50" />}
       {cut && i === 0 && !selected && (
-        <span aria-hidden className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 animate-pulse rounded-sm bg-night/80 px-2 py-0.5 text-caption whitespace-nowrap text-paper" data-testid="touch-hint">
+        <span aria-hidden className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 animate-pulse rounded-sm bg-night/85 px-3 py-1 text-small whitespace-nowrap text-paper" data-testid="touch-hint">
           {hint}
         </span>
       )}

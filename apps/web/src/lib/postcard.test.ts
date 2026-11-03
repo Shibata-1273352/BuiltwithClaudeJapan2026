@@ -6,6 +6,7 @@ const events = [
   { type: "see", data: { elements: [{ text_original: null }, { text_original: "松下幸之助", box: { w: 0.1, h: 0.05 } }, { text_original: "風雷神門", box: { w: 0.5, h: 0.5 } }] } },
   { type: "guide", data: { notes: [{ element: 1 }, { element: 2 }] } },
   { type: "space", data: { ok: true, scene_id: "cap_x" } },
+  { type: "candidates", data: { candidates: [{ sourceId: "bird" }, { sourceId: "kafu" }, { sourceId: "bird" }] } },
   { type: "claims", data: { claims: [{ id: "c1", source_id: "bird", status: "accepted" }, { id: "c2", source_id: "kafu", status: "rejected" }] } },
   { type: "threads", data: [{ claimId: "cl:exist:bird", state: "absent" }, { claimId: "c1", state: "ink" }] },
   { type: "existence", data: { rows: [{ source: "bird", time: { start: "1878-06-09" }, value: "absent" }] } },

@@ -39,7 +39,7 @@ export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: numb
         );
       })}
       <li className="text-caption text-muted tabular-nums">
-        {finished ? t.finished(((s.done?.elapsed_ms ?? elapsed) / 1000).toFixed(1)) : eta > 0 ? t.eta(eta) : t.soon}
+        {finished ? t.fin : eta > 0 ? t.eta(eta) : t.soon}
       </li>
     </ol>
   );

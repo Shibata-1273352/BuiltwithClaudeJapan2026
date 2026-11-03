@@ -88,8 +88,6 @@ export function EvidenceColumn({
                   {c.excerpt}
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted">
-                  {c.accepted > 0 && <span>{t.kept} {c.accepted}</span>}
-                  {c.downgraded + c.rejected > 0 && <span>{t.down} {c.downgraded + c.rejected}</span>}
                   {c.existence && (
                     <span className={c.existence.value === "absent" ? "font-medium text-paper" : ""}>
                       {EXIST_LABEL[ui][c.existence.value]}

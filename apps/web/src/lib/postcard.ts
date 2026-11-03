@@ -73,7 +73,8 @@ export function postcardData(events: Ev[], lang: "ja" | "en", story: Sentence[] 
     sceneId: space?.ok && space.scene_id ? space.scene_id : null,
     cutout: null,
     counts: {
-      sources: new Set(claims.map((c) => c.source_id).filter(Boolean)).size,
+      // the same definitions as the stage strip (stripNumbers): sources searched, claims accepted
+      sources: new Set(events.filter((e) => e.type === "candidates").flatMap((e) => ((e.data as { candidates?: { sourceId: string }[] }).candidates ?? []).map((c) => c.sourceId))).size,
       threads: threads.length,
       claims: claims.filter((c) => c.status === "accepted").length,
     },

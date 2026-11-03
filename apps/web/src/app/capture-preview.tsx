@@ -126,7 +126,7 @@ export function CapturePreview() {
       )}
       <div className="flex flex-wrap gap-3">
       {canCam && (
-        <Button variant="primary" onClick={() => setCam(true)} data-testid="camera-open">
+        <Button onClick={() => setCam(true)} data-testid="camera-open">
           {t.camera}
         </Button>
       )}

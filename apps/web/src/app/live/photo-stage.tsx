@@ -56,7 +56,7 @@ const T = dict({
   en: {
     alt: "The photo being explored",
     printAlt: "Hiroshige's Kinryūzan Temple at Asakusa laid over the photo",
-    printCap: "Utagawa Hiroshige, Kinryūzan Temple at Asakusa (One Hundred Famous Views of Edo), 1856, laid over",
+    printCap: "Utagawa Hiroshige, Kinryūzan Temple at Asakusa, 1856 — laid over your photo",
     same: (f: string) => `You and Hiroshige both face ${f} (a guess, pencil)`,
     both: (a: string, b: string) => `You face ${a}, Hiroshige faced ${b} (a guess, pencil)`,
   },

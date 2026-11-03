@@ -47,7 +47,7 @@ export function GuideCards({
   const writing = s.stages.guide && s.stages.guide.done === undefined;
   return (
     <section aria-label={l.what} className="flex flex-col gap-3" data-testid="guide-cards">
-      {order.map(({ e, i }) => {
+      {order.map(({ e, i }, pos) => {
         const n = notes.get(i);
         const open = selectedSee === i;
         return (
@@ -72,7 +72,7 @@ export function GuideCards({
                 {e.meaning?.[lang]}
               </p>
             </button>
-            {n ? <Note n={n} open={open} l={l} lang={lang} onAsk={onAsk ? (q) => onAsk(q, i) : undefined} /> : writing ? <p className="shimmer mt-2 rounded-sm text-caption text-muted">{l.writing}</p> : null}
+            {n ? <Note n={n} open={open} l={l} lang={lang} onAsk={onAsk ? (q) => onAsk(q, i) : undefined} /> : writing && pos === 0 ? <p className="shimmer mt-2 rounded-sm text-caption text-muted">{l.writing}</p> : null}
           </m.article>
         );
       })}

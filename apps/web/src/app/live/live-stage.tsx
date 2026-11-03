@@ -5,6 +5,8 @@
  * threads drawn across all of them. Every SSE event visibly changes something while the AI works.
  * "リスト表示" (6.4) shows the same running exploration as the accessible list.
  */
+import { plainLabel } from "./text-column";
+import { MuteToggle } from "./mute-toggle";
 import Link from "next/link";
 import { domMax, LazyMotion, LayoutGroup, MotionConfig } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -311,6 +313,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <Button variant="quiet" onClick={() => setView((v) => (v === "stage" ? "list" : "stage"))} className="present-hide" data-testid="view-toggle" disabled={!expId}>
                   {view === "stage" ? t.list : t.stage}
                 </Button>
+                <MuteToggle />
                 <LangToggle />
               </div>
             </header>
@@ -379,7 +382,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     onAspect={setAspect}
                     aspect={aspect}
                     absent={absentNow}
-                    absentLine={absentNow ? (ys?.label[lang] ?? null) : null}
+                    absentLine={absentNow && ys ? plainLabel(ys.label[lang], lang, s.place?.path[0]?.name.en) : null}
                     dim={Boolean(scene) && s.at.space !== undefined && elapsed - s.at.space > 1200}
                     objects={
                       <ObjectsLayer

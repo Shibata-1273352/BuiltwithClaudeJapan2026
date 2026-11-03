@@ -6,8 +6,16 @@
 let ctx: AudioContext | null = null;
 let muted = false;
 
+const muteListeners = new Set<() => void>();
+/** For useSyncExternalStore: the mute toggle re-renders when the choice changes. */
+export function subscribeMute(f: () => void): () => void {
+  muteListeners.add(f);
+  return () => muteListeners.delete(f);
+}
+
 export function setMuted(m: boolean) {
   muted = m;
+  muteListeners.forEach((f) => f());
   try {
     localStorage.setItem("tsumugi_mute", m ? "1" : "0");
   } catch {

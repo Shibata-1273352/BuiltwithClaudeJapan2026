@@ -111,6 +111,19 @@ function SeeAsk({ s, since }: { s: LiveState; since: number }) {
 /** "Kaminarimon (Thunder Gate)" → "Kaminarimon": the gloss is said once, in the title. */
 const shortName = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, "");
 
+/** The thread's label without its trailing basis in parentheses, and (English) the gloss said once. */
+export function plainLabel(label: string, ui: "ja" | "en", placeEn?: string): string {
+  let s = label.replace(/（[^（）]*（[^）]*）[^）]*）$|（[^）]*）$/, "");
+  if (ui === "en") {
+    s = s.replace(/\s*\((?:from|see)\b(?:[^()]|\([^()]*\))*\)\s*$/, "");
+    if (placeEn) {
+      const short = shortName(placeEn);
+      if (short !== placeEn) s = s.split(placeEn).join(short);
+    }
+  }
+  return s.trim();
+}
+
 function sourceOfClaim(s: LiveState, claimId: string): string | null {
   if (claimId.startsWith("cl:exist:")) return claimId.split(":").pop() ?? null;
   return s.claims.find((c) => c.id === claimId)?.source_id ?? null;
@@ -201,7 +214,7 @@ export function TextColumn({
                 <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
                 <span className="font-serif text-title">{t.notYet(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
               </p>
-              <p className="mt-2 font-serif text-body text-paper/80">{broken[0].label[ui].replace(/（[^（）]*（[^）]*）[^）]*）$|（[^）]*）$/, "")}</p>
+              <p className="mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
               <p className="mt-1 text-caption text-muted">{t.byCode}</p>
             </m.div>
           )}

@@ -110,10 +110,10 @@ export function Landing() {
       <header className="mx-auto flex w-full max-w-7xl items-baseline justify-between px-5 pt-6">
         <span className="font-serif text-lead tracking-[0.3em]">TSUMUGI</span>
         <nav className="flex items-center gap-1" aria-label={t.nav}>
-          <Link href="/notes" className="inline-flex min-h-11 items-center px-2 text-small text-muted hover:text-paper">
+          <Link href="/notes" className="inline-flex min-h-11 items-center px-2 text-small whitespace-nowrap text-muted hover:text-paper">
             {t.notes}
           </Link>
-          <Link href="/time" className="inline-flex min-h-11 items-center px-2 text-small text-muted hover:text-paper">
+          <Link href="/time" className="inline-flex min-h-11 items-center px-2 text-small whitespace-nowrap text-muted hover:text-paper">
             {t.time}
           </Link>
           <LangToggle className="ml-2" />
