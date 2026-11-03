@@ -22,14 +22,14 @@ function Typed({ text, since, reduced, cps = 45 }: { text: string; since: number
 }
 
 /** What the see call asks Claude for (SEE_SYSTEM), ticked one by one while it works, all at once when it answers. */
-const ASK = ["看板・銘の文字を原文のまま読む", "読みと意味を日英で添える", "写っている要素と位置を囲む", "場所の候補を階層で挙げる", "撮影者の立ち位置と向きを見立てる"];
+const ASK = ["看板・銘の文字を原文のまま読む", "読みと意味を日英で添える", "写っている要素と位置を囲む", "場所の候補を階層で挙げる"];
 
 function SeeAsk({ s, since }: { s: LiveState; since: number }) {
   const answered = Boolean(s.see);
   const call = s.calls.find((c) => c.stage === "see");
   return (
     <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-lg border border-lantern/30 p-3" data-testid="see-ask">
-      <p className="text-xs font-bold text-lantern">Claude Opus 5.5 への依頼{answered && call ? `：応答 ${(call.elapsedMs / 1000).toFixed(1)} 秒` : "：写真を読んでいます"}</p>
+      <p className="text-xs font-bold text-lantern">Claude への依頼{answered && call ? `：応答 ${(call.elapsedMs / 1000).toFixed(1)} 秒` : "：写真を読んでいます"}</p>
       <ul className="mt-2 flex flex-col gap-1.5 text-sm">
         {ASK.map((a, i) => {
           const shown = answered || since > 600 + i * 1700;

@@ -30,7 +30,7 @@ export function EvidenceColumn({
     <section className="flex h-full min-h-0 flex-col gap-2" aria-label="根拠" data-testid="evidence-column">
       <h2 className="flex items-baseline justify-between font-serif text-lg">
         <span>根拠となる資料</span>
-        <span className="text-xs text-muted tabular-nums">{s.candidates.length} 節</span>
+        <span className="text-xs text-muted tabular-nums">{new Set(s.candidates.map((c) => c.passageId)).size} 節</span>
       </h2>
       <table className="w-full table-fixed text-[11px]" data-testid="search-matrix" aria-label="観点×言語の検索">
         <thead>

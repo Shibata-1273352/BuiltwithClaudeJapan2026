@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { MIN_SEE_SWEEP, scheduleBeats } from "./beats";
 import { etaSeconds, STEPS, stepStatus } from "./eta";
-import { fold, initialState, reduce, stripNumbers, type LiveEvent } from "./state";
+import { fold, initialState, reduce, sourceCards, stripNumbers, type LiveEvent } from "./state";
 
 const fx = JSON.parse(readFileSync(path.join(import.meta.dirname, "../../../../../fixtures/live/kaminarimon-events.json"), "utf8")) as { events: (LiveEvent & { ts: string })[] };
 const events = fx.events;
@@ -25,6 +25,16 @@ describe("live state (a real recorded exploration)", () => {
     expect(stripNumbers(a)).toEqual(stripNumbers(s));
     const twice = events.reduce((acc, e) => reduce(reduce(acc, e), e), initialState());
     expect(stripNumbers(twice)).toEqual(stripNumbers(s));
+  });
+  it("one card per source; a broken thread wins the card", () => {
+    const cards = sourceCards(s);
+    expect(new Set(cards.map((c) => c.sourceId)).size).toBe(cards.length);
+    const bird = cards.find((c) => c.sourceId === "bird-unbeaten")!;
+    expect(bird.state).toBe("absent");
+    expect(bird.year).toBe(1878);
+    expect(bird.existence?.value).toBe("absent");
+    expect(cards.find((c) => c.sourceId === "met-56689")?.state).toBe("combined");
+    expect(cards.reduce((a, c) => a + c.threads.length, 0)).toBe(s.threads!.length);
   });
   it("strip numbers add up", () => {
     const n = stripNumbers(s);

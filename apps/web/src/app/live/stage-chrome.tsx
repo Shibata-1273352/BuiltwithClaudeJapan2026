@@ -9,7 +9,11 @@ import { STAGE_WORK, WHO_LABEL } from "./labels";
 export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: number; finished: boolean }) {
   const eta = etaSeconds(s.stages, elapsed);
   return (
-    <ol className="flex flex-wrap items-center gap-x-1 gap-y-2 text-sm" data-testid="step-rail" aria-label="探索の段階">
+    <ol className="flex max-w-full items-center gap-x-1 overflow-x-auto text-sm whitespace-nowrap lg:flex-wrap lg:gap-y-2" data-testid="step-rail" aria-label="探索の段階">
+      {/* screen readers hear step changes and completion, not the ticking timers */}
+      <li className="sr-only" aria-live="polite">
+        {finished ? "探索が完了しました" : (STEPS.find((st) => stepStatus(st, s.stages) === "running")?.ja ?? "")}
+      </li>
       {STEPS.map((st, i) => {
         const status = stepStatus(st, s.stages);
         const sec = stepElapsed(st, s.stages, elapsed) / 1000;
@@ -29,7 +33,7 @@ export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: numb
           </li>
         );
       })}
-      <li className="ml-3 text-xs text-muted tabular-nums" aria-live="polite">
+      <li className="ml-3 text-xs text-muted tabular-nums">
         {finished ? `完了 ${((s.done?.elapsed_ms ?? elapsed) / 1000).toFixed(1)} 秒` : eta > 0 ? `残り 約${eta}秒` : "まもなく"}
       </li>
     </ol>
@@ -37,10 +41,17 @@ export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: numb
 }
 
 /** What is working right now — several at once when the DAG runs in parallel. */
+/** The model that actually answered (server-side fallback may serve another one). */
+function servedLabel(s: LiveState): string {
+  const m = s.calls.at(-1)?.served ?? "claude-opus-5-5";
+  return m.replace(/^claude-/, "Claude ").replace(/-(\d+)-(\d+)$/, " $1.$2").replace(/(^|\s)([a-z])/g, (x) => x.toUpperCase());
+}
+
 export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boolean; replay?: boolean }) {
   const running = Object.entries(s.stages).filter(([, v]) => v.done === undefined).map(([k]) => k);
+  const claude = servedLabel(s);
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="live-chip" aria-live="polite">
+    <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="live-chip">
       <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-bold tracking-wider ${replay ? "bg-koto/20 text-koto" : finished ? "bg-toki/20 text-toki" : "bg-ba/20 text-ba"}`}>
         <span aria-hidden className={`size-1.5 rounded-full ${replay ? "bg-koto" : finished ? "bg-toki" : "animate-pulse bg-ba"}`} />
         {replay ? "記録の再生" : finished ? "完了" : "LIVE"}
@@ -58,7 +69,7 @@ export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boo
               exit={{ opacity: 0, y: 6 }}
               className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 ${w.who === "claude" ? "border-lantern/60 text-paper" : "border-muted/40 text-muted"}`}
             >
-              <span className={w.who === "claude" ? "font-bold text-lantern" : "font-bold"}>{w.who === "claude" ? "Claude Opus 5.5" : WHO_LABEL[w.who]}</span>
+              <span className={w.who === "claude" ? "font-bold text-lantern" : "font-bold"}>{w.who === "claude" ? claude : WHO_LABEL[w.who]}</span>
               {w.ja}
             </m.span>
           );
@@ -68,10 +79,10 @@ export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boo
   );
 }
 
-function Num({ v, label, accent, digits = 0, unit = "" }: { v: number; label: string; accent?: string; digits?: number; unit?: string }) {
+function Num({ v, label, accent, digits = 0, unit = "", ticking = false }: { v: number; label: string; accent?: string; digits?: number; unit?: string; ticking?: boolean }) {
   return (
     <div className="flex min-w-16 flex-col">
-      <m.span key={v.toFixed(digits)} initial={{ opacity: 0.3, y: 4 }} animate={{ opacity: 1, y: 0 }} className={`font-serif text-3xl leading-none tabular-nums ${accent ?? ""}`}>
+      <m.span key={ticking ? "t" : v.toFixed(digits)} initial={ticking ? false : { opacity: 0.3, y: 4 }} animate={{ opacity: 1, y: 0 }} className={`font-serif text-3xl leading-none tabular-nums ${accent ?? ""}`}>
         {unit === "$" ? "$" : ""}
         {v.toFixed(digits)}
         {unit && unit !== "$" ? <span className="ml-0.5 text-base">{unit}</span> : null}
@@ -87,7 +98,7 @@ export function ResultStrip({ s, elapsed }: { s: LiveState; elapsed: number }) {
   const sec = s.done?.elapsed_ms ? s.done.elapsed_ms / 1000 : elapsed / 1000;
   return (
     <div className="flex flex-wrap items-end gap-x-7 gap-y-3" data-testid="result-strip">
-      <Num v={sec} label="経過" digits={1} unit="秒" />
+      <Num v={sec} label="経過" digits={1} unit="秒" ticking />
       <Num v={n.sources} label="資料" />
       <Num v={n.passages} label="読んだ節" />
       <Num v={n.languages} label="言語" />

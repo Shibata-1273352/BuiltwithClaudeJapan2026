@@ -58,7 +58,7 @@ export function ThreadLayer({
     let prev = "";
     const tick = (t: number) => {
       raf = requestAnimationFrame(tick);
-      if (t - last < 100 || !stageRef.current) return;
+      if (t - last < 100 || !stageRef.current || !axisRef.current?.offsetParent) return; // hidden on phones
       last = t;
       const next = measure(stageRef.current, anchorRef.current, axisRef.current, cardEls.current);
       const key = round(next);

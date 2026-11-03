@@ -141,7 +141,7 @@ export function CapturePreview() {
       {/* the live stage takes the whole screen once the photo is sent */}
       {sent && !asList && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-night">
-          <UploadStage jpeg={sent} useLocation={useLocation} />
+          <UploadStage jpeg={sent} useLocation={useLocation} onExit={() => setSent(null)} />
         </div>
       )}
 

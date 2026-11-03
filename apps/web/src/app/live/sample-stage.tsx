@@ -9,7 +9,7 @@ export function SampleStage({ demoReplay }: { demoReplay: string | null }) {
   return <LiveStage source={source} demoReplay={demoReplay} />;
 }
 
-export function UploadStage({ jpeg, useLocation }: { jpeg: Blob; useLocation: boolean }) {
+export function UploadStage({ jpeg, useLocation, onExit }: { jpeg: Blob; useLocation: boolean; onExit: () => void }) {
   const [source] = useState<Source>(() => ({ kind: "upload", jpeg, useLocation }));
-  return <LiveStage source={source} />;
+  return <LiveStage source={source} onExit={onExit} />;
 }

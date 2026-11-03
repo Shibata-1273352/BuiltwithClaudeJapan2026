@@ -10,7 +10,6 @@ import { domMax, LazyMotion, LayoutGroup, MotionConfig } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sourceCards } from "@/lib/live/state";
 import { ExplorationView } from "../exploration-view";
-import { VisualHitCard } from "../visual-hit";
 import { EvidenceColumn } from "./evidence-column";
 import { PhotoStage, useScene } from "./photo-stage";
 import { LiveChips, ResultStrip, StepRail, Toasts } from "./stage-chrome";
@@ -38,9 +37,9 @@ function usePresent() {
   }, []);
 }
 
-const btn = "inline-flex min-h-11 items-center rounded-full px-5 text-sm font-medium";
+const btn = "inline-flex min-h-11 items-center rounded-full px-4 text-sm font-medium";
 
-export function LiveStage({ source, demoReplay }: { source: Source; demoReplay?: string | null }) {
+export function LiveStage({ source, demoReplay, onExit }: { source: Source; demoReplay?: string | null; onExit?: () => void }) {
   const { state: s, phase, error, expId, photo, elapsed, reduced } = useExploration(source);
   const [view, setView] = useState<"stage" | "list">("stage");
   const [hot, setHot] = useState<string | null>(null);
@@ -86,12 +85,14 @@ export function LiveStage({ source, demoReplay }: { source: Source; demoReplay?:
   const actions = (
     <>
       {s.visual?.hits[0] && s.at.visual !== undefined && (
-        <div className="w-full">
-          <p className="mb-1 text-xs text-muted">提灯から提灯へ：似た図像（画像の類似度。根拠ではありません）</p>
-          <ul className="flex gap-3">
-            <VisualHitCard h={s.visual.hits[0]} width="w-28" />
-          </ul>
-        </div>
+        <a href={s.visual.hits[0].commons} target="_blank" rel="noreferrer noopener" className="flex w-full items-center gap-3 rounded-lg bg-night-2/80 p-2 ring-1 ring-muted/15" data-testid="visual">
+          {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
+          <img src={`/api/cache/visual/images/${s.visual.hits[0].file}`} alt="" className="h-14 w-10 rounded object-cover" />
+          <span className="min-w-0 text-xs leading-snug">
+            <span className="block text-muted">提灯から提灯へ：似た図像（類似度 {s.visual.hits[0].score.toFixed(2)}。根拠ではありません）</span>
+            <span className="block truncate font-serif text-sm">{s.visual.hits[0].title}</span>
+          </span>
+        </a>
       )}
       {finished && expId && (
         <a href={`/note/${expId}`} className={`${btn} bg-lantern text-night`} data-testid="note-link">
@@ -123,7 +124,7 @@ export function LiveStage({ source, demoReplay }: { source: Source; demoReplay?:
           <main className="flex min-h-dvh flex-col gap-3 px-4 py-3 lg:h-dvh lg:px-8 lg:py-4">
             <header className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/" className="font-serif text-xl tracking-[0.3em]" aria-label="TSUMUGI はじめに戻る">
+                <Link href="/" onClick={onExit} className="font-serif text-xl tracking-[0.3em]" aria-label="TSUMUGI はじめに戻る">
                   TSUMUGI
                 </Link>
                 <StepRail s={s} elapsed={elapsed} finished={finished} />
@@ -145,6 +146,11 @@ export function LiveStage({ source, demoReplay }: { source: Source; demoReplay?:
             {s.failed && (
               <p className="text-sm text-ba" role="alert">
                 探索を最後まで進められませんでした：{s.failed.message}
+                {demoReplay && (
+                  <a href={`/replay/${demoReplay}`} className="ml-3 underline" data-testid="fallback-replay">
+                    記録を再生する（録画）
+                  </a>
+                )}
               </p>
             )}
 

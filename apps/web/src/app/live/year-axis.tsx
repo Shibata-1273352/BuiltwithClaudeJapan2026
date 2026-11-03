@@ -44,10 +44,9 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
             title={`${a}–${b} ${present ? "存在" : "不在"}`}
           >
             {!present && b - a > 30 && (
-              <span className="absolute top-1/2 left-3 -translate-y-1/2 whitespace-nowrap text-[11px] text-ba">
+              <span className="absolute bottom-0 left-3 whitespace-nowrap text-[11px] leading-tight text-ba">
                 {a} 焼失
-                <br />
-                {b} 再建
+                <br />→ {b} 再建
               </span>
             )}
           </m.div>
