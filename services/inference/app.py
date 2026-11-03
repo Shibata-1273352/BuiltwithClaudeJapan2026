@@ -19,7 +19,7 @@ from typing import Annotated, Literal
 
 import numpy as np
 import torch
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
 from PIL import Image
 from pydantic import BaseModel, Field
 
@@ -193,6 +193,28 @@ class SceneOut(BaseModel):
 
 SCENE_ID_RE = r"^[a-z0-9][a-z0-9_-]{0,63}$"
 ARTIFACT_ID_RE = r"^[a-z0-9][a-z0-9-]{0,63}$"
+
+
+def _warm() -> None:
+    """Load SAM 3, depth and SigLIP and run one tiny pass each (MPS compiles kernels on first use),
+    so the first exploration after an idle release does not pay ~6 s of loading."""
+    from scripts.build_scene import Models
+
+    sm, sp = _load("sam3")
+    dm, dp = _load("depth")
+    _load("siglip")
+    tiny = Image.new("RGB", (64, 64), (128, 64, 32))
+    m = Models.from_loaded(device, sm, sp, dm, dp)
+    m.masks_many(tiny, ["lantern"])
+    m.depth(tiny)
+
+
+@app.post("/warm", dependencies=[Depends(require_token)])
+async def warm(background: BackgroundTasks) -> dict:
+    """Called when a visitor opens the app; returns at once, loading happens in the background."""
+    already = sorted(_models)
+    background.add_task(_warm)
+    return {"ok": True, "loaded": already}
 
 
 @app.post("/scene", response_model=SceneOut, dependencies=[Depends(require_token)])

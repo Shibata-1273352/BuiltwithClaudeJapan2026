@@ -31,7 +31,7 @@ import { existenceFor, sourceTime, timeline } from "../timeline-server";
 import type { CallRecord } from "../claude";
 import type { DB } from "../corpus/db";
 
-export const BUDGET = { deadlineMs: 90_000, maxClaudeCalls: 14 } as const;
+export const BUDGET = { deadlineMs: 90_000, maxClaudeCalls: 24 } as const; // small parallel extraction calls (latency)
 
 class Deadline extends Error {}
 
@@ -95,7 +95,8 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     const see = await stage(ctx, "see", async () => {
       ctx.claude();
       const img = await readFile(capture.image_path);
-      const r = await seePhoto({ base64: img.toString("base64"), mediaType: "image/jpeg" });
+      // live progress for the stage (display only; never stored as a claim): thinking summary + finished elements
+      const r = await seePhoto({ base64: img.toString("base64"), mediaType: "image/jpeg" }, (p) => emit(explorationId, "see_progress", p));
       logCall(ctx, db, explorationId, r.record);
       if (!r.validation.ok) throw new Error(`see output rejected: ${r.validation.errors.join("; ")}`);
       emit(explorationId, "see", r.validation.value);
@@ -342,17 +343,25 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return found;
     };
     const selected1 = selectForExtraction(retrieved);
-    const [c1en, c1ja, found2] = await Promise.all([
-      stage(ctx, "extract:en", () => extractRound(1, selected1.filter((c) => c.lang === "en"))),
-      stage(ctx, "extract:ja", () => extractRound(1, selected1.filter((c) => c.lang === "ja"))),
-      opts.gapRound ? stage(ctx, "gap", runGap) : Promise.resolve([] as Retrieved[]),
-    ]);
+    // Latency (4.13): output length sets a call's time, so each language is split into two smaller
+    // parallel calls (claim ids carry the passage id, so they stay unique), and the gap round's
+    // extraction starts as soon as the gap judgment returns instead of waiting for round 1.
+    // ~2 passages per call: a call's time is set by its output (~100 tokens/s), so small calls in
+    // parallel finish together in ~4 s instead of one long call (measured 2026-11-03)
+    const PASSAGES_PER_CALL = 2;
+    const halves = <T,>(xs: T[]): T[][] => Array.from({ length: Math.ceil(xs.length / PASSAGES_PER_CALL) }, (_, i) => xs.slice(i * PASSAGES_PER_CALL, (i + 1) * PASSAGES_PER_CALL));
+    const extractLang = async (lang: "en" | "ja") => (await Promise.all(halves(selected1.filter((c) => c.lang === lang)).map((part) => extractRound(1, part)))).flat();
+    const round2 = opts.gapRound
+      ? stage(ctx, "gap", runGap).then(async (found2) => {
+          for (const f of found2) {
+            all.push(f);
+            byPassage.set(f.passageId, f);
+          }
+          return found2.length ? stage(ctx, "extract2", async () => (await Promise.all(halves(selectForExtraction(found2)).map((part) => extractRound(2, part)))).flat()) : [];
+        })
+      : Promise.resolve([] as CheckedClaim[]);
+    const [c1en, c1ja, claims2] = await Promise.all([stage(ctx, "extract:en", () => extractLang("en")), stage(ctx, "extract:ja", () => extractLang("ja")), round2]);
     const claims1 = [...c1en, ...c1ja];
-    for (const f of found2) {
-      all.push(f);
-      byPassage.set(f.passageId, f);
-    }
-    const claims2 = found2.length ? await stage(ctx, "extract2", () => extractRound(2, selectForExtraction(found2))) : [];
     const extraction = { claims: [...claims1, ...claims2] };
 
     // 7. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
@@ -432,7 +441,10 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       if (!cards.size) return null;
       ctx.claude();
       const lang = capture.ui_lang === "en" ? "en" : "ja";
-      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id), photoUnmatched);
+      // sentences reach the stage as they are written and pass the checks (display only; the final event is authoritative)
+      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id), photoUnmatched, (ok) =>
+        emit(explorationId, "narrative_progress", { lang, sentences: ok.map(({ text, claim_ids, assertion_type }) => ({ text, claim_ids, assertion_type })) }),
+      );
       logCall(ctx, db, explorationId, r.record);
       const payload = {
         lang,

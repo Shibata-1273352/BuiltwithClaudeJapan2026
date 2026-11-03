@@ -15,6 +15,8 @@ Requirements: `docs/REQUIREMENTS.md` (the source of truth). Deadline 2026-11-10 
   checked by screenshots (`scripts/design-shots.ts`, `scripts/stage-shots.ts`, `scripts/rehearse.ts`).
 - Cost: report the cost of every live Claude run. Prefer the public recording (`DEMO_REPLAY_ID`)
   for UI checks. The evaluation uses the Batch API and runs once, aggregated, when features are done.
+- Speed: fast mode (`CLAUDE_FAST=1`, ~2x cost) is for the live demo only; measure latency changes
+  with `scripts/profile-run.ts` / `bench-see.ts` / `bench-scene.ts` before and after.
 - Never type a number into the UI or docs by hand: compute it from stored results
   (e.g. `lib/eval-summary.ts`).
 - Honesty is a feature:

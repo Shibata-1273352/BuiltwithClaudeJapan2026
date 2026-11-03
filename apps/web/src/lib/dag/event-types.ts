@@ -6,6 +6,7 @@
 export const EVENT_TYPES = [
   "received",
   "stage",
+  "see_progress",
   "see",
   "place",
   "plan",
@@ -21,6 +22,7 @@ export const EVENT_TYPES = [
   "visual",
   "viewpoint",
   "associations",
+  "narrative_progress",
   "narrative",
   "graph",
   "ai_call",

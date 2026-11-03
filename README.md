@@ -149,6 +149,28 @@ After done, 「時をめくる」 (year slider 1856 → 1878 → 1960) and 「�
 
 Checks: `npx tsx --env-file=.env scripts/e2e-sample.ts <base>` (live, ~$0.24), `scripts/e2e-demo.ts <base> <id>` (the public recording from a fresh session), `scripts/stage-shots.ts <base> /replay/<id> [--phone] [--at 3,15,25,40]`.
 
+## Performance (2026-11-03)
+
+One live run of the CC0 Kaminarimon sample, server-side time to `done` (`scripts/profile-run.ts <id>`):
+
+| | Before | Standard | Demo (`CLAUDE_FAST=1`) |
+| --- | --- | --- | --- |
+| Total | 37.1 s | 25.5 s | **12.2 s** |
+| 視る (see) | 14.1 s | 9.1 s | 3.5 s |
+| 間 (SAM 3 + depth, parallel) | 14.3 s | 7.1 s | 6.7 s |
+| Story | 8.5 s | 6.5 s | 2.8 s |
+| Cost | $0.22 | $0.27 | $0.54 |
+
+What changed: see output trimmed to what the stage shows (~1260 → ~860 tokens); SAM 3 computes the
+image features once for all prompts (segmentation 12.3 → 4.4 s); extraction runs as small parallel
+calls of ~2 passages (a call's time is set by its output length) and the gap round starts as soon
+as the gap judgment returns; slow extraction calls are hedged with an identical request; the story
+cites short aliases (C1…) mapped back by code (912 → 563 output tokens); the inference models are
+warmed when the app opens; the gap judgment and viewpoint run on Sonnet 5.5 at standard speed.
+What the visitor sees sooner: Claude's elements and readings stream onto the photo (first at ~2.5 s)
+and the story appears sentence by sentence as each one passes the code checks.
+Benchmarks: `scripts/bench-see.ts <photo>` (Claude), `scripts/bench-scene.ts <photo>` (inference).
+
 ## Beyond P0
 
 | ID | Feature | Status |

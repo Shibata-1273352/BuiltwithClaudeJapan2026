@@ -82,6 +82,21 @@ class Models:
         return post["masks"].cpu().numpy().astype(bool), post["scores"].cpu().tolist()
 
     @torch.inference_mode()
+    def masks_many(self, img: Image.Image, texts: list[str]) -> list[tuple[np.ndarray, list[float]]]:
+        """Several text prompts on one image: the vision encoder runs once and its features are reused
+        (the expensive part; each prompt then costs only the text encoder and the mask decoder)."""
+        img_inputs = self.sp(images=img, return_tensors="pt").to(self.device)
+        vision = self.sm.get_vision_features(pixel_values=img_inputs["pixel_values"])
+        sizes = img_inputs["original_sizes"].tolist()
+        out = []
+        for t in texts:
+            ti = self.sp(text=t, return_tensors="pt").to(self.device)
+            o = self.sm(vision_embeds=vision, input_ids=ti["input_ids"], attention_mask=ti.get("attention_mask"))
+            post = self.sp.post_process_instance_segmentation(o, threshold=0.4, mask_threshold=0.5, target_sizes=sizes)[0]
+            out.append((post["masks"].cpu().numpy().astype(bool), post["scores"].cpu().tolist()))
+        return out
+
+    @torch.inference_mode()
     def depth(self, img: Image.Image) -> np.ndarray:
         inputs = self.dp(images=img, return_tensors="pt").to(self.device)
         out = self.dm(**inputs)
@@ -192,10 +207,11 @@ def build_photo_scene(models: "Models", img: Image.Image, scene_id: str, artifac
 
     elements: dict[str, dict] = {}
     masks_by_key: dict[str, np.ndarray] = {}
-    for key, prompt in prompts or PHOTO_PROMPTS:
-        t0 = time.perf_counter()
-        masks, scores = models.masks(img, text=prompt)
-        timings[f"segment_{key}"] = round((time.perf_counter() - t0) * 1000)
+    plist = prompts or PHOTO_PROMPTS
+    t0 = time.perf_counter()
+    results = models.masks_many(img, [prompt for _, prompt in plist])
+    timings["segment"] = round((time.perf_counter() - t0) * 1000)
+    for (key, prompt), (masks, scores) in zip(plist, results):
         if not len(masks):
             continue
         if key == "people":

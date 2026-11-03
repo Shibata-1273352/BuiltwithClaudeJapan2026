@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CapturePreview } from "./capture-preview";
 import { ButtonLink } from "./ui/button";
+import { Warm } from "./warm";
 
 const STEPS = [
   { n: "01", ja: "かざす", body: "目の前の景色を一枚。顔は端末の中でぼかし、位置は任意です。" },
@@ -18,6 +19,7 @@ const THREADS = [
 export default function Home() {
   return (
     <main className="flex flex-1 flex-col">
+      <Warm />
       <header className="mx-auto flex w-full max-w-7xl items-baseline justify-between px-5 pt-6">
         <span className="font-serif text-lead tracking-[0.3em]">TSUMUGI</span>
         <nav className="flex gap-1" aria-label="ページ">

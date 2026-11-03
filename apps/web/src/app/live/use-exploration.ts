@@ -85,6 +85,7 @@ export function useExploration(source: Source) {
       };
       for (const t of EVENT_TYPES) es.addEventListener(t, on);
     };
+    if (source.kind !== "replay") void fetch("/api/warm", { method: "POST" }).catch(() => {}); // models load while the photo is sent
     (async () => {
       if (source.kind === "replay") {
         mark();

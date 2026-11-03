@@ -44,7 +44,7 @@ function servedLabel(s: LiveState): string {
   return m.replace(/^claude-/, "Claude ").replace(/-(\d+)-(\d+)$/, " $1.$2").replace(/(^|\s)([a-z])/g, (x) => x.toUpperCase());
 }
 
-export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boolean; replay?: boolean }) {
+export function LiveChips({ s, finished, replay, note }: { s: LiveState; finished: boolean; replay?: boolean; note?: React.ReactNode }) {
   const running = Object.entries(s.stages).filter(([, v]) => v.done === undefined).map(([k]) => k);
   const claude = servedLabel(s);
   return (
@@ -55,6 +55,7 @@ export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boo
         </span>
         {replay ? "記録の再生" : finished ? "完了" : "LIVE"}
       </Tag>
+      {note}
       <AnimatePresence initial={false}>
         {running.map((k) => {
           const w = STAGE_WORK[k];

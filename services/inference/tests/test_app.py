@@ -53,6 +53,10 @@ def test_scene_requires_token():
     assert r.status_code == 401
 
 
+def test_warm_requires_token():
+    assert client.post("/warm").status_code == 401
+
+
 def test_scene_rejects_path_like_ids():
     r = client.post(
         "/scene",

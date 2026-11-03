@@ -155,12 +155,18 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
               </div>
             </header>
             <div className="flex min-h-7 flex-wrap items-center gap-x-6 gap-y-1">
-              <LiveChips s={s} finished={finished} replay={replay} />
-              {replay && (
-                <p className="text-caption text-muted" data-testid="replay-banner">
-                  {source.recordedAt.slice(5, 16).replace("-", "/").replace("T", " ")} に実行した探索の録画
-                </p>
-              )}
+              <LiveChips
+                s={s}
+                finished={finished}
+                replay={replay}
+                note={
+                  replay ? (
+                    <span className="text-caption text-muted" data-testid="replay-banner">
+                      {source.recordedAt.slice(5, 16).replace("-", "/").replace("T", " ")} に実行した探索の録画
+                    </span>
+                  ) : null
+                }
+              />
               <span className="ml-auto hidden max-w-[40%] lg:block">
                 <Toasts s={s} elapsed={elapsed} />
               </span>

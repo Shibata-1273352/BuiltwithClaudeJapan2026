@@ -28,6 +28,10 @@ const ASK = ["看板・銘の文字を原文のまま読む", "読みと意味�
 function SeeAsk({ s, since }: { s: LiveState; since: number }) {
   const answered = Boolean(s.see);
   const call = s.calls.find((c) => c.stage === "see");
+  const els = s.seeProgress?.elements ?? [];
+  // ticked by what has actually arrived: text read, readings/meanings, boxes; places come with the answer
+  const doneAt = [els.some((e) => e.text_original), els.some((e) => e.reading || e.meaning), els.length > 0, answered];
+  const thinking = s.seeProgress?.thinking?.trim();
   return (
     <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="see-ask">
       <p className="label">
@@ -35,17 +39,24 @@ function SeeAsk({ s, since }: { s: LiveState; since: number }) {
       </p>
       <ol className="mt-2 flex flex-col gap-1 text-small">
         {ASK.map((a, i) => {
-          const shown = answered || since > 600 + i * 1700;
+          const shown = answered || doneAt[i] || since > 600 + i * 1700;
+          const ok = answered || doneAt[i];
           return shown ? (
-            <m.li key={a} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} className={`flex gap-3 ${answered ? "text-paper" : "text-paper/80"}`}>
-              <span aria-hidden className={`w-4 text-caption tabular-nums ${answered ? "text-toki" : "text-lantern"}`}>
-                {answered ? "✓" : "…"}
+            <m.li key={a} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} className={`flex gap-3 ${ok ? "text-paper" : "text-paper/70"}`}>
+              <span aria-hidden className={`w-4 text-caption tabular-nums ${ok ? "text-toki" : "text-lantern"}`}>
+                {ok ? "✓" : "…"}
               </span>
               {a}
             </m.li>
           ) : null;
         })}
       </ol>
+      {thinking && !answered && (
+        <div className="mt-4" data-testid="see-thinking">
+          <p className="label">Claude の思考（要約・ライブ）</p>
+          <p className="mt-1 line-clamp-4 font-serif text-small text-paper/75 italic">{thinking.slice(-280)}</p>
+        </div>
+      )}
     </m.div>
   );
 }
@@ -75,7 +86,7 @@ export function TextColumn({
   const since = (k: string) => (s.at[k] !== undefined ? elapsed - s.at[k] : -1);
   const placeName = s.place?.path[0]?.name; // the path is leaf-first
   const docked = placeName && since("place") >= 1900;
-  const readings = (s.see?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
+  const readings = (s.see?.elements ?? s.seeProgress?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
   const showBroken = broken.length > 0 && since("threads") > 1800;
   const brokenYear = (() => {
@@ -83,8 +94,8 @@ export function TextColumn({
     const row = s.existence?.rows.find((r) => r.source === src);
     return row?.time?.start?.slice(0, 4) ?? null;
   })();
-  const sentences = s.narrative?.sentences ?? [];
-  const sinceNarr = since("narrative");
+  const sentences = s.narrative?.sentences ?? s.narrativeProgress?.sentences ?? [];
+  const sinceNarr = s.at.narrative_progress !== undefined ? elapsed - s.at.narrative_progress : since("narrative");
   const order = new Map(cards.map((c, i) => [c.sourceId, i + 1]));
   const showStory = sinceNarr >= 0;
 
@@ -180,7 +191,7 @@ export function TextColumn({
 
         {/* the story, sentence by sentence (350 ms each), with source numbers */}
         {showStory && (
-          <article data-testid="narrative" lang={s.narrative?.lang ?? "ja"}>
+          <article data-testid="narrative" lang={s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
             <p className="label">この場所の物語</p>
             <div className="mt-2 flex flex-col gap-3">
               {sentences.map((x, i) => {
@@ -209,6 +220,9 @@ export function TextColumn({
             </div>
           </article>
         )}
+
+        {/* the viewpoint may land after the story has started: keep it, below the story */}
+        {showStory && <ViewpointCard s={s} />}
 
         {/* threads that exist but are not drawn on a phone */}
         {s.threads && (
