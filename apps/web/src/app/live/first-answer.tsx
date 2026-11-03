@@ -81,7 +81,7 @@ export function FirstAnswer({ s }: { s: LiveState }) {
           {since ? (
             <m.div key="a2" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-1" data-testid="since-when">
               <p className="font-serif text-title leading-tight tabular-nums">{since.since}</p>
-              <p className="mt-0.5 font-serif text-small text-paper/85">{since.label[lang]}</p>
+              <p className="present-hide mt-0.5 font-serif text-small text-paper/85">{since.label[lang]}</p>
               <p className="mt-0.5 text-caption text-muted">{l.byCode}</p>
             </m.div>
           ) : placeKnown && (s.place === null || tl) ? (

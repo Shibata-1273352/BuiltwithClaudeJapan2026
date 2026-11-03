@@ -222,7 +222,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
           </Button>
         </div>
         <p className="font-serif text-title leading-snug" data-testid="time-label">
-          {plainLabel(ys.label[lang], lang, data.name?.en)}
+          {plainLabel(ys.label[lang], lang, data.name?.en).replace(/^\d{3,4}年：|^\d{3,4}: /, "")}
         </p>
         {conflict && (
           <m.figure initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-conflict">

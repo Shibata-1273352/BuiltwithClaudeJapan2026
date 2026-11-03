@@ -76,6 +76,15 @@ html[data-present] {
 html[data-present] .quiet-row > * {
   font-size: var(--text-small);
 }
+/* presenter: the 1878 discovery fits the frame with the first answer */
+html[data-present] [data-testid="broken-callout"] .text-hero {
+  font-size: var(--text-display);
+}
+html[data-present] [data-testid="broken-callout"] > p.flex {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
 html[data-present] .present-hide {
   display: none !important;
 }
@@ -190,12 +199,20 @@ path[data-rope] {
   opacity: 0;
   transition: opacity 500ms ease-out;
 }
+g[data-braid] path {
+  opacity: 0;
+  transition: opacity 500ms ease-out;
+}
+g[data-braid] path.on {
+  opacity: 1;
+}
 path[data-rope].on {
   opacity: 1;
 }
 /* on wide and 4K screens the threads keep their weight relative to the page */
 @media (min-width: 2200px) {
-  path[data-rope] {
+  path[data-rope],
+  g[data-braid] path {
     stroke-width: calc(var(--sw, 1) * 100vw / 1920);
   }
 }

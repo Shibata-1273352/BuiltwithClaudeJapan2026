@@ -37,7 +37,6 @@ const T = dict({
     moments: [
       { img: "time", title: "時を越える", body: "明治の旅人が歩いた日、ここに常設の門はなかった。" },
       { img: "read", title: "言葉を越える", body: "縦書きの筆文字も、明治の英文も。" },
-      { img: "postcard", title: "持ち帰る", body: "確かめた一文を、絵はがきに。" },
     ],
     trustTitle: "安心して使える理由",
     trust: "読むのは Claude、確かめるのはコード。資料にないことは「書かれていません」。",
@@ -77,7 +76,6 @@ const T = dict({
     moments: [
       { img: "time", title: "Across time", body: "When a Meiji-era traveller walked here, no permanent gate stood." },
       { img: "read", title: "Across languages", body: "Vertical brush lettering, Meiji-era English." },
-      { img: "postcard", title: "Take it home", body: "The checked sentence, on a postcard." },
     ],
     trustTitle: "Why you can rely on it",
     trust: "Claude reads; code checks. What the sources do not say, it says so.",
@@ -118,14 +116,14 @@ export function Landing({ facts }: { facts: LandingFacts }) {
       {/* the scene, the value, the action */}
       <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 pt-10 pb-14 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-14 lg:pt-14">
         <div>
-          <figure className="max-w-[38em] border-l-2 border-lantern pl-4" data-testid="origin">
+          <h1 className="font-serif text-title leading-tight font-bold sm:text-display">{t.hero}</h1>
+          <p className="mt-6 max-w-[36em] text-body text-paper/80">{t.sub}</p>
+          <figure className="mt-8 max-w-[38em] border-l-2 border-lantern pl-4" data-testid="origin">
             <figcaption className="label">{t.origin}</figcaption>
             <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
             <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
             <p className="mt-3 text-small text-paper/80" data-testid="career">{t.career}</p>
           </figure>
-          <h1 className="mt-10 font-serif text-title leading-tight font-bold sm:text-display">{t.hero}</h1>
-          <p className="mt-6 max-w-[36em] text-body text-paper/80">{t.sub}</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <ButtonLink href="/live" variant="primary" className="px-6 text-body" data-testid="try-sample">
               {t.trySample}
@@ -142,7 +140,7 @@ export function Landing({ facts }: { facts: LandingFacts }) {
 
       {/* the three moments */}
       <section className="mx-auto w-full max-w-7xl px-5 pb-16" aria-label={t.moments.map((m) => m.title).join(" / ")}>
-        <ol className="grid gap-10 border-t border-rule pt-10 md:grid-cols-3">
+        <ol className="grid gap-10 border-t border-rule pt-10 md:grid-cols-2">
           {t.moments.map((m, i) => (
             <li key={m.img} className="flex flex-col gap-3">
               <span className="text-caption text-muted tabular-nums">{String(i + 1).padStart(2, "0")}</span>
@@ -162,7 +160,7 @@ export function Landing({ facts }: { facts: LandingFacts }) {
           <p className="label">{t.trustTitle}</p>
           <p className="mt-3 max-w-[36em] text-body text-paper/85">{t.trust}</p>
           <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
-            {t.numbers(facts).map((n) => (
+            {t.numbers(facts).slice(0, 1).map((n) => (
               <div key={n.l} className="flex flex-col">
                 <dt className="order-2 mt-1 text-caption text-muted">{n.l}</dt>
                 <dd className="font-serif text-title tabular-nums">{n.v}</dd>
