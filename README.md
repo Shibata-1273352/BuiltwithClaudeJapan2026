@@ -3,7 +3,7 @@
 > 撮るだけで、目の前の日本が、意味と物語になる。
 > Take a photo — the Japan in front of you turns into meaning and story.
 
-**Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer.
+**Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer. My career has been at a telecom carrier, the job of connecting people; TSUMUGI (紡ぐ, *tsumugu*, to weave) connects time, place and people, with every thread checked against its source.
 
 **Who it is for.** Travellers who love Japan, and the Japanese friends who show them around: standing in front of a gate, a sign or a lantern, with a phone.
 

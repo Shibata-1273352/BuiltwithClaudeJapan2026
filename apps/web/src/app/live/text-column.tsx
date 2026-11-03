@@ -34,6 +34,7 @@ const T = dict({
     ja: "日本語",
     en: "英語",
     sep: "、",
+    searched: (n: number) => `Claude が足りない観点を判断し、追加で探した（${n} 節が見つかった）：`,
     story: "この場所の物語",
     threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：${src} 資料`,
   },
@@ -57,6 +58,7 @@ const T = dict({
     ja: "Japanese",
     en: "English",
     sep: ", ",
+    searched: (n: number) => `Claude judged what was missing and searched again (${n} passages found): `,
     story: "The story of this place",
     threads: (n: number, b: number, src: number) => `${n} threads (${b} broken) from ${src} sources`,
   },
@@ -307,6 +309,18 @@ export function TextColumn({
         )}
 
         {/* the viewpoint may land after the story has started: keep it, below the story */}
+        {/* after the story, Claude's judgment stays as one line: what it found missing, what it searched for */}
+        {showStory && s.gap?.gaps && s.gap.gaps.length > 0 && (
+          <p className="border-l-2 border-lantern pl-4 text-caption text-muted" data-testid="claude-searched">
+            {t.searched(s.gap.found ?? 0)}
+            <span className="text-paper">
+              {s.gap.gaps
+                .flatMap((g) => g.terms)
+                .slice(0, 4)
+                .join(t.sep)}
+            </span>
+          </p>
+        )}
         {showStory && <ViewpointCard s={s} />}
         {showStory && world}
 
