@@ -8,21 +8,22 @@ export type Arrival = { seq: number; type: string; at: number };
 
 /** How long a beat of this type holds the stage before the next one may start (ms). */
 export const HOLD: Record<string, number> = {
-  see: 1400, // boxes draw in
-  place: 1100, // the big title
-  candidates: 140, // light points, staggered
-  gap: 1200, // Claude's judgment is read
-  claims: 450,
-  visual: 1600, // the print wipes onto the photo
-  existence: 700,
-  timeline: 300,
-  threads: 1200, // threads grow, one breaks
-  narrative: 400,
-  associations: 600,
+  // trimmed 2026-11-03 once the backend got ~2.5x faster: holds pace the beats, they must not add seconds
+  see: 900, // boxes draw in (most already arrived while streaming)
+  place: 800, // the big title
+  candidates: 90, // light points, staggered
+  gap: 800, // Claude's judgment starts typing
+  claims: 250,
+  visual: 1000, // the print wipes onto the photo
+  existence: 500,
+  timeline: 200,
+  threads: 900, // threads grow, one breaks
+  narrative: 250,
+  associations: 400,
 };
 const DEFAULT_HOLD = 120;
 /** The scan sweep shows at least this long after the first event, even when the see call is fast. */
-export const MIN_SEE_SWEEP = 2600;
+export const MIN_SEE_SWEEP = 1800;
 
 export function scheduleBeats(arrivals: Arrival[], { reduced = false }: { reduced?: boolean } = {}): Map<number, number> {
   const out = new Map<number, number>();

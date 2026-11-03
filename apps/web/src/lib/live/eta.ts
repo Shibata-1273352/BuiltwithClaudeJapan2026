@@ -1,17 +1,18 @@
 /**
- * Step rail and ETA (6.2, NN/g: show progress and an estimate for waits over 10 s). Medians from
- * the measured runs of 11/3 (README: median 42.6 s). The rail shows these user-facing steps; the
- * DAG stages map onto them.
+ * Step rail and ETA (6.2, NN/g: show progress and an estimate for waits over 10 s). Medians of the
+ * standard-speed runs after the performance work of 2026-11-03 (total ~25 s; fast mode finishes
+ * sooner, and an estimate that ends early is the better error). The rail shows these user-facing
+ * steps; the DAG stages map onto them.
  */
 export type Step = { key: string; ja: string; en: string; stages: string[]; median: number; parallel?: boolean };
 
 export const STEPS: Step[] = [
-  { key: "see", ja: "視る", en: "Read the photo", stages: ["see", "place"], median: 13000 },
-  { key: "search", ja: "探す", en: "Search books", stages: ["plan", "retrieve"], median: 400 },
-  { key: "check", ja: "確かめる", en: "Check claims", stages: ["extract:en", "extract:ja", "gap", "extract2"], median: 15000 },
-  { key: "time", ja: "時を照らす", en: "Judge the time", stages: ["existence", "names"], median: 300 },
-  { key: "weave", ja: "紡ぐ", en: "Weave the story", stages: ["narrate", "graph"], median: 11000 },
-  { key: "ma", ja: "間", en: "Space", stages: ["space"], median: 19000, parallel: true },
+  { key: "see", ja: "視る", en: "Read the photo", stages: ["see", "place"], median: 9000 },
+  { key: "search", ja: "探す", en: "Search books", stages: ["plan", "retrieve"], median: 200 },
+  { key: "check", ja: "確かめる", en: "Check claims", stages: ["extract:en", "extract:ja", "gap", "extract2"], median: 9000 },
+  { key: "time", ja: "時を照らす", en: "Judge the time", stages: ["existence", "names"], median: 100 },
+  { key: "weave", ja: "紡ぐ", en: "Weave the story", stages: ["narrate", "graph"], median: 6500 },
+  { key: "ma", ja: "間", en: "Space", stages: ["space"], median: 7000, parallel: true },
 ];
 
 type Stages = Record<string, { started: number; done?: number }>;

@@ -31,7 +31,7 @@ import { existenceFor, sourceTime, timeline } from "../timeline-server";
 import type { CallRecord } from "../claude";
 import type { DB } from "../corpus/db";
 
-export const BUDGET = { deadlineMs: 90_000, maxClaudeCalls: 14 } as const;
+export const BUDGET = { deadlineMs: 90_000, maxClaudeCalls: 24 } as const; // small parallel extraction calls (latency)
 
 class Deadline extends Error {}
 
@@ -346,11 +346,10 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     // Latency (4.13): output length sets a call's time, so each language is split into two smaller
     // parallel calls (claim ids carry the passage id, so they stay unique), and the gap round's
     // extraction starts as soon as the gap judgment returns instead of waiting for round 1.
-    const halves = <T,>(xs: T[]): T[][] => {
-      const k = xs.length >= 6 ? 3 : xs.length >= 4 ? 2 : 1;
-      const n = Math.ceil(xs.length / k);
-      return Array.from({ length: k }, (_, i) => xs.slice(i * n, (i + 1) * n)).filter((x) => x.length);
-    };
+    // ~2 passages per call: a call's time is set by its output (~100 tokens/s), so small calls in
+    // parallel finish together in ~4 s instead of one long call (measured 2026-11-03)
+    const PASSAGES_PER_CALL = 2;
+    const halves = <T,>(xs: T[]): T[][] => Array.from({ length: Math.ceil(xs.length / PASSAGES_PER_CALL) }, (_, i) => xs.slice(i * PASSAGES_PER_CALL, (i + 1) * PASSAGES_PER_CALL));
     const extractLang = async (lang: "en" | "ja") => (await Promise.all(halves(selected1.filter((c) => c.lang === lang)).map((part) => extractRound(1, part)))).flat();
     const round2 = opts.gapRound
       ? stage(ctx, "gap", runGap).then(async (found2) => {

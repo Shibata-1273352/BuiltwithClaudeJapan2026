@@ -221,6 +221,9 @@ export function TextColumn({
           </article>
         )}
 
+        {/* the viewpoint may land after the story has started: keep it, below the story */}
+        {showStory && <ViewpointCard s={s} />}
+
         {/* threads that exist but are not drawn on a phone */}
         {s.threads && (
           <p className="text-caption text-muted lg:hidden">

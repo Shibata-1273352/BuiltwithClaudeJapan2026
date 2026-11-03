@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { MIN_SEE_SWEEP, scheduleBeats } from "./beats";
+import { HOLD, MIN_SEE_SWEEP, scheduleBeats } from "./beats";
 import { etaSeconds, STEPS, stepStatus } from "./eta";
 import { fold, initialState, reduce, sourceCards, stripNumbers, type LiveEvent } from "./state";
 
@@ -80,11 +80,11 @@ describe("beats (6.3 choreography)", () => {
   });
   it("staggers the burst of candidates and lets the scan sweep run", () => {
     const cands = events.filter((e) => e.type === "candidates").map((e) => shown.get(e.seq)!);
-    for (let i = 1; i < cands.length; i++) expect(cands[i] - cands[i - 1]).toBeGreaterThanOrEqual(140);
+    for (let i = 1; i < cands.length; i++) expect(cands[i] - cands[i - 1]).toBeGreaterThanOrEqual(HOLD.candidates);
     expect(at("see")).toBeGreaterThanOrEqual(MIN_SEE_SWEEP);
   });
   it("shows the broken thread only after the existence judgment", () => {
-    expect(at("threads")).toBeGreaterThanOrEqual(at("existence") + 700);
+    expect(at("threads")).toBeGreaterThanOrEqual(at("existence") + HOLD.existence);
   });
   it("reduced motion: no holds", () => {
     const r = scheduleBeats(arrivals, { reduced: true });
@@ -97,7 +97,7 @@ describe("step rail and ETA", () => {
     const none = etaSeconds({}, 0);
     const seeDone = etaSeconds({ see: { started: 0, done: 13000 }, place: { started: 13000, done: 13001 } }, 13001);
     expect(none).toBeGreaterThan(seeDone);
-    expect(none).toBeLessThanOrEqual(45);
+    expect(none).toBeLessThanOrEqual(30);
   });
   it("marks a step done when its stages are done", () => {
     const see = STEPS[0];

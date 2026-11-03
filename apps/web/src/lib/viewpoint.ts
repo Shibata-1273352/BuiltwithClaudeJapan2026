@@ -3,8 +3,23 @@
  * does not lengthen the critical path). Qualitative, no geometry; shown in pencil with premises.
  */
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { UNTRUSTED_POLICY, validateViewpoint, ViewpointOutput, type Viewpoint } from "@tsumugi/core";
-import { CLAUDE_LIGHT_MODEL, claude, costOf, rateLimitHeaders, type CallRecord } from "./claude";
+import {
+  UNTRUSTED_POLICY,
+  validateViewpoint,
+  ViewpointOutput,
+  type Viewpoint,
+} from "@tsumugi/core";
+import {
+  CLAUDE_LIGHT_MODEL,
+  CLAUDE_MODEL,
+  FAST_BETA,
+  claude,
+  costOf,
+  fastOn,
+  rateLimitHeaders,
+  withFast,
+  type CallRecord,
+} from "./claude";
 
 export const VIEWPOINT_SYSTEM = `You are the "viewpoint" step of TSUMUGI. The place in the photo has already been identified (given below).
 
@@ -19,28 +34,52 @@ export async function guessViewpoint(
   place: string,
 ): Promise<{ value: Viewpoint | null; errors: string[]; record: CallRecord }> {
   const startedAt = new Date();
-  const { data, response } = await claude()
-    .beta.messages.create({
-      model: CLAUDE_LIGHT_MODEL,
-      max_tokens: 4000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      output_config: { effort: "low", format: betaZodOutputFormat(ViewpointOutput) },
-      system: [{ type: "text", text: VIEWPOINT_SYSTEM, cache_control: { type: "ephemeral" } }],
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: image.mediaType, data: image.base64 } },
-            { type: "text", text: `Place (from the dictionary): ${place}` },
-          ],
+  // with fast mode on, Opus 5.5 fast answers before the story starts (Sonnet took ~6 s); else Sonnet 5.5
+  const model = fastOn() ? CLAUDE_MODEL : CLAUDE_LIGHT_MODEL;
+  const { data, response } = await withFast((fast) =>
+    claude()
+      .beta.messages.create({
+        model,
+        ...(fast ? { speed: "fast" as const } : {}),
+        max_tokens: 4000,
+        betas: [
+          "server-side-fallback-2026-07-01",
+          ...(fast ? [FAST_BETA] : []),
+        ],
+        fallbacks: "default",
+        output_config: {
+          effort: "low",
+          format: betaZodOutputFormat(ViewpointOutput),
         },
-      ],
-    })
-    .withResponse();
+        system: [
+          {
+            type: "text",
+            text: VIEWPOINT_SYSTEM,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: image.mediaType,
+                  data: image.base64,
+                },
+              },
+              { type: "text", text: `Place (from the dictionary): ${place}` },
+            ],
+          },
+        ],
+      })
+      .withResponse(),
+  );
   const record: CallRecord = {
     stage: "viewpoint",
-    model: CLAUDE_LIGHT_MODEL,
+    model,
     servedModel: data.model,
     startedAt: startedAt.toISOString(),
     elapsedMs: Date.now() - startedAt.getTime(),
@@ -51,15 +90,18 @@ export async function guessViewpoint(
       cacheRead: data.usage.cache_read_input_tokens ?? 0,
       cacheWrite: data.usage.cache_creation_input_tokens ?? 0,
     },
-    costUsd: costOf(data.usage, CLAUDE_LIGHT_MODEL),
+    costUsd: costOf(data.usage, model),
     rateLimit: rateLimitHeaders(response.headers),
     requestId: response.headers.get("request-id"),
   };
   const text = data.content.find((b) => b.type === "text")?.text;
-  if (data.stop_reason === "refusal" || !text) return { value: null, errors: ["no output"], record };
+  if (data.stop_reason === "refusal" || !text)
+    return { value: null, errors: ["no output"], record };
   try {
     const v = validateViewpoint(JSON.parse(text));
-    return v.ok ? { value: v.value, errors: [], record } : { value: null, errors: v.errors, record };
+    return v.ok
+      ? { value: v.value, errors: [], record }
+      : { value: null, errors: v.errors, record };
   } catch {
     return { value: null, errors: ["output is not valid JSON"], record };
   }
