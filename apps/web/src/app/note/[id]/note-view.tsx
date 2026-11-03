@@ -29,8 +29,8 @@ const T = dict({
     space: "間（ま）で見る",
     aligned: "広重の絵と位置合わせ済み",
     seen: "写真の中で読めたもの",
-    confirm: "確認しました",
-    unconfirm: "確認を取り消す",
+    confirm: "確かめた印をつける",
+    unconfirm: "印を外す",
     visual: "提灯から提灯へ・似た図像",
     noNarrative: "この言語の物語はまだありません。",
     make: "作る",
@@ -54,8 +54,8 @@ const T = dict({
     space: "View in 間 (ma)",
     aligned: "aligned to the Hiroshige print",
     seen: "Read in the photo",
-    confirm: "I checked this",
-    unconfirm: "Undo my check",
+    confirm: "Mark as checked by me",
+    unconfirm: "Remove my mark",
     visual: "Lantern to lantern · similar images",
     noNarrative: "No story in this language yet.",
     make: "Write it",
@@ -335,7 +335,7 @@ export function NoteView({ note }: { note: Note }) {
                   {k.author ?? ""}
                   {k.first_published ? ` · ${k.first_published}${lang === "ja" ? " 刊" : " (pub.)"}` : ""}
                 </p>
-                <p className="mt-2 text-caption text-muted">{[k.provider, k.edition, k.license].filter(Boolean).join(" · ")}</p>
+                <p className="mt-2 text-caption text-muted">{[k.provider, k.edition, k.license?.replace(/\s*\(isPublicDomain=true\)/, "")].filter(Boolean).join(" · ")}</p>
                 {k.url && (
                   <a href={k.url} className="mt-2 block truncate text-caption text-muted underline decoration-rule-strong underline-offset-4 hover:text-paper" rel="noreferrer noopener" target="_blank">
                     {k.url}

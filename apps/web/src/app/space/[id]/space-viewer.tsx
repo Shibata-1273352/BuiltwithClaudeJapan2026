@@ -387,7 +387,7 @@ export function SpaceViewer({
             className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-6 bg-gradient-to-t from-night/85 to-transparent px-6 pt-24 pb-8 lg:px-12 lg:pb-10"
             data-testid="space-inside"
           >
-            <div className="max-w-[36rem]">
+            <div className="max-w-[24rem]">
               <p className="label">{l.inside}</p>
               <p className="mt-2 font-serif text-title">{l.print}</p>
               {ys && (

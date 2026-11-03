@@ -5,6 +5,7 @@
  * the photo, Claude's judgment of what is missing (labelled as Claude's), the broken thread, and
  * finally the story, sentence by sentence, each citing its sources.
  */
+import { interimSince } from "@/lib/time-river";
 import { FirstAnswer } from "./first-answer";
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
@@ -27,6 +28,8 @@ const T = dict({
     received: "写真を受け取りました。",
     broken: "切れた糸",
     notYet: (p: string) => `${p}は、まだなかった`,
+    notYetPermanent: (p: string) => `恒久的な${p}は、まだなかった`,
+    interim: (y: number) => `仮設の門は${y}年から立っていた（年表）`,
     byCode: "年表との照合はコード。Claude には判定させていません。",
     words: "写真の中の文字",
     judgment: "Claude の判断 ── 何が足りないか",
@@ -51,6 +54,8 @@ const T = dict({
     received: "Photo received.",
     broken: "Broken thread",
     notYet: (p: string) => `${p || "it"} was gone`,
+    notYetPermanent: (p: string) => `the permanent ${p || "structure"} was gone`,
+    interim: (y: number) => `a temporary gate stood from ${y} (timeline)`,
     byCode: "Checked against the timeline by code — not left to Claude.",
     words: "Words in the photo",
     judgment: "Claude's judgment — what is missing",
@@ -171,6 +176,12 @@ export function TextColumn({
   const readings = (s.see?.elements ?? s.seeProgress?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
   const showBroken = broken.length > 0 && since("threads") > 1800;
+  const brokenYearNum = (() => {
+    const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
+    const row = s.existence?.rows.find((r) => r.source === src);
+    return row?.time?.start ? Number(row.time.start.slice(0, 4)) : null;
+  })();
+  const interim = brokenYearNum && s.timeline ? interimSince(s.timeline as never, brokenYearNum) : null;
   const brokenYear = (() => {
     const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
     const row = s.existence?.rows.find((r) => r.source === src);
@@ -221,8 +232,9 @@ export function TextColumn({
               </p>
               <p className="mt-1 flex items-baseline gap-4">
                 <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
-                <span className="font-serif text-title">{t.notYet(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
+                <span className="font-serif text-title">{(interim ? t.notYetPermanent : t.notYet)(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
               </p>
+              {interim && <p className="mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
               <p className="mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
               <p className="mt-1 text-caption text-muted">{t.byCode}</p>
             </m.div>
@@ -321,7 +333,7 @@ export function TextColumn({
             </span>
           </p>
         )}
-        {showStory && <ViewpointCard s={s} />}
+        {showStory && <div className="present-hide"><ViewpointCard s={s} /></div>}
         {showStory && world}
 
         {/* threads that exist but are not drawn on a phone */}
