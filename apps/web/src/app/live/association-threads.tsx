@@ -9,7 +9,7 @@ export function AssociationThreads({ s }: { s: LiveState }) {
   const a = s.associations;
   if (!a?.ok || a.items.length === 0) return null;
   return (
-    <section className="border-t border-rule pt-3" aria-label="連想の糸" data-testid="associations">
+    <section className="present-hide border-t border-rule pt-3" aria-label="連想の糸" data-testid="associations">
       <p className="label">
         連想の糸 <Pencil /> <span className="ml-1">根拠グラフがつなぐ、今回は読んでいない資料</span>
       </p>

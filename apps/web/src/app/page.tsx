@@ -30,7 +30,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-14 px-5 pt-14 pb-16 lg:grid-cols-[1.8fr_1fr] lg:gap-16 lg:pt-24">
+      <section className="mx-auto grid w-full max-w-7xl gap-12 px-5 pt-12 pb-16 lg:grid-cols-[1.5fr_1fr] lg:items-center lg:gap-16 lg:pt-16">
         <div>
           <p className="label">一枚の写真から、170年前の目へ</p>
           <h1 className="mt-6 font-serif text-title font-bold whitespace-nowrap sm:text-display xl:text-hero">
@@ -38,7 +38,7 @@ export default function Home() {
             <br />
             バードや広重が
             <br />
-            何を見たかを、
+            <span className="text-lantern">何を見たか</span>を、
             <br />
             根拠つきで。
           </h1>
@@ -55,45 +55,55 @@ export default function Home() {
           </div>
           <p className="mt-3 text-caption text-muted">例はライブで解析します（約40秒）。写真は Wikimedia Commons の CC0。</p>
         </div>
+        <figure className="hidden lg:block">
+          <div className="grid grid-cols-2 gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element -- the CC0 sample photo (allowlisted) */}
+            <img src="/api/samples/kaminarimon_cc0.jpg" alt="雷門の大提灯（現在）" className="aspect-[3/4] w-full rounded-md object-cover" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print */}
+            <img src="/api/cache/visual/images/edo100-095fe827.jpg" alt="歌川広重《名所江戸百景 浅草金龍山》1856" className="aspect-[3/4] w-full rounded-md object-cover object-top" />
+          </div>
+          <figcaption className="mt-3 flex justify-between text-caption text-muted">
+            <span>いまの雷門</span>
+            <span>広重《浅草金龍山》1856</span>
+          </figcaption>
+        </figure>
+      </section>
 
-        <div className="lg:pt-4">
-          <ol className="border-t border-rule">
-            {STEPS.map((s) => (
-              <li key={s.n} className="grid grid-cols-[3rem_1fr] border-b border-rule py-5">
-                <span className="pt-1 text-caption text-muted tabular-nums">{s.n}</span>
-                <div>
-                  <p className="font-serif text-title leading-tight">{s.ja}</p>
-                  <p className="mt-2 text-small text-paper/75">{s.body}</p>
-                </div>
+      <section className="mx-auto w-full max-w-7xl px-5 pb-16">
+        <ol className="grid border-t border-rule md:grid-cols-3 md:gap-10">
+          {STEPS.map((s) => (
+            <li key={s.n} className="border-b border-rule py-6 md:border-b-0">
+              <span className="text-caption text-muted tabular-nums">{s.n}</span>
+              <p className="mt-1 font-serif text-title leading-tight">{s.ja}</p>
+              <p className="mt-2 text-small text-paper/75">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <p className="label">四本の糸</p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-small">
+            {THREADS.map((t) => (
+              <li key={t.ja} className="flex items-center gap-2">
+                <svg width="24" height="4" aria-hidden>
+                  <path d="M0 2 H24" stroke={t.color} strokeWidth="2" />
+                </svg>
+                {t.ja}
+                <span className="text-caption text-muted">{t.en}</span>
               </li>
             ))}
-          </ol>
-          <div className="mt-6">
-            <p className="label">四本の糸</p>
-            <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-small">
-              {THREADS.map((t) => (
-                <li key={t.ja} className="flex items-center gap-2">
-                  <svg width="24" height="4" aria-hidden>
-                    <path d="M0 2 H24" stroke={t.color} strokeWidth="2" />
-                  </svg>
-                  {t.ja}
-                  <span className="text-caption text-muted">{t.en}</span>
-                </li>
-              ))}
-              <li className="flex items-center gap-2">
-                <svg width="24" height="6" aria-hidden>
-                  <path d="M0 3 H9 M15 3 H24" stroke="var(--thread-ba)" strokeWidth="2" />
-                </svg>
-                切れた糸
-                <span className="text-caption text-muted">その年、それはなかった</span>
-              </li>
-            </ul>
-          </div>
+            <li className="flex items-center gap-2">
+              <svg width="24" height="6" aria-hidden>
+                <path d="M0 3 H9 M15 3 H24" stroke="var(--paper)" strokeWidth="2" />
+              </svg>
+              切れた糸
+              <span className="text-caption text-muted">その年、それはなかった</span>
+            </li>
+          </ul>
         </div>
       </section>
 
       <section id="capture" className="border-t border-rule">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-14 lg:grid-cols-[1fr_2fr]">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-6 px-5 py-14">
           <div>
             <p className="label">自分の写真で</p>
             <h2 className="mt-2 font-serif text-title">目の前の景色を、一枚</h2>

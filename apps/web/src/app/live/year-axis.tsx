@@ -21,12 +21,12 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
   const periods = tl?.periods ?? [];
   const pos = (y: number) => `calc(${PAD}px + (100% - ${2 * PAD}px) * ${yearFrac(y)})`;
   return (
-    <div ref={axisRef} className="relative h-full w-full" data-testid="year-axis" aria-label="年の軸">
+    <div ref={axisRef} className={`relative h-full w-full transition-opacity duration-700 ${cards.length ? "opacity-100" : "opacity-0"}`} data-testid="year-axis" aria-label="年の軸">
       {/* spine */}
       <div className="absolute top-4 bottom-4 left-1/2 w-px -translate-x-1/2 bg-muted/30" />
       {TICKS.map((y) => (
         <div key={y} className="absolute right-0 left-0 flex items-center" style={{ top: pos(y) }}>
-          <span className="w-full -translate-y-1/2 pr-[calc(50%+10px)] text-right text-caption text-muted/70 tabular-nums">{y}</span>
+          <span className="w-full -translate-y-1/2 pr-[calc(50%+10px)] text-right text-caption text-muted/50 tabular-nums">{y}</span>
         </div>
       ))}
       {/* the river: present = solid gold, absent = open */}
@@ -37,7 +37,7 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
         return (
           <m.div
             key={i}
-            className={`absolute left-1/2 w-1.5 -translate-x-1/2 rounded-sm ${present ? "bg-toki/80" : "border border-dashed border-ba/70"}`}
+            className={`absolute left-1/2 w-1.5 -translate-x-1/2 rounded-sm ${present ? "bg-toki/80" : "border border-dashed border-paper/40"}`}
             style={{ top: pos(a), height: `calc((100% - ${2 * PAD}px) * ${yearFrac(b) - yearFrac(a)})`, transformOrigin: "top" }}
             initial={{ scaleY: 0, opacity: 0 }}
             animate={{ scaleY: 1, opacity: 1 }}
@@ -45,9 +45,10 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
             title={`${a}–${b} ${present ? "存在" : "不在"}`}
           >
             {!present && b - a > 30 && (
-              <span className="absolute bottom-0 left-3 whitespace-nowrap text-caption leading-tight text-ba">
-                {a} 焼失
-                <br />→ {b} 再建
+              <span className="absolute bottom-0 left-3 whitespace-nowrap text-caption leading-tight text-paper/80">
+                {a}–{b}
+                <br />
+                不在
               </span>
             )}
           </m.div>

@@ -36,7 +36,7 @@ export function EvidenceColumn({
       <table className="w-full table-fixed border-y border-rule text-caption" data-testid="search-matrix" aria-label="観点×言語の検索">
         <thead>
           <tr className="text-muted">
-            <th className="w-12 py-1.5 text-left font-normal" />
+            <th className="w-14 py-1.5 pl-4 text-left font-normal" />
             {Object.values(FACET_JA).map((f) => (
               <th key={f} className="py-1.5 text-left font-normal">
                 {f}
@@ -47,12 +47,12 @@ export function EvidenceColumn({
         <tbody>
           {(["en", "ja"] as const).map((lang) => (
             <tr key={lang} className="border-t border-rule">
-              <td className="py-1.5 text-muted">{lang === "ja" ? "日本語" : "英語"}</td>
+              <td className="py-1.5 pl-4 text-muted">{lang === "ja" ? "日本語" : "英語"}</td>
               {Object.keys(FACET_JA).map((f) => {
                 const g = [...s.candidateGroups].reverse().find((x) => x.facet === f && x.lang === lang);
                 return (
                   <td key={f} className="py-1.5">
-                    <span className={`block h-5 tabular-nums transition-colors duration-500 ${g ? (g.notFound ? "text-ba" : "text-paper") : searched ? "shimmer w-10 rounded-sm" : ""}`}>
+                    <span className={`block h-5 tabular-nums transition-colors duration-500 ${g ? (g.notFound ? "text-muted line-through decoration-muted/60" : "text-paper") : searched ? "shimmer w-10 rounded-sm" : ""}`}>
                       {g ? (g.notFound ? "見つからず" : `${g.found} 節`) : ""}
                     </span>
                   </td>
@@ -62,17 +62,8 @@ export function EvidenceColumn({
           ))}
         </tbody>
       </table>
-      {cards.length === 0 && (
-        <ul className="flex flex-col" aria-hidden>
-          {[0, 1, 2, 3].map((i) => (
-            <li key={i} className="border-b border-rule py-3">
-              <span className={`block h-4 w-2/3 rounded-sm bg-paper/5 ${searched ? "shimmer" : ""}`} />
-              <span className={`mt-2 block h-3 w-full rounded-sm bg-paper/5 ${searched ? "shimmer" : ""}`} />
-            </li>
-          ))}
-        </ul>
-      )}
-      <ul className="flex min-h-[50%] flex-1 flex-col overflow-y-auto pr-1">
+      {cards.length === 0 && <p className="font-serif text-body text-muted">{searched ? "日英の資料を探しています。" : "写真を読み終えたら、日英の資料を探します。"}</p>}
+      <ul className="fade-end flex min-h-[50%] flex-1 flex-col overflow-y-auto pr-1 pb-10">
         <AnimatePresence initial={false}>
           {cards.map((c) => {
             const color = c.layer ? LAYER_COLOR[c.layer] : "var(--muted)";
@@ -111,15 +102,18 @@ export function EvidenceColumn({
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted">
                   {c.accepted > 0 && <span>採用 {c.accepted}</span>}
-                  {c.downgraded + c.rejected > 0 && <span className="text-muted">格下げ・却下 {c.downgraded + c.rejected}</span>}
+                  {c.downgraded + c.rejected > 0 && <span>格下げ {c.downgraded + c.rejected}</span>}
                   {c.existence && (
-                    <span className={c.existence.value === "absent" ? "font-medium text-ba" : c.existence.value === "present" ? "text-toki" : ""}>
+                    <span className={c.existence.value === "absent" ? "font-medium text-paper" : ""}>
                       {EXIST_JA[c.existence.value]}
                     </span>
                   )}
                   {c.state && (
-                    <span className={broken ? "text-ba" : ""}>
-                      {STATE_JA[c.state] ?? c.state}・糸 {c.threads.length}
+                    <span className={`inline-flex items-center gap-1.5 ${broken ? "text-paper" : ""}`}>
+                      <svg width="16" height="4" aria-hidden>
+                        <path d={broken ? "M0 2 H6 M10 2 H16" : "M0 2 H16"} stroke={color} strokeWidth="2" strokeDasharray={c.state === "pending" ? "3 2" : undefined} />
+                      </svg>
+                      {STATE_JA[c.state] ?? c.state}
                     </span>
                   )}
                 </div>

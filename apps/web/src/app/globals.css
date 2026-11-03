@@ -138,3 +138,19 @@ body {
   letter-spacing: 0.08em;
   color: var(--muted);
 }
+
+/* Japanese: break between phrases, never inside a word (Chrome 119+; others fall back) */
+:lang(ja) {
+  word-break: auto-phrase;
+  line-break: strict;
+}
+/* a scroll area that would cut a line in half fades out instead */
+.fade-end {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+}
+/* the step rail scrolls on phones: show that it continues */
+@media (max-width: 1023px) {
+  .fade-right {
+    mask-image: linear-gradient(to right, #000 88%, transparent);
+  }
+}

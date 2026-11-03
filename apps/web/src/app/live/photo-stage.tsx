@@ -182,8 +182,8 @@ export function PhotoStage({
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print aligned to the photo */}
             <img src={overlay!} alt="広重『名所江戸百景 浅草金龍山』に写真を重ねたもの" className="size-full object-contain" />
-            <span className="absolute bottom-3 left-3 rounded-sm bg-night/80 px-2 py-1 text-caption">
-              広重 1856 と重ねる（位置合わせ：Claudeが付けた目印＋コード）
+            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night/90 to-transparent px-4 pt-10 pb-3 text-caption text-paper/80">
+              歌川広重《名所江戸百景 浅草金龍山》1856 を重ねて
               {facingLine && <span className="mt-0.5 block font-hand text-small text-paper" data-testid="facing-line">{facingLine}</span>}
             </span>
           </m.div>

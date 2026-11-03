@@ -71,6 +71,9 @@ const STATE: Record<string, { ja: string; en: string; cls: string }> = {
   user_confirmed: { ja: "あなたの確認", en: "confirmed by you", cls: "border-double" },
 };
 const LAYER: Record<string, string> = { toki: "border-toki", ba: "border-ba", koto: "border-koto", ma: "border-ma" };
+/** graph predicates in labels read as words, not ids (CLAUDE.md design 9) */
+const PRED: Record<string, string> = { destroyed_in: "焼失", rebuilt_in: "再建", built_in: "建立", describes: "記述", mentions: "言及", observed: "観察", named_as: "呼び名", dedicated_to: "祀る", depicts: "描く" };
+const plain = (s: string) => s.replace(/（([a-z_]+)(「[^」]*」)?）/g, (m, p: string, q?: string) => (PRED[p] ? `（${PRED[p]}${q ?? ""}）` : m));
 
 export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang }) {
   const [lang, setLang] = useState<Lang>(initialLang);
@@ -152,10 +155,10 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
         </div>
       </header>
 
-      <section className="grid gap-10 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <section className="grid gap-10 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element -- private, session-scoped cache file
-          <img src={photo} alt="" className="max-h-[70vh] w-full rounded-md object-contain object-left" />
+          <img src={photo} alt="" className="max-h-[78vh] w-full rounded-md object-contain object-left" />
         ) : (
           <div className="flex min-h-64 items-center justify-center border-y border-rule text-muted">空間解析：簡易表示</div>
         )}
@@ -225,7 +228,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
                     className={`w-full border-l-2 py-2 pr-2 pl-4 text-left transition-colors ${selected === i ? "border-paper bg-paper/5" : "border-transparent text-paper/80 hover:text-paper"}`}
                   >
                     {x.text}
-                    <span className="ml-2 font-sans text-caption text-muted">{t[x.assertion_type as "direct" | "derived" | "interpretive"] ?? x.assertion_type}</span>
+                    <span className="ml-2 inline-block font-sans text-caption whitespace-nowrap text-muted">{t[x.assertion_type as "direct" | "derived" | "interpretive"] ?? x.assertion_type}</span>
                   </button>
                 </li>
               ))}
@@ -240,7 +243,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
           )}
         </div>
 
-        <aside aria-live="polite" data-testid="note-evidence" className="border-t border-rule pt-3">
+        <aside aria-live="polite" data-testid="note-evidence" className="self-start border-t border-rule pt-3 md:sticky md:top-8">
           <h2 className="label mb-4">{t.evidence}</h2>
           <ul className="flex flex-col">
             {cites.map((c) => (
@@ -258,7 +261,6 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
                         {refs[lang] ? (refs[lang]?.[c.sentenceIds.join("|")] ?? "—") : t.refLoading}
                       </p>
                     )}
-                    <p className="mt-2 pl-4 font-mono text-caption text-muted/70">{c.sentenceIds.join(", ")}</p>
                   </>
                 ) : (
                   <p className={`mt-2 border-l-2 pl-4 ${LAYER.toki} ${STATE[c.state]?.cls ?? ""}`}>
@@ -287,7 +289,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
                 <span className="block text-caption text-muted">
                   {confirmed[th.id] ? `${STATE.user_confirmed[lang]}（${STATE[th.state]?.[lang] ?? th.state}）` : (STATE[th.state]?.[lang] ?? th.state)}
                 </span>
-                {th.label[lang]}
+                {plain(th.label[lang])}
                 {(th.state === "pending" || th.state === "pencil") && (
                   <Button variant="quiet" onClick={() => toggleConfirm(th.id)} aria-pressed={Boolean(confirmed[th.id])} className="ml-1 text-caption" data-testid="confirm-thread">
                     {confirmed[th.id] ? t.unconfirm : t.confirm}

@@ -78,6 +78,11 @@ export function TextColumn({
   const readings = (s.see?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
   const showBroken = broken.length > 0 && since("threads") > 1800;
+  const brokenYear = (() => {
+    const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
+    const row = s.existence?.rows.find((r) => r.source === src);
+    return row?.time?.start?.slice(0, 4) ?? null;
+  })();
   const sentences = s.narrative?.sentences ?? [];
   const sinceNarr = since("narrative");
   const order = new Map(cards.map((c, i) => [c.sourceId, i + 1]));
@@ -85,7 +90,7 @@ export function TextColumn({
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label="わかったこと">
-      <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3">
+      <div className="fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12">
         {/* the place */}
         <div className="min-h-28">
           {docked ? (
@@ -103,9 +108,29 @@ export function TextColumn({
               場所を一つに決められませんでした{s.placeTried?.length ? `（候補：${s.placeTried.join("、")}）` : ""}
             </p>
           ) : (
-            <p className="font-serif text-title text-muted">{s.stages.see ? "この写真は、どこだろう。" : "写真を受け取りました。"}</p>
+            <p className="font-serif text-display text-paper/80">{s.stages.see ? "この写真は、どこだろう。" : "写真を受け取りました。"}</p>
           )}
         </div>
+
+        {/* the discovery: the broken thread */}
+        <AnimatePresence>
+          {showBroken && (
+            <m.div key="broken" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} data-testid="broken-callout">
+              <p className="label flex items-center gap-2">
+                <svg width="28" height="6" aria-hidden>
+                  <path d="M0 3 H10 M18 3 H28" stroke="var(--thread-toki)" strokeWidth="2" />
+                </svg>
+                切れた糸
+              </p>
+              <p className="mt-1 flex items-baseline gap-4">
+                <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
+                <span className="font-serif text-title">{placeName?.ja ?? ""}は、まだなかった</span>
+              </p>
+              <p className="mt-2 font-serif text-body text-paper/80">{broken[0].label.ja.replace(/（[^（）]*（[^）]*）[^）]*）$|（[^）]*）$/, "")}</p>
+              <p className="mt-1 text-caption text-muted">年表との照合はコード。Claude には判定させていません。</p>
+            </m.div>
+          )}
+        </AnimatePresence>
 
         {s.stages.see && !s.at.place && <SeeAsk s={s} since={since("received") >= 0 ? since("received") : elapsed} />}
 
@@ -153,17 +178,6 @@ export function TextColumn({
           </m.figure>
         )}
 
-        {/* the discovery: the broken thread */}
-        <AnimatePresence>
-          {showBroken && (
-            <m.div key="broken" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="border-l-2 border-ba pl-4" data-testid="broken-callout">
-              <p className="label text-ba">切れた糸</p>
-              <p className="mt-1 font-serif text-lead">{broken[0].label.ja.replace(/（[^（）]*（[^）]*）[^）]*）$|（[^）]*）$/, "")}</p>
-              <p className="mt-1 text-caption text-muted">年表との照合はコード。Claude には判定させていません。</p>
-            </m.div>
-          )}
-        </AnimatePresence>
-
         {/* the story, sentence by sentence (350 ms each), with source numbers */}
         {showStory && (
           <article data-testid="narrative" lang={s.narrative?.lang ?? "ja"}>
@@ -203,7 +217,7 @@ export function TextColumn({
           </p>
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-2 border-t border-rule pt-4">{actions}</div>
+      <div className="grid grid-cols-2 gap-2 border-t border-rule pt-4 lg:flex lg:flex-wrap lg:items-center">{actions}</div>
     </section>
   );
 }

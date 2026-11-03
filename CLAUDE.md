@@ -38,15 +38,20 @@ carry the structure, and light (lantern, the four threads) appears only where it
    card) or an overlay panel. Never a box inside a box. Callouts use a 2px left rule, no fill.
 3. **Two radii** — `rounded-sm` (2px: tags, inputs, buttons) and `rounded-md` (6px: photos, cards,
    panels). `rounded-full` only inside `src/app/ui/` (status dots).
-4. **Color has a role.** `paper` text, `muted` secondary (≥ 4.5:1 on night). `lantern` = the one
-   primary action per view and "live". Thread colors (時 gold, 場 vermilion, 言 light indigo,
-   間 sakura-nezumi) only for thread meaning. No glow or colored shadow outside the thread layer
-   and the photo anchor; no backdrop blur.
+4. **Color has a role.** `paper` text and the primary action, `muted` secondary (≥ 4.5:1 on
+   night). `lantern` = "live" (Claude working, the photo anchor) and at most one highlight per view.
+   Thread colors (時 gold, 場 vermilion, 言 light indigo, 間 sakura-nezumi) only for thread meaning —
+   "absent / not found" is a line style and paper text, never vermilion. Zeros are `muted`. No glow
+   or colored shadow outside the thread layer and the photo anchor; no backdrop blur.
 5. **Say it once.** One `<Pencil>` marker + one legend per view instead of repeated disclaimers
    (「根拠ではありません」 appears once in `src/app`). No meta-commentary in headings; an
    explanation goes in a caption line below. Labels stay next to line styles (not color alone).
-6. **Buttons**: `<Button>` / `<ButtonLink>` — `primary` (lantern, one per view), `secondary`
+6. **Buttons**: `<Button>` / `<ButtonLink>` — `primary` (paper fill, one per view), `secondary`
    (hairline), `quiet` (text). Rectangular, `min-h-11` touch target.
 7. **Motion** only for a change of state (≤ 700 ms, except the deliberate beats of 6.3);
    pulsing only for "live" and the running step; everything respects reduced motion.
-8. Keep every `data-testid` used by the E2E scripts and the list view.
+8. **Japanese typesetting**: phrases do not break mid-word (`word-break: auto-phrase` on `:lang(ja)`),
+   annotations do not wrap; a scroll area that can cut text fades out instead (`.fade-end`).
+9. **No debug or raw ids on screen** (fps, layer keys, scores, claim/sentence ids) — they belong
+   in 舞台裏 or behind `?debug=1`.
+10. Keep every `data-testid` used by the E2E scripts and the list view.

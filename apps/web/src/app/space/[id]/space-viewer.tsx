@@ -1,5 +1,9 @@
 "use client";
 import { Button } from "../../ui/button";
+import { Tag } from "../../ui/marks";
+
+const LAYER_JA: Record<string, string> = { lantern: "大提灯", lantern_base: "提灯の金具", gate: "門", people: "人" };
+const debugOn = () => typeof location !== "undefined" && new URLSearchParams(location.search).get("debug") === "1";
 
 /**
  * 間 (ma) layer, day-2 version: the photo splits into depth layers (FR-29, FR-32) and the
@@ -296,25 +300,28 @@ export function SpaceViewer({
           <Fps onFps={setFps} />
         </Canvas>
         )}
-        {!flat && (
+        {!flat && debugOn() && (
           <p className="pointer-events-none absolute right-3 top-3 rounded-sm bg-night/70 px-2 py-1 text-caption text-muted">
             {fps} fps
           </p>
         )}
       </div>
 
-      <aside className="flex w-full flex-col gap-6 p-6 lg:w-96">
+      <aside className="flex w-full flex-col gap-7 px-6 py-10 lg:w-96 lg:pr-10">
         <h1 className="font-serif text-title">間（ま）</h1>
         <p className="-mt-4 text-caption text-muted">写真を SAM 3 と深度で層に分け、広重の絵と重ねる</p>
         {/* 3D-only controls are hidden in the 2D view (FR-37) */}
         {!flat && (
-          <Button onClick={() => setSplit(split ? 0 : performance.now())}>{split ? "平面に戻す" : "層に割る"}</Button>
-        )}
-
-        {align && !flat && (
-          <Button variant="primary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={() => go(!inside)}>
-            {inside ? "今へ戻る" : "絵の中へ ── 広重 1856"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {align && (
+              <Button variant="primary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={() => go(!inside)}>
+                {inside ? "今へ戻る" : "絵の中へ ── 広重 1856"}
+              </Button>
+            )}
+            <Button variant="quiet" onClick={() => setSplit(split ? 0 : performance.now())}>
+              {split ? "平面に戻す" : "層に割る"}
+            </Button>
+          </div>
         )}
 
         {hasPeople && !flat && (
@@ -341,7 +348,7 @@ export function SpaceViewer({
         {timeline && ys && (
           <label className="flex flex-col gap-2" data-testid="space-time">
             <span className="flex items-baseline justify-between">
-              <span>時をめくる</span>
+              <span className="label">時をめくる</span>
               <span className="font-serif text-title tabular-nums">{year}</span>
             </span>
             <input
@@ -362,17 +369,20 @@ export function SpaceViewer({
                 </button>
               ))}
             </span>
-            <span className="text-small" data-testid="space-year-state" data-state={ys.state}>
-              [{STATE_JA[ys.state]}] {ys.label.ja}
+            <span className="font-serif text-lead" data-testid="space-year-state" data-state={ys.state}>
+              {ys.label.ja}
+              <span className="ml-2 align-middle font-sans">
+                <Tag tone={ys.state === "present" ? "toki" : "muted"} dashed={ys.state !== "present"}>
+                  {STATE_JA[ys.state]}
+                </Tag>
+              </span>
             </span>
           </label>
         )}
 
         {align && (
           <label className="flex flex-col gap-2">
-            <span>
-              重ねる：歌川広重《浅草金龍山》1856 <span className="text-muted">（The Met 56689）</span>
-            </span>
+            <span className="label">重ねる ── 歌川広重《浅草金龍山》1856</span>
             <input
               type="range"
               min={0}
@@ -385,7 +395,7 @@ export function SpaceViewer({
             />
             <span className="text-small text-muted">
               {overlayBase > overlay ? "1866年の焼失より前は、広重が描いた門の時代として自動で重ねています。" : ""}
-              位置合わせ：大提灯の下端と左端（資料側のアンカーは事前注記：{align.artifact_anchors_annotated_by}）
+              大提灯の下端と左端で位置を合わせています。
             </span>
           </label>
         )}
@@ -399,10 +409,8 @@ export function SpaceViewer({
               .reverse()
               .map(([key, el]) => (
                 <li key={key} className="flex justify-between gap-4">
-                  <span>{key}</span>
-                  <span className="text-muted">
-                    {LAYER_LABEL[el.layer]} · 深度 {el.depth.toFixed(2)} · score {el.score.toFixed(2)}
-                  </span>
+                  <span>{LAYER_JA[key] ?? key}</span>
+                  <span className="text-muted">{LAYER_LABEL[el.layer]}</span>
                 </li>
               ))}
           </ul>

@@ -93,7 +93,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const actions = (
     <>
       {s.visual?.hits[0] && s.at.visual !== undefined && (
-        <a href={s.visual.hits[0].commons} target="_blank" rel="noreferrer noopener" className="mb-2 flex w-full items-center gap-3" data-testid="visual">
+        <a href={s.visual.hits[0].commons} target="_blank" rel="noreferrer noopener" className="col-span-2 mb-2 flex w-full items-center gap-3" data-testid="visual">
           {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
           <img src={`/api/cache/visual/images/${s.visual.hits[0].file}`} alt="" className="h-12 w-9 rounded-sm object-cover" />
           <span className="min-w-0">
@@ -103,6 +103,11 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
             <span className="block truncate font-serif text-small">{s.visual.hits[0].title}</span>
           </span>
         </a>
+      )}
+      {s.space?.aligned && s.at.visual !== undefined && (
+        <Button variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} className="col-span-2 -mt-2 mb-2 w-full justify-start px-0" data-testid="overlay-toggle">
+          {overlayOn ? "写真に戻す" : "広重の絵と重ねる"}
+        </Button>
       )}
       {finished && expId && (
         <ButtonLink href={`/note/${expId}`} variant="primary" data-testid="note-link">
@@ -125,11 +130,6 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
         </ButtonLink>
       )}
       {into && !s.space?.aligned && finished && <ButtonLink href={into}>この絵の中へ</ButtonLink>}
-      {s.space?.aligned && s.at.visual !== undefined && (
-        <Button variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} data-testid="overlay-toggle">
-          {overlayOn ? "写真に戻す" : "広重の絵と重ねる"}
-        </Button>
-      )}
     </>
   );
 
@@ -138,14 +138,14 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       <MotionConfig reducedMotion="user">
         <LayoutGroup>
           <main className="flex min-h-dvh w-full max-w-full flex-col gap-4 overflow-x-clip px-4 py-4 lg:h-dvh lg:px-10 lg:py-5">
-            <header className="flex flex-wrap items-center justify-between gap-x-10 gap-y-3 border-b border-rule pb-3">
+            <header className="flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3 border-b border-rule pb-3">
               <div className="flex w-full min-w-0 flex-wrap items-baseline gap-x-10 gap-y-2 lg:w-auto">
                 <Link href="/" onClick={onExit} className="font-serif text-lead tracking-[0.3em]" aria-label="TSUMUGI はじめに戻る">
                   TSUMUGI
                 </Link>
                 <StepRail s={s} elapsed={elapsed} finished={finished} />
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-baseline gap-1">
                 <Button variant="quiet" onClick={() => toggle("backstage")} aria-expanded={panel === "backstage"} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
                   舞台裏
                 </Button>
@@ -158,9 +158,12 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
               <LiveChips s={s} finished={finished} replay={replay} />
               {replay && (
                 <p className="text-caption text-muted" data-testid="replay-banner">
-                  これは記録の再生です（{source.recordedAt.slice(0, 16).replace("T", " ")} に実行した探索）。新しい探索は行っていません。
+                  {source.recordedAt.slice(5, 16).replace("-", "/").replace("T", " ")} に実行した探索の録画
                 </p>
               )}
+              <span className="ml-auto hidden max-w-[40%] lg:block">
+                <Toasts s={s} elapsed={elapsed} />
+              </span>
             </div>
             {s.failed && (
               <p className="text-small text-ba" role="alert">
@@ -210,7 +213,6 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
               <ResultStrip s={s} elapsed={elapsed} />
               <PencilLegend />
             </footer>
-            <Toasts s={s} elapsed={elapsed} />
           </main>
         </LayoutGroup>
       </MotionConfig>
