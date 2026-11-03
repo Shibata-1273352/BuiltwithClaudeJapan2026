@@ -1,131 +1,133 @@
 "use client";
 
-/** The landing page in the visitor's language (FR-40); page.tsx stays a Server Component. */
+/**
+ * The landing page (FR-40 ja/en): who has what problem, and how TSUMUGI solves it — in that order.
+ * It opens with the scene it was made from, says the value in one line, shows the product's three
+ * moments (real screenshots), why it can be relied on (numbers computed from the evaluation), and
+ * where it works today. page.tsx (a Server Component) computes the facts.
+ */
 import Link from "next/link";
+import type { LandingFacts } from "@/lib/landing-facts";
 import { CapturePreview } from "./capture-preview";
-import { dict, LangToggle, useDict } from "./i18n";
+import { dict, LangToggle, useDict, useLang } from "./i18n";
 import { ButtonLink } from "./ui/button";
 import { Warm } from "./warm";
-
-const THREADS = [
-  { ja: "時", en: "time", color: "var(--thread-toki)" },
-  { ja: "場", en: "place", color: "var(--thread-ba)" },
-  { ja: "言", en: "words", color: "var(--thread-koto)" },
-  { ja: "間", en: "space", color: "var(--thread-ma)" },
-];
 
 const T = dict({
   ja: {
     nav: "ページ",
     notes: "旅ノート",
-    time: "時をめくる",
-    kicker: "一枚の写真から、170年前の目へ",
+    how: "しくみ",
+    origin: "はじまり",
+    scene: "浅草で、外国人の友人に「これ、なんて書いてあるの？　いつからあるの？」と聞かれて、答えられなかった。",
+    sceneBy: "── 作者の体験",
     hero: (
       <>
-        雷門の大提灯の下で、
+        撮るだけで、
         <br />
-        バードや広重が
+        目の前の日本が、
         <br />
-        <span className="text-lantern">何を見たか</span>を、
-        <br />
-        根拠つきで。
+        <span className="text-lantern">意味と物語</span>になる。
       </>
     ),
-    intro: (
-      <>
-        旅先で古い本や絵を探しても、それが<span className="text-paper">同じ場所の、同じ時代の話か</span>
-        までは分かりません。1878年のイザベラ・バードは浅草を歩きましたが、そのとき雷門は焼失して存在しませんでした。TSUMUGI
-        は資料をつなぐ前に、時代・場所・言葉が本当につながるかを確かめます。
-      </>
-    ),
-    trySample: "例で試す ── 雷門",
-    own: "自分の写真で",
-    sampleNote: "例はライブで解析します（約40秒）。写真は Wikimedia Commons の CC0。",
-    altNow: "雷門の大提灯（現在）",
-    altPrint: "歌川広重《名所江戸百景 浅草金龍山》1856",
-    capNow: "いまの雷門",
-    capPrint: "広重《浅草金龍山》1856",
-    steps: [
-      { n: "01", title: "かざす", body: "目の前の景色を一枚。顔は端末の中でぼかし、位置は任意です。" },
-      { n: "02", title: "紡ぐ", body: "Claude が写真の文字を読み、日英の古い旅行記・随筆・浮世絵・公式資料から根拠を探します。" },
-      { n: "03", title: "確かめる", body: "書かれた年に、それは本当にあったか。年表と照合して糸を結び、合わない糸は切ります。" },
+    sub: "看板の字を読み、文化をガイドし、明治の旅行記や江戸の浮世絵が語るこの場所の昔まで。歴史は、一文ずつ原典で確かめます。",
+    trySample: "雷門で試す",
+    heroAlt: "TSUMUGI の画面：写真の文字の読み、いつからあるか、資料へ伸びる糸",
+    own: "カメラで撮る",
+    sampleNote: "例の写真は Wikimedia Commons の CC0。その場でライブに解析します。",
+    moments: [
+      { img: "read", title: "読める、わかる", body: "看板の字の読みと意味、漢字のなりたち、その場でできること。" },
+      { img: "time", title: "時を超える", body: "いまの門はいつからあるのか。明治の旅行者は、門のない浅草を歩いていた。" },
+      { img: "postcard", title: "持ち帰る", body: "触れて、聞いて、確かめた一文を、絵はがきと旅ノートに。" },
     ],
-    threads: "四本の糸",
-    cut: "切れた糸",
-    cutNote: "その年、それはなかった",
+    trustTitle: "安心して使える理由",
+    trust: "Claude が写真を読み、文化を解説し、物語を書きます。その年に本当にあったか、引用が原文どおりかは、コードが確かめます。資料にないことは「書かれていません」と答えます。",
+    numbers: (f: LandingFacts) => [
+      { v: `${f.citationExactPct}%`, l: `引用が原文と一致（${f.citationN} 件）` },
+      { v: `${f.rejected}/${f.fabricated}`, l: "作られた引用を拒否" },
+      { v: `${f.unsupportedShown}`, l: "根拠のない文の表示" },
+    ],
+    evalNote: (run: string) => `評価：Batch API による一括評価（${run}）`,
+    howLink: "しくみを見る",
+    whereTitle: "いま使える場所",
+    full: (f: LandingFacts) => `資料と年表がそろっている場所：${f.places.map((p) => p.ja).join("、")}（日英の資料 ${f.sources} 点）`,
+    elsewhere: "それ以外の場所でも、写真の文字の読みとガイドは使えます。歴史は、資料がそろった場所だけで確かめます。",
     captureTitle: "目の前の景色を、一枚",
     captureNote: "写真は端末の中で縮小・位置情報の除去・顔のぼかしをしてから送ります。",
   },
   en: {
     nav: "Pages",
     notes: "Travel notes",
-    time: "Turn the years",
-    kicker: "From one photo to eyes of 170 years ago",
+    how: "How it works",
+    origin: "Where it began",
+    scene: "In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer.",
+    sceneBy: "— the maker’s own experience",
     hero: (
       <>
-        Under Kaminarimon’s
+        Just take a photo —
         <br />
-        great lantern,
+        the Japan in front of you
         <br />
-        <span className="text-lantern">what Bird and
-        <br />
-        Hiroshige saw</span> —
-        <br />
-        with evidence.
+        turns into <span className="text-lantern">meaning and story</span>.
       </>
     ),
-    intro: (
-      <>
-        Old books and prints are easy to find on a trip, but not whether they speak of{" "}
-        <span className="text-paper">the same place, in the same era</span>. Isabella Bird walked Asakusa in 1878 — when
-        the Kaminarimon gate had burnt down and did not exist. Before TSUMUGI ties sources together, it checks that the
-        era, the place and the words really connect.
-      </>
-    ),
-    trySample: "Try the example ── Kaminarimon",
-    own: "With your own photo",
-    sampleNote: "The example is analysed live (about 40 s). Photo: Wikimedia Commons, CC0.",
-    altNow: "The great lantern of Kaminarimon (today)",
-    altPrint: "Utagawa Hiroshige, One Hundred Famous Views of Edo: Kinryūzan Temple, Asakusa, 1856",
-    capNow: "Kaminarimon today",
-    capPrint: "Hiroshige, Kinryūzan, Asakusa, 1856",
-    steps: [
-      { n: "01", title: "Hold up", body: "One photo of the view in front of you. Faces are blurred on your device; location is optional." },
-      { n: "02", title: "Weave", body: "Claude reads the text in the photo and looks for evidence in old Japanese and English travelogues, essays, ukiyo-e and official sources." },
-      { n: "03", title: "Check", body: "Did it really exist in the year it was written about? Threads are tied against the chronology; the ones that do not fit are cut." },
+    sub: "It reads the signs, guides you through the culture, and tells what Meiji-era travellers and Edo prints saw here. The history is checked, sentence by sentence, against the original sources.",
+    trySample: "Try it at Kaminarimon",
+    heroAlt: "The TSUMUGI stage: the words in the photo read, how long it has stood, threads to the sources",
+    own: "Open the camera",
+    sampleNote: "The example photo is CC0 from Wikimedia Commons, analysed live.",
+    moments: [
+      { img: "read", title: "Read and understand", body: "What the sign says, what it means, how its kanji are built, and what to try right there." },
+      { img: "time", title: "Across time", body: "How long has this gate stood? A traveller of the Meiji era walked an Asakusa with no gate." },
+      { img: "postcard", title: "Take it home", body: "Touch, ask, and keep the checked sentence on a postcard and in your travel note." },
     ],
-    threads: "Four threads",
-    cut: "Cut thread",
-    cutNote: "it was not there that year",
+    trustTitle: "Why you can rely on it",
+    trust: "Claude reads the photo, explains the culture and writes the story. Whether it stood that year, and whether a quote is the source’s own words, is checked by code. What the sources do not say, it says it does not know.",
+    numbers: (f: LandingFacts) => [
+      { v: `${f.citationExactPct}%`, l: `quotes match the original (${f.citationN})` },
+      { v: `${f.rejected}/${f.fabricated}`, l: "fabricated quotes rejected" },
+      { v: `${f.unsupportedShown}`, l: "unsupported sentences shown" },
+    ],
+    evalNote: (run: string) => `Evaluation: one batch run with the Batch API (${run})`,
+    howLink: "See how it works",
+    whereTitle: "Where it works today",
+    full: (f: LandingFacts) => `With sources and a reviewed timeline: ${f.places.map((p) => p.en).join(", ")} (${f.sources} Japanese and English sources)`,
+    elsewhere: "Anywhere else, the reading of the words in the photo and the guide still work. History is checked only where the sources are in place.",
     captureTitle: "The view in front of you, in one photo",
     captureNote: "Your photo is resized, stripped of location data and face-blurred on your device before it is sent.",
   },
 });
 
-export function Landing() {
+export function Landing({ facts }: { facts: LandingFacts }) {
   const t = useDict(T);
+  const lang = useLang();
   return (
     <main className="flex flex-1 flex-col">
       <Warm />
       <header className="mx-auto flex w-full max-w-7xl items-baseline justify-between px-5 pt-6">
         <span className="font-serif text-lead tracking-[0.3em]">TSUMUGI</span>
         <nav className="flex items-center gap-1" aria-label={t.nav}>
+          <Link href="/how" className="inline-flex min-h-11 items-center px-2 text-small whitespace-nowrap text-muted hover:text-paper" data-testid="how-link">
+            {t.how}
+          </Link>
           <Link href="/notes" className="inline-flex min-h-11 items-center px-2 text-small whitespace-nowrap text-muted hover:text-paper">
             {t.notes}
-          </Link>
-          <Link href="/time" className="inline-flex min-h-11 items-center px-2 text-small whitespace-nowrap text-muted hover:text-paper">
-            {t.time}
           </Link>
           <LangToggle className="ml-2" />
         </nav>
       </header>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-12 px-5 pt-12 pb-16 lg:grid-cols-[1.5fr_1fr] lg:items-center lg:gap-16 lg:pt-16">
+      {/* the scene, the value, the action */}
+      <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 pt-10 pb-14 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-14 lg:pt-14">
         <div>
-          <p className="label">{t.kicker}</p>
-          <h1 className="mt-6 font-serif text-title font-bold whitespace-nowrap sm:text-display xl:text-hero">{t.hero}</h1>
-          <p className="mt-8 max-w-[34em] text-body text-paper/80">{t.intro}</p>
-          <div className="mt-10 flex flex-wrap items-center gap-3">
+          <figure className="max-w-[38em] border-l-2 border-lantern pl-4" data-testid="origin">
+            <figcaption className="label">{t.origin}</figcaption>
+            <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
+            <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
+          </figure>
+          <h1 className="mt-10 font-serif text-title font-bold sm:text-display xl:text-hero">{t.hero}</h1>
+          <p className="mt-6 max-w-[36em] text-body text-paper/80">{t.sub}</p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <ButtonLink href="/live" variant="primary" className="px-6 text-body" data-testid="try-sample">
               {t.trySample}
             </ButtonLink>
@@ -133,50 +135,51 @@ export function Landing() {
           </div>
           <p className="mt-3 text-caption text-muted">{t.sampleNote}</p>
         </div>
-        <figure className="hidden lg:block">
-          <div className="grid grid-cols-2 gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element -- the CC0 sample photo (allowlisted) */}
-            <img src="/api/samples/kaminarimon_cc0.jpg" alt={t.altNow} className="aspect-[3/4] w-full rounded-md object-cover" />
-            {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print */}
-            <img src="/api/cache/visual/images/edo100-095fe827.jpg" alt={t.altPrint} className="aspect-[3/4] w-full rounded-md object-cover object-top" />
-          </div>
-          <figcaption className="mt-3 flex justify-between text-caption text-muted">
-            <span>{t.capNow}</span>
-            <span>{t.capPrint}</span>
-          </figcaption>
+        <figure className="mx-auto w-full">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a screenshot of the app (the guide card) */}
+          <img src={`/landing/hero-${lang}.jpg`} alt={t.heroAlt} className="w-full rounded-md ring-1 ring-rule" />
         </figure>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-5 pb-16">
-        <ol className="grid border-t border-rule md:grid-cols-3 md:gap-10">
-          {t.steps.map((s) => (
-            <li key={s.n} className="border-b border-rule py-6 md:border-b-0">
-              <span className="text-caption text-muted tabular-nums">{s.n}</span>
-              <p className="mt-1 font-serif text-title leading-tight">{s.title}</p>
-              <p className="mt-2 text-small text-paper/75">{s.body}</p>
+      {/* the three moments */}
+      <section className="mx-auto w-full max-w-7xl px-5 pb-16" aria-label={t.moments.map((m) => m.title).join(" / ")}>
+        <ol className="grid gap-10 border-t border-rule pt-10 md:grid-cols-3">
+          {t.moments.map((m, i) => (
+            <li key={m.img} className="flex flex-col gap-3">
+              <span className="text-caption text-muted tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+              <p className="font-serif text-title leading-tight">{m.title}</p>
+              <p className="text-small text-paper/75">{m.body}</p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- a screenshot of the app */}
+              <img src={`/landing/${m.img}-${lang}.jpg`} alt="" loading="lazy" className={`mt-2 w-full rounded-md ${m.img === "postcard" ? "mx-auto max-w-[16rem]" : ""}`} />
             </li>
           ))}
         </ol>
-        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <p className="label">{t.threads}</p>
-          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-small">
-            {THREADS.map((th) => (
-              <li key={th.ja} className="flex items-center gap-2">
-                <svg width="24" height="4" aria-hidden>
-                  <path d="M0 2 H24" stroke={th.color} strokeWidth="2" />
-                </svg>
-                {th.ja}
-                <span className="text-caption text-muted">{th.en}</span>
-              </li>
+      </section>
+
+      {/* why it can be relied on; where it works */}
+      <section className="mx-auto grid w-full max-w-7xl gap-12 border-t border-rule px-5 py-14 md:grid-cols-2" data-testid="trust">
+        <div>
+          <p className="label">{t.trustTitle}</p>
+          <p className="mt-3 max-w-[36em] text-body text-paper/85">{t.trust}</p>
+          <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
+            {t.numbers(facts).map((n) => (
+              <div key={n.l} className="flex flex-col">
+                <dt className="order-2 mt-1 text-caption text-muted">{n.l}</dt>
+                <dd className="font-serif text-title tabular-nums">{n.v}</dd>
+              </div>
             ))}
-            <li className="flex items-center gap-2">
-              <svg width="24" height="6" aria-hidden>
-                <path d="M0 3 H9 M15 3 H24" stroke="var(--paper)" strokeWidth="2" />
-              </svg>
-              {t.cut}
-              <span className="text-caption text-muted">{t.cutNote}</span>
-            </li>
-          </ul>
+          </dl>
+          <p className="mt-4 text-caption text-muted">
+            {t.evalNote(facts.evalRun)} ·{" "}
+            <Link href="/how" className="underline decoration-rule-strong underline-offset-4 hover:text-paper">
+              {t.howLink}
+            </Link>
+          </p>
+        </div>
+        <div>
+          <p className="label">{t.whereTitle}</p>
+          <p className="mt-3 text-body text-paper/85">{t.full(facts)}</p>
+          <p className="mt-3 text-small text-paper/70">{t.elsewhere}</p>
         </div>
       </section>
 
