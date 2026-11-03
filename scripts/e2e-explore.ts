@@ -55,7 +55,7 @@ if (u.protocol === "https:") {
       sameSite: "Strict",
     },
   ]);
-  await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page.goto(base + "/?view=list&motion=0", { waitUntil: "networkidle" });
 }
 
 const t0 = Date.now();

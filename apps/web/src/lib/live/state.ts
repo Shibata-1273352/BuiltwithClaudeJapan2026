@@ -9,7 +9,7 @@ export type LiveEvent = { seq: number; type: EventType | string; data: unknown }
 
 export type SeeElement = { label: string; box: { x: number; y: number; w: number; h: number }; text_original: string | null; reading: string | null; meaning: { ja: string; en: string } | null; confidence: number };
 export type Viewpoint = { state: "pencil"; visitor: { position: string; facing: string; toward: string; premises: string[] } | null; artwork: { text: string; premise: string } | null };
-export type Candidate = { passageId: string; sourceId: string; sourceTitle: string; lang: "en" | "ja"; text: string; facet: string; relation?: string };
+export type Candidate = { passageId: string; sourceId: string; sourceTitle: string; lang: "en" | "ja"; text: string; facet: string; relation?: string; year?: number | null };
 export type ClaimRow = { id: string; passage_id: string; source_id?: string; source?: string; lang?: "en" | "ja"; subject: string; predicate: string; value: string | null; status: string; excerpt: string; sentence_ids: string[]; failed_checks?: string[] };
 export type ThreadRow = { id: string; claimId: string; layer: "toki" | "ba" | "koto" | "ma"; state: string; label: { ja: string; en: string }; evidence: string[] };
 export type ExistenceRow = { source: string; sourceTitle: string; time: { kind: string; start: string | null; end?: string | null } | null; value: "present" | "absent" | "unknown"; reason: string };
@@ -18,6 +18,8 @@ export type Association = { source: string; title: string; passage: string | nul
 
 export type LiveState = {
   applied: Record<number, true>;
+  /** when each event type was first shown (client ms), for animations relative to their beat */
+  at: Record<string, number>;
   stages: Record<string, { started: number; done?: number; ms?: number }>;
   calls: { stage: string; model: string; elapsedMs: number; costUsd: number; seq: number }[];
   see?: { elements: SeeElement[] };
@@ -43,12 +45,12 @@ export type LiveState = {
   failed?: { message: string };
 };
 
-export const initialState = (): LiveState => ({ applied: {}, stages: {}, calls: [], candidates: [], candidateGroups: [], claims: [], claimTotals: { accepted: 0, downgraded: 0, rejected: 0 } });
+export const initialState = (): LiveState => ({ applied: {}, at: {}, stages: {}, calls: [], candidates: [], candidateGroups: [], claims: [], claimTotals: { accepted: 0, downgraded: 0, rejected: 0 } });
 
 /** Apply one event. `at` is the client time (ms) the event became visible, for stage timers. */
 export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
   if (s.applied[ev.seq]) return s;
-  const n: LiveState = { ...s, applied: { ...s.applied, [ev.seq]: true } };
+  const n: LiveState = { ...s, applied: { ...s.applied, [ev.seq]: true }, at: ev.type in s.at ? s.at : { ...s.at, [ev.type]: at } };
   const d = ev.data as Record<string, unknown>;
   switch (ev.type) {
     case "stage": {
@@ -150,4 +152,62 @@ export function stripNumbers(s: LiveState) {
     claudeCalls: s.calls.length,
     costUsd: s.calls.reduce((a, c) => a + c.costUsd, 0),
   };
+}
+
+/** Where a thread comes from: an existence thread names its source; others cite a passage. */
+export function threadSource(t: ThreadRow): string {
+  if (t.claimId.startsWith("cl:exist:")) return t.claimId.split(":").pop()!;
+  return (t.evidence[0] ?? "").split(":")[0];
+}
+
+const STATE_RANK: Record<string, number> = { absent: 5, pending: 4, combined: 3, fork: 2, pencil: 1, ink: 0 };
+
+export type SourceCard = {
+  sourceId: string;
+  title: string;
+  lang: "en" | "ja";
+  year: number | null;
+  excerpt: string;
+  accepted: number;
+  downgraded: number;
+  rejected: number;
+  existence: ExistenceRow | null;
+  threads: ThreadRow[];
+  /** the strongest thread state for this source (a broken thread wins) and its layer */
+  state: string | null;
+  layer: ThreadRow["layer"] | null;
+  firstSeq: number;
+};
+
+/** One card per source, in the order the sources were found (6.2 evidence column). */
+export function sourceCards(s: LiveState): SourceCard[] {
+  const by = new Map<string, SourceCard>();
+  for (const c of s.candidates) {
+    if (by.has(c.sourceId)) continue;
+    by.set(c.sourceId, { sourceId: c.sourceId, title: c.sourceTitle, lang: c.lang, year: c.year ?? null, excerpt: c.text, accepted: 0, downgraded: 0, rejected: 0, existence: null, threads: [], state: null, layer: null, firstSeq: c.seq });
+  }
+  for (const cl of s.claims) {
+    const card = cl.source_id ? by.get(cl.source_id) : undefined;
+    if (!card) continue;
+    if (cl.status === "accepted") card.accepted++;
+    else if (cl.status === "downgraded") card.downgraded++;
+    else card.rejected++;
+    if (cl.status === "accepted" && card.accepted === 1 && cl.excerpt) card.excerpt = cl.excerpt;
+  }
+  for (const r of s.existence?.rows ?? []) {
+    const card = by.get(r.source);
+    if (!card) continue;
+    card.existence = r;
+    if (card.year == null && r.time?.start) card.year = Number(r.time.start.slice(0, 4)) || null;
+  }
+  for (const t of s.threads ?? []) {
+    const card = by.get(threadSource(t));
+    if (!card) continue;
+    card.threads.push(t);
+    if (card.state == null || (STATE_RANK[t.state] ?? 0) > (STATE_RANK[card.state] ?? 0)) {
+      card.state = t.state;
+      card.layer = t.layer;
+    }
+  }
+  return [...by.values()].sort((a, b) => a.firstSeq - b.firstSeq);
 }

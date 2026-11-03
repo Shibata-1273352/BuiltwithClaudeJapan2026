@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { boxAround, type Box } from "@/lib/capture/geometry";
 import { prepare, render, toJpeg, type Prepared } from "@/lib/capture/preprocess";
 import { ExplorationView } from "./exploration-view";
+import { UploadStage } from "./live/sample-stage";
 
 type State =
   | { kind: "idle" }
@@ -20,6 +21,7 @@ export function CapturePreview() {
   const [state, setState] = useState<State>({ kind: "idle" });
   const [jpeg, setJpeg] = useState<{ bytes: number; url: string; blob: Blob } | null>(null);
   const [sent, setSent] = useState<Blob | null>(null);
+  const [asList, setAsList] = useState(false); // 6.4 ?view=list: the accessible list instead of the stage
   const [useLocation, setUseLocation] = useState(false);
   const out = useRef<HTMLCanvasElement>(null);
 
@@ -110,7 +112,11 @@ export function CapturePreview() {
             <button
               type="button"
               disabled={!jpeg || Boolean(sent)}
-              onClick={() => jpeg && setSent(jpeg.blob)}
+              onClick={() => {
+                if (!jpeg) return;
+                setAsList(new URLSearchParams(location.search).get("view") === "list");
+                setSent(jpeg.blob);
+              }}
               className="min-h-11 rounded-full bg-toki px-6 font-bold text-night disabled:opacity-40"
               data-testid="send"
             >
@@ -131,7 +137,13 @@ export function CapturePreview() {
         </>
       )}
 
-      {sent && <ExplorationView jpeg={sent} useLocation={useLocation} />}
+      {sent && asList && <ExplorationView jpeg={sent} useLocation={useLocation} />}
+      {/* the live stage takes the whole screen once the photo is sent */}
+      {sent && !asList && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-night">
+          <UploadStage jpeg={sent} useLocation={useLocation} />
+        </div>
+      )}
 
       {state.kind === "idle" && (
         <p className="text-sm text-muted">写真は端末の中で縮小・位置情報の除去・顔のぼかしをしてから送ります。</p>

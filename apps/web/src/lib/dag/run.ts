@@ -210,7 +210,8 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
               tried: r.tried,
               found: r.candidates.length,
               notFound: r.candidates.length === 0,
-              candidates: r.candidates.map((c) => ({ ...c, text: c.text.slice(0, 400) })),
+              // year: the source's own time for this site, so the live stage can place it on the year axis
+              candidates: r.candidates.map((c) => ({ ...c, text: c.text.slice(0, 400), year: Number(sourceTime(c.sourceId, place)?.start?.slice(0, 4)) || null })),
             });
           }
         }

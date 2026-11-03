@@ -75,10 +75,10 @@ function getPosition(): Promise<{ lat: number; lon: number } | "denied" | "unava
  * `replay`: FR-47 — show a stored exploration again with its original pacing instead of starting a
  * new one (only when live fails). A banner says "recording" for the whole time.
  */
-export function ExplorationView({ jpeg, useLocation = false, replay }: { jpeg?: Blob; useLocation?: boolean; replay?: { explorationId: string; recordedAt: string } }) {
+export function ExplorationView({ jpeg, useLocation = false, replay, attach }: { jpeg?: Blob; useLocation?: boolean; replay?: { explorationId: string; recordedAt: string }; attach?: string }) {
   const [events, setEvents] = useState<Ev[]>([]);
   const [status, setStatus] = useState<string>(replay ? "探索中…" : "送信の準備中…");
-  const [expId, setExpId] = useState<string | null>(replay?.explorationId ?? null);
+  const [expId, setExpId] = useState<string | null>(replay?.explorationId ?? attach ?? null);
   const [lang, setLang] = useState<"ja" | "en">("ja");
   const [alt, setAlt] = useState<Partial<Record<"ja" | "en", NarrativeEvent>>>({});
   const [langBusy, setLangBusy] = useState(false);
@@ -102,6 +102,11 @@ export function ExplorationView({ jpeg, useLocation = false, replay }: { jpeg?: 
     };
     if (replay) {
       listen(`/api/explorations/${replay.explorationId}/events?pace=replay`);
+      return () => es?.close();
+    }
+    // the live stage's "リスト表示": the same running exploration, as a list (6.4)
+    if (attach) {
+      listen(`/api/explorations/${attach}/events`);
       return () => es?.close();
     }
     if (!jpeg) return;
@@ -141,7 +146,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay }: { jpeg?: 
       listen(url);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
-  }, [jpeg, useLocation, replay]);
+  }, [jpeg, useLocation, replay, attach]);
 
   const pick = <T,>(t: string) => events.find((e) => e.type === t)?.data as T | undefined;
   const see = pick<SeeOutput>("see");
