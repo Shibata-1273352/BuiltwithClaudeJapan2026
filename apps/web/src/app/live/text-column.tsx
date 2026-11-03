@@ -8,9 +8,56 @@
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
 import { threadSource } from "@/lib/live/state";
+import { dict, useDict, useLang } from "../i18n";
+import { FACET_LABEL } from "./labels";
 import { ViewpointCard } from "./viewpoint-card";
 
-const FACET_JA: Record<string, string> = { place_description: "場所の記述", naming: "呼び名", existence_timeline: "存在の年表", historical_artifacts: "歴史的な作品" };
+const T = dict({
+  ja: {
+    ask: ["看板・銘の文字を原文のまま読む", "読みと意味を日英で添える", "写っている要素と位置を囲む", "場所の候補を階層で挙げる"],
+    request: "Claude への依頼",
+    answered: (s: string) => `応答 ${s} 秒`,
+    reading: "読んでいます",
+    thinking: "Claude の思考（要約・ライブ）",
+    found: "わかったこと",
+    noPlace: (c: string) => `場所を一つに決められませんでした${c ? `（候補：${c}）` : ""}`,
+    where: "この写真は、どこだろう。",
+    received: "写真を受け取りました。",
+    broken: "切れた糸",
+    notYet: (p: string) => `${p}は、まだなかった`,
+    byCode: "年表との照合はコード。Claude には判定させていません。",
+    words: "写真の中の文字",
+    judgment: "Claude の判断 ── 何が足りないか",
+    more: "追加で探す語：",
+    ja: "日本語",
+    en: "英語",
+    sep: "、",
+    story: "この場所の物語",
+    threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：${src} 資料`,
+  },
+  en: {
+    ask: ["Read the signs and inscriptions as written", "Add readings and meanings in Japanese and English", "Box what is in the photo", "Name the place, from wide to narrow"],
+    request: "Asked of Claude",
+    answered: (s: string) => `answered in ${s} s`,
+    reading: "reading",
+    thinking: "Claude's thinking (summary, live)",
+    found: "What we found",
+    noPlace: (c: string) => `Could not settle on one place${c ? ` (candidates: ${c})` : ""}`,
+    where: "Where is this photo?",
+    received: "Photo received.",
+    broken: "Broken thread",
+    notYet: (p: string) => `${p} was not there yet`,
+    byCode: "Checked against the timeline by code — not left to Claude.",
+    words: "Words in the photo",
+    judgment: "Claude's judgment — what is missing",
+    more: "Also searching for: ",
+    ja: "Japanese",
+    en: "English",
+    sep: ", ",
+    story: "The story of this place",
+    threads: (n: number, b: number, src: number) => `${n} threads (${b} broken) from ${src} sources`,
+  },
+});
 
 function Typed({ text, since, reduced, cps = 45 }: { text: string; since: number; reduced: boolean; cps?: number }) {
   const n = reduced ? text.length : Math.max(0, Math.floor((since / 1000) * cps));
@@ -23,7 +70,6 @@ function Typed({ text, since, reduced, cps = 45 }: { text: string; since: number
 }
 
 /** What the see call asks Claude for (SEE_SYSTEM), ticked one by one while it works, all at once when it answers. */
-const ASK = ["看板・銘の文字を原文のまま読む", "読みと意味を日英で添える", "写っている要素と位置を囲む", "場所の候補を階層で挙げる"];
 
 function SeeAsk({ s, since }: { s: LiveState; since: number }) {
   const answered = Boolean(s.see);
@@ -32,13 +78,14 @@ function SeeAsk({ s, since }: { s: LiveState; since: number }) {
   // ticked by what has actually arrived: text read, readings/meanings, boxes; places come with the answer
   const doneAt = [els.some((e) => e.text_original), els.some((e) => e.reading || e.meaning), els.length > 0, answered];
   const thinking = s.seeProgress?.thinking?.trim();
+  const t = useDict(T);
   return (
     <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="see-ask">
       <p className="label">
-        Claude への依頼 <span className="text-lantern">{answered && call ? `応答 ${(call.elapsedMs / 1000).toFixed(1)} 秒` : "読んでいます"}</span>
+        {t.request} <span className="text-lantern">{answered && call ? t.answered((call.elapsedMs / 1000).toFixed(1)) : t.reading}</span>
       </p>
       <ol className="mt-2 flex flex-col gap-1 text-small">
-        {ASK.map((a, i) => {
+        {t.ask.map((a, i) => {
           const shown = answered || doneAt[i] || since > 600 + i * 1700;
           const ok = answered || doneAt[i];
           return shown ? (
@@ -53,7 +100,7 @@ function SeeAsk({ s, since }: { s: LiveState; since: number }) {
       </ol>
       {thinking && !answered && (
         <div className="mt-4" data-testid="see-thinking">
-          <p className="label">Claude の思考（要約・ライブ）</p>
+          <p className="label">{t.thinking}</p>
           <p className="mt-1 line-clamp-4 font-serif text-small text-paper/75 italic">{thinking.slice(-280)}</p>
         </div>
       )}
@@ -76,6 +123,8 @@ export function TextColumn({
   actions,
   guide,
   guideFocus,
+  story,
+  world,
 }: {
   s: LiveState;
   cards: SourceCard[];
@@ -88,7 +137,13 @@ export function TextColumn({
   guide: React.ReactNode;
   /** after the story has started: the guide card of the object being touched */
   guideFocus?: React.ReactNode;
+  /** the story in the visitor's language when it differs from the run's (fetched once, cached) */
+  /** FR-25: where the sources come from (after the story) */
+  world?: React.ReactNode;
+  story?: { lang: "ja" | "en"; sentences: { text: string; claim_ids: string[]; assertion_type: string }[] } | null;
 }) {
+  const t = useDict(T);
+  const ui = useLang();
   const since = (k: string) => (s.at[k] !== undefined ? elapsed - s.at[k] : -1);
   const placeName = s.place?.path[0]?.name; // the path is leaf-first
   const docked = placeName && since("place") >= 1900;
@@ -100,32 +155,32 @@ export function TextColumn({
     const row = s.existence?.rows.find((r) => r.source === src);
     return row?.time?.start?.slice(0, 4) ?? null;
   })();
-  const sentences = s.narrative?.sentences ?? s.narrativeProgress?.sentences ?? [];
+  const sentences = story?.sentences ?? s.narrative?.sentences ?? s.narrativeProgress?.sentences ?? [];
   const sinceNarr = s.at.narrative_progress !== undefined ? elapsed - s.at.narrative_progress : since("narrative");
   const order = new Map(cards.map((c, i) => [c.sourceId, i + 1]));
   const showStory = sinceNarr >= 0;
 
   return (
-    <section className="flex h-full min-h-0 flex-col gap-4" aria-label="わかったこと">
+    <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.found}>
       <div className="fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12">
         {/* the place */}
         <div className="min-h-28">
           {docked ? (
             <div>
-              <p className="label">{[...s.place!.path.slice(1)].reverse().map((p) => p.name.ja).join(" ／ ")}</p>
-              <m.h1 layoutId="place-ja" className="mt-1 font-serif text-display font-bold" data-testid="place-title">
-                {placeName.ja}
+              <p className="label">{[...s.place!.path.slice(1)].reverse().map((p) => p.name[ui]).join(ui === "ja" ? " ／ " : " / ")}</p>
+              <m.h1 layoutId="place-ja" className={`mt-1 font-serif font-bold ${ui === "ja" ? "text-display" : "text-title leading-tight"}`} data-testid="place-title">
+                {ui === "ja" ? placeName.ja : placeName.en}
               </m.h1>
               <m.p layoutId="place-en" className="font-serif text-lead text-paper/70 italic">
-                {placeName.en}
+                {ui === "ja" ? placeName.en : placeName.ja}
               </m.p>
             </div>
           ) : s.place === null ? (
             <p className="text-small text-muted" data-testid="place-unknown">
-              場所を一つに決められませんでした{s.placeTried?.length ? `（候補：${s.placeTried.join("、")}）` : ""}
+              {t.noPlace(s.placeTried?.join(t.sep) ?? "")}
             </p>
           ) : (
-            <p className="font-serif text-display text-paper/80">{s.stages.see ? "この写真は、どこだろう。" : "写真を受け取りました。"}</p>
+            <p className="font-serif text-display text-paper/80">{s.stages.see ? t.where : t.received}</p>
           )}
         </div>
 
@@ -137,14 +192,14 @@ export function TextColumn({
                 <svg width="28" height="6" aria-hidden>
                   <path d="M0 3 H10 M18 3 H28" stroke="var(--thread-toki)" strokeWidth="2" />
                 </svg>
-                切れた糸
+                {t.broken}
               </p>
               <p className="mt-1 flex items-baseline gap-4">
                 <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
-                <span className="font-serif text-title">{placeName?.ja ?? ""}は、まだなかった</span>
+                <span className="font-serif text-title">{t.notYet(placeName?.[ui] ?? "")}</span>
               </p>
-              <p className="mt-2 font-serif text-body text-paper/80">{broken[0].label.ja.replace(/（[^（）]*（[^）]*）[^）]*）$|（[^）]*）$/, "")}</p>
-              <p className="mt-1 text-caption text-muted">年表との照合はコード。Claude には判定させていません。</p>
+              <p className="mt-2 font-serif text-body text-paper/80">{broken[0].label[ui].replace(/（[^（）]*（[^）]*）[^）]*）$|（[^）]*）$/, "")}</p>
+              <p className="mt-1 text-caption text-muted">{t.byCode}</p>
             </m.div>
           )}
         </AnimatePresence>
@@ -157,7 +212,7 @@ export function TextColumn({
         {!showStory ? guide : guideFocus}
         {false && readings.length > 0 && !showStory && (
           <div>
-            <p className="label">写真の中の文字</p>
+            <p className="label">{t.words}</p>
             <dl className="mt-2 flex flex-col gap-3">
               {readings.map((e, i) => (
                 <m.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.15 }}>
@@ -175,20 +230,20 @@ export function TextColumn({
         {/* Claude's own judgment (gap.assessment), labelled as Claude's — not a code decision */}
         {s.gap?.assessment && !showStory && (
           <m.figure initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="claude-line">
-            <figcaption className="label">Claude の判断 ── 何が足りないか</figcaption>
+            <figcaption className="label">{t.judgment}</figcaption>
             <blockquote className="mt-1 font-serif text-body">
               <Typed text={s.gap.assessment} since={since("gap")} reduced={reduced} />
             </blockquote>
             {s.gap.gaps && s.gap.gaps.length > 0 && since("gap") > 1500 && (
               <p className="mt-2 text-caption text-muted">
-                追加で探す語：
+                {t.more}
                 {s.gap.gaps
-                  .flatMap((g) => g.terms.map((t) => ({ t, g })))
+                  .flatMap((g) => g.terms.map((term) => ({ term, g })))
                   .slice(0, 8)
-                  .map(({ t, g }, i) => (
-                    <m.span key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.06 }} className="text-paper" title={`${FACET_JA[g.facet] ?? g.facet}（${g.lang === "ja" ? "日本語" : "英語"}）`}>
-                      {i > 0 ? "、" : ""}
-                      {t}
+                  .map(({ term, g }, i) => (
+                    <m.span key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.06 }} className="text-paper" title={`${FACET_LABEL[ui][g.facet] ?? g.facet} (${g.lang === "ja" ? t.ja : t.en})`}>
+                      {i > 0 ? t.sep : ""}
+                      {term}
                     </m.span>
                   ))}
               </p>
@@ -198,8 +253,8 @@ export function TextColumn({
 
         {/* the story, sentence by sentence (350 ms each), with source numbers */}
         {showStory && (
-          <article data-testid="narrative" lang={s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
-            <p className="label">この場所の物語</p>
+          <article data-testid="narrative" lang={story?.lang ?? s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
+            <p className="label">{t.story}</p>
             <div className="mt-2 flex flex-col gap-3">
               {sentences.map((x, i) => {
                 const srcs = [...new Set(x.claim_ids.map((c) => sourceOfClaim(s, c)).filter((v): v is string => !!v))];
@@ -230,11 +285,12 @@ export function TextColumn({
 
         {/* the viewpoint may land after the story has started: keep it, below the story */}
         {showStory && <ViewpointCard s={s} />}
+        {showStory && world}
 
         {/* threads that exist but are not drawn on a phone */}
         {s.threads && (
           <p className="text-caption text-muted lg:hidden">
-            糸 {s.threads.length} 本（切れた糸 {s.threads.filter((t) => t.state === "absent").length}）：{[...new Set(s.threads.map(threadSource))].length} 資料
+            {t.threads(s.threads.length, s.threads.filter((x) => x.state === "absent").length, [...new Set(s.threads.map(threadSource))].length)}
           </p>
         )}
       </div>

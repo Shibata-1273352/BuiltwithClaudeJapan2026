@@ -5,10 +5,11 @@
  * Claude reads it, the boxes of what it read, the place title, the SAM 3 layers wiping in, and the
  * aligned Hiroshige print wiping over it.
  */
+import { dict, useDict, useLang } from "../i18n";
 import { AnimatePresence, m } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import type { LiveState } from "@/lib/live/state";
-import { FACING_JA } from "./viewpoint-card";
+import { FACING } from "./viewpoint-card";
 
 type Scene = {
   size: [number, number];
@@ -43,6 +44,23 @@ export function anchorBox(s: LiveState, scene: Scene | null): { x: number; y: nu
   const el = [...(s.see?.elements ?? [])].sort((a, b) => b.box.w * b.box.h * b.confidence - a.box.w * a.box.h * a.confidence)[0];
   return el ? { x: el.box.x + el.box.w / 2, y: el.box.y + el.box.h / 2 } : null;
 }
+
+const T = dict({
+  ja: {
+    alt: "探索している写真",
+    printAlt: "広重『名所江戸百景 浅草金龍山』に写真を重ねたもの",
+    printCap: "歌川広重《名所江戸百景 浅草金龍山》1856 を重ねて",
+    same: (f: string) => `あなたも広重も${f}を向いている（見立て・鉛筆）`,
+    both: (a: string, b: string) => `あなたは${a}を、広重は${b}を向いている（見立て・鉛筆）`,
+  },
+  en: {
+    alt: "The photo being explored",
+    printAlt: "Hiroshige's Kinryūzan Temple at Asakusa laid over the photo",
+    printCap: "Utagawa Hiroshige, Kinryūzan Temple at Asakusa (One Hundred Famous Views of Edo), 1856, laid over",
+    same: (f: string) => `You and Hiroshige both face ${f} (a guess, pencil)`,
+    both: (a: string, b: string) => `You face ${a}, Hiroshige faced ${b} (a guess, pencil)`,
+  },
+});
 
 export function PhotoStage({
   s,
@@ -83,11 +101,14 @@ export function PhotoStage({
   const overlay = s.space?.aligned && scene?.alignment?.ok && scene.alignment.overlay && s.space.scene_id ? `/api/cache/scenes/${s.space.scene_id}/${scene.alignment.overlay}` : null;
   // the print wipes over the photo when the visual match lands, holds, then steps back (toggle brings it back)
   const showOverlay = overlay && sinceVisual >= 0 && (overlayOn || sinceVisual < 5200);
+  const t = useDict(T);
+  const lang = useLang();
   const placeName = s.place?.path[0]?.name; // leaf-first
   // FR-35 in one line, at the moment the print lands: you and Hiroshige, facing (pencil)
   const vf = s.viewpoint?.visitor?.facing;
   const af = s.viewpoint?.artwork?.facing;
-  const facingLine = vf && af && FACING_JA[vf] && FACING_JA[af] ? (vf === af ? `あなたも広重も${FACING_JA[vf]}を向いている（見立て・鉛筆）` : `あなたは${FACING_JA[vf]}を、広重は${FACING_JA[af]}を向いている（見立て・鉛筆）`) : null;
+  const F = FACING[lang];
+  const facingLine = vf && af && F[vf] && F[af] ? (vf === af ? t.same(F[vf]) : t.both(F[vf], F[af])) : null;
 
   return (
     <div className="relative h-full max-w-full overflow-hidden rounded-md bg-ink shadow-2xl ring-1 ring-muted/20" style={{ aspectRatio: aspect }} data-testid="stage-photo">
@@ -95,7 +116,7 @@ export function PhotoStage({
         // eslint-disable-next-line @next/next/no-img-element -- the visitor's own (face-blurred) photo or the CC0 sample
         <img
           src={photo}
-          alt="探索している写真"
+          alt={t.alt}
           className={`absolute inset-0 size-full object-cover transition-[filter] duration-700 ${absent ? "brightness-[0.5] grayscale" : dim ? "brightness-[0.62] saturate-[0.85]" : ""}`}
           onLoad={(e) => {
             const i = e.currentTarget;
@@ -189,9 +210,9 @@ export function PhotoStage({
             data-testid="stage-overlay"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print aligned to the photo */}
-            <img src={overlay!} alt="広重『名所江戸百景 浅草金龍山』に写真を重ねたもの" className="size-full object-contain" />
+            <img src={overlay!} alt={t.printAlt} className="size-full object-contain" />
             <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night/90 to-transparent px-4 pt-10 pb-3 text-caption text-paper/80">
-              歌川広重《名所江戸百景 浅草金龍山》1856 を重ねて
+              {t.printCap}
               {facingLine && <span className="mt-0.5 block font-hand text-small text-paper" data-testid="facing-line">{facingLine}</span>}
             </span>
           </m.div>

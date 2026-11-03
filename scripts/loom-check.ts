@@ -70,6 +70,20 @@ try {
     if (!(await page.getByTestId("stage-overlay").count())) fails.push("1856: Hiroshige's print should be over the photo");
     await to(1960);
     await shot("7-1960");
+    await to(2026);
+  }
+  // pull the thread (a Claude call, ~$0.01): skip with --no-ask
+  if (!rest.includes("--no-ask")) {
+    const input = page.getByTestId("ask-input");
+    if (!(await input.count())) fails.push("no ask panel");
+    else {
+      await input.fill(lang === "en" ? "Why was the gate missing in 1878?" : "1878年に雷門がなかったのはなぜ？");
+      await page.getByTestId("ask-submit").click();
+      await page.locator('[data-testid="ask-answer"] sup, [data-testid="ask-not-found"]').first().waitFor({ timeout: 60_000 });
+      await page.waitForTimeout(1500);
+      await shot("8-ask");
+      if (!(await page.locator('[data-testid="ask-answer"] sup').count())) fails.push("the answer cites nothing");
+    }
   }
   if (errors.length) fails.push(...errors.slice(0, 3));
   console.log(JSON.stringify({ out, fails }, null, 1));

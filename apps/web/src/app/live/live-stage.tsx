@@ -24,12 +24,61 @@ import { LiveChips, ResultStrip, StepRail, Toasts } from "./stage-chrome";
 import { TextColumn } from "./text-column";
 import { RopeLayer, type RopeSpec } from "./rope-layer";
 import { ObjectsLayer } from "./objects-layer";
+import { AskPanel, type AskItem } from "./ask-panel";
 import { GuideCards } from "./guide-cards";
+import { WorldCard } from "./world-card";
 import { LAYER_COLOR } from "./labels";
 import { loomObjects } from "@/lib/live/objects";
 import { pluck } from "@/lib/live/feel";
 import { yearState, type TimelineData as RiverData } from "@/lib/time-river";
-import { useLang } from "../i18n";
+import { dict, LangToggle, useDict, useLang } from "../i18n";
+
+const T = dict({
+  ja: {
+    replayFallback: "記録を再生する（録画であることを表示します）",
+    home: "はじめに戻る",
+    homeAria: "TSUMUGI はじめに戻る",
+    similar: "提灯から提灯へ・似た図像",
+    back: "写真に戻す",
+    overlay: "広重の絵と重ねる",
+    note: "旅ノートを開く",
+    time: "時をめくる",
+    names: "言の地層",
+    intoPrint: "絵の中へ",
+    space: "間（ま）で見る",
+    intoThis: "この絵の中へ",
+    backstage: "舞台裏",
+    list: "リスト表示",
+    stage: "舞台表示",
+    recorded: (d: string) => `${d} に実行した探索の録画`,
+    failed: "探索を最後まで進められませんでした：",
+    replayShort: "記録を再生する（録画）",
+    timeTitle: (p: string) => `時をめくる：${p}はいつ、そこにあったか`,
+    namesTitle: "言の地層：資料ごとの呼び名",
+  },
+  en: {
+    replayFallback: "Play the recording (shown as a recording)",
+    home: "Back to the start",
+    homeAria: "TSUMUGI, back to the start",
+    similar: "Lantern to lantern · a similar picture",
+    back: "Back to the photo",
+    overlay: "Lay Hiroshige's print over it",
+    note: "Open the travel note",
+    time: "Turn the years",
+    names: "Layers of names",
+    intoPrint: "Into the print",
+    space: "See it in layers",
+    intoThis: "Into this print",
+    backstage: "Backstage",
+    list: "List view",
+    stage: "Stage view",
+    recorded: (d: string) => `Recording of an exploration run on ${d}`,
+    failed: "The exploration could not finish: ",
+    replayShort: "Play the recording",
+    timeTitle: (p: string) => `Turn the years: when was ${p} there?`,
+    namesTitle: "Layers of names: what each source called it",
+  },
+});
 import { useExploration, type Source } from "./use-exploration";
 import { YearAxis } from "./year-axis";
 
@@ -77,7 +126,26 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const [selectedObj, setSelectedObj] = useState<string | null>(null);
   const [scrub, setScrub] = useState<number | null>(null);
   const lang = useLang();
+  const t = useDict(T);
   const lastDecade = useRef<number | null>(null);
+  // pull the thread: questions and Claude's cited answers (this run's passages only)
+  const [asks, setAsks] = useState<AskItem[]>([]);
+  const onAsk = useCallback(
+    (q: string) => {
+      if (!expId) return;
+      setAsks((a) => [...a, { q, status: "asking" }]);
+      const done = (patch: Partial<AskItem>) => setAsks((a) => a.map((x) => (x.q === q && x.status === "asking" ? { ...x, ...patch } : x)));
+      fetch(`/api/explorations/${expId}/ask`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question: q, lang }) })
+        .then(async (r) => {
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok) return done({ status: "error", reason: j.error });
+          done({ status: "done", ok: j.ok, reason: j.reason, segments: j.segments, costUsd: j.costUsd, elapsedMs: j.elapsedMs });
+          if (j.ok) pluck(320);
+        })
+        .catch(() => done({ status: "error" }));
+    },
+    [expId, lang],
+  );
   usePresent();
   const scene = useScene(s.space?.ok ? s.space.scene_id : undefined);
   const cards = useMemo(() => sourceCards(s), [s]);
@@ -126,9 +194,35 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
             at: s.at.threads! + i * 140,
           }),
         );
+    // ink: an answer to each source it cites (checked by code), through the source's year
+    asks.forEach((a, i) => {
+      const ids = [...new Set((a.segments ?? []).flatMap((sg) => sg.cites.map((c) => c.sourceId)))];
+      ids.forEach((sid) => {
+        const c = cards.find((x) => x.sourceId === sid);
+        if (c) out.push({ id: `ask:${i}:${sid}`, from: `ask:${i}`, to: `card:${sid}`, kind: "ink", color: "var(--paper)", year: c.year, at: 0 });
+      });
+    });
     return out;
-  }, [s.guide, s.at.guide, s.at.threads, objects, mainObj, cards]);
+  }, [s.guide, s.at.guide, s.at.threads, objects, mainObj, cards, asks]);
   const finished = phase === "done";
+  const runLang = s.narrative?.lang;
+  const [story, setStory] = useState<{ lang: "ja" | "en"; sentences: { text: string; claim_ids: string[]; assertion_type: string }[] } | null>(null);
+  useEffect(() => {
+    if (!finished || !expId || !runLang || runLang === lang) return;
+    let off = false;
+    fetch(`/api/explorations/${expId}/narrative?lang=${lang}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!off && Array.isArray(j?.sentences)) setStory({ lang, sentences: j.sentences });
+      })
+      .catch(() => {});
+    return () => {
+      off = true;
+    };
+  }, [finished, expId, runLang, lang]);
+  const sourceIds = useMemo(() => cards.map((c) => c.sourceId), [cards]);
+  const titles = useMemo(() => new Map(cards.map((c) => [c.sourceId, c.title])), [cards]);
+  const storyShown = story && story.lang === lang && lang !== runLang ? story : null;
   const replay = source.kind === "replay";
   const photoUrl = photo ?? (s.space?.scene_id ? `/api/cache/scenes/${s.space.scene_id}/photo.jpg` : null);
   const into = s.visual?.hits.find((h) => h.into)?.into;
@@ -141,11 +235,11 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
         </p>
         {demoReplay && (
           <ButtonLink href={`/replay/${demoReplay}`} variant="primary" data-testid="fallback-replay">
-            記録を再生する（録画であることを表示します）
+            {t.replayFallback}
           </ButtonLink>
         )}
         <Link href="/" className="text-small text-muted underline">
-          はじめに戻る
+          {t.home}
         </Link>
       </main>
     );
@@ -159,7 +253,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
           <img src={`/api/cache/visual/images/${s.visual.hits[0].file}`} alt="" className="h-12 w-9 rounded-sm object-cover" />
           <span className="min-w-0">
             <span className="block text-caption text-muted">
-              提灯から提灯へ・似た図像 {s.visual.hits[0].score.toFixed(2)} <Pencil />
+              {t.similar} {s.visual.hits[0].score.toFixed(2)} <Pencil />
             </span>
             <span className="block truncate font-serif text-small">{s.visual.hits[0].title}</span>
           </span>
@@ -167,30 +261,30 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       )}
       {s.space?.aligned && s.at.visual !== undefined && (
         <Button variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} className="col-span-2 -mt-2 mb-2 w-full justify-start px-0" data-testid="overlay-toggle">
-          {overlayOn ? "写真に戻す" : "広重の絵と重ねる"}
+          {overlayOn ? t.back : t.overlay}
         </Button>
       )}
       {finished && expId && (
         <ButtonLink href={`/note/${expId}`} variant="primary" data-testid="note-link">
-          旅ノートを開く
+          {t.note}
         </ButtonLink>
       )}
       {finished && s.timeline != null && (
         <Button onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
-          時をめくる
+          {t.time}
         </Button>
       )}
       {finished && s.names != null && (
         <Button onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
-          言の地層
+          {t.names}
         </Button>
       )}
       {finished && s.space?.ok && s.space.url && (
         <ButtonLink href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} data-testid="space-link">
-          {s.space.aligned ? "絵の中へ" : "間（ま）で見る"}
+          {s.space.aligned ? t.intoPrint : t.space}
         </ButtonLink>
       )}
-      {into && !s.space?.aligned && finished && <ButtonLink href={into}>この絵の中へ</ButtonLink>}
+      {into && !s.space?.aligned && finished && <ButtonLink href={into}>{t.intoThis}</ButtonLink>}
     </>
   );
 
@@ -201,18 +295,19 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
           <main className="flex min-h-dvh w-full max-w-full flex-col gap-4 overflow-x-clip px-4 py-4 lg:h-dvh lg:px-10 lg:py-5">
             <header className="flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3 border-b border-rule pb-3">
               <div className="flex w-full min-w-0 flex-wrap items-baseline gap-x-10 gap-y-2 lg:w-auto">
-                <Link href="/" onClick={onExit} className="font-serif text-lead tracking-[0.3em]" aria-label="TSUMUGI はじめに戻る">
+                <Link href="/" onClick={onExit} className="font-serif text-lead tracking-[0.3em]" aria-label={t.homeAria}>
                   TSUMUGI
                 </Link>
                 <StepRail s={s} elapsed={elapsed} finished={finished} />
               </div>
               <div className="flex items-baseline gap-1">
                 <Button variant="quiet" onClick={() => toggle("backstage")} aria-expanded={panel === "backstage"} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
-                  舞台裏
+                  {t.backstage}
                 </Button>
                 <Button variant="quiet" onClick={() => setView((v) => (v === "stage" ? "list" : "stage"))} className="present-hide" data-testid="view-toggle" disabled={!expId}>
-                  {view === "stage" ? "リスト表示" : "舞台表示"}
+                  {view === "stage" ? t.list : t.stage}
                 </Button>
+                <LangToggle />
               </div>
             </header>
             <div className="flex min-h-7 flex-wrap items-center gap-x-6 gap-y-1">
@@ -223,7 +318,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 note={
                   replay ? (
                     <span className="text-caption text-muted" data-testid="replay-banner">
-                      {source.recordedAt.slice(5, 16).replace("-", "/").replace("T", " ")} に実行した探索の録画
+                      {t.recorded(source.recordedAt.slice(5, 16).replace("-", "/").replace("T", " "))}
                     </span>
                   ) : null
                 }
@@ -234,10 +329,11 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
             </div>
             {s.failed && (
               <p className="text-small text-ba" role="alert">
-                探索を最後まで進められませんでした：{s.failed.message}
+                {t.failed}
+                {s.failed.message}
                 {demoReplay && (
                   <a href={`/replay/${demoReplay}`} className="ml-3 underline" data-testid="fallback-replay">
-                    記録を再生する（録画）
+                    {t.replayShort}
                   </a>
                 )}
               </p>
@@ -258,8 +354,15 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     hot={hot}
                     setHot={setHot}
                     actions={actions}
-                    guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} />}
-                    guideFocus={selectedSee !== null ? <GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} only={selectedSee} /> : null}
+                    guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} onAsk={finished && expId ? onAsk : undefined} />}
+                    story={storyShown}
+                    world={finished && s.place?.entity ? <WorldCard entity={s.place.entity} sourceIds={sourceIds} titles={titles} /> : null}
+                    guideFocus={
+                      <>
+                        {selectedSee !== null && <GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} only={selectedSee} onAsk={expId ? onAsk : undefined} />}
+                        {finished && expId && <AskPanel items={asks} onAsk={onAsk} register={register} />}
+                      </>
+                    }
                   />
                 </div>
                 <div className="order-1 flex h-[45vh] min-h-0 justify-center lg:order-none lg:h-full">
@@ -296,13 +399,13 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 </div>
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
-                  <StagePanel title={`時をめくる：${s.place?.path[0]?.name.ja ?? ""}はいつ、そこにあったか`} onClose={() => setPanel(null)} testid="time-panel" wide>
+                  <StagePanel title={t.timeTitle(s.place?.path[0]?.name[lang] ?? "")} onClose={() => setPanel(null)} testid="time-panel" wide>
                     <TimeRiver data={s.timeline as TimelineData} initialYear={1856} />
                   </StagePanel>
                 )}
                 {panel === "names" && s.names != null && (
-                  <StagePanel title="言の地層：資料ごとの呼び名" onClose={() => setPanel(null)} testid="names-panel" wide>
-                    <NamesLayer names={s.names as NamesData} lang="ja" />
+                  <StagePanel title={t.namesTitle} onClose={() => setPanel(null)} testid="names-panel" wide>
+                    <NamesLayer names={s.names as NamesData} lang={lang} />
                   </StagePanel>
                 )}
                 <RopeLayer stageRef={stageRef} anchors={anchors} axisRef={axisRef} specs={specs} since={elapsed} hot={hot} reduced={reduced} pluckRef={pluckRef} />

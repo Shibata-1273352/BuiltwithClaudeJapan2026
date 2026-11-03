@@ -6,12 +6,13 @@
  */
 import { useEffect, useState } from "react";
 import type { Cite, Lang, Note, NarrativeLike } from "@/lib/note";
+import { dict, useLang, useSetLang } from "../../i18n";
 import { VisualHitCard } from "../../visual-hit";
 import { Button, ButtonLink } from "../../ui/button";
 import { Pencil, Section } from "../../ui/marks";
 import { LoomLegend } from "../../ui/legend";
 
-const T = {
+const T = dict({
   ja: {
     title: "旅ノート",
     story: "物語",
@@ -34,6 +35,7 @@ const T = {
     derived: "推論（年表との照合）",
     interpretive: "解釈",
     direct: "資料の記述",
+    simple: "空間解析：簡易表示",
     stats: (s: Note["stats"]) => `${((s.elapsed_ms ?? 0) / 1000).toFixed(1)} 秒 · Claude ${s.claude_calls ?? "?"} 回 · $${(s.cost_usd ?? 0).toFixed(3)}`,
   },
   en: {
@@ -59,8 +61,9 @@ const T = {
     interpretive: "interpretation",
     direct: "stated by the source",
     stats: (s: Note["stats"]) => `${((s.elapsed_ms ?? 0) / 1000).toFixed(1)} s · Claude ${s.claude_calls ?? "?"} calls · $${(s.cost_usd ?? 0).toFixed(3)}`,
+    simple: "Spatial analysis: simple view",
   },
-};
+});
 
 const STATE: Record<string, { ja: string; en: string; cls: string }> = {
   ink: { ja: "インク", en: "ink", cls: "border-solid" },
@@ -73,11 +76,24 @@ const STATE: Record<string, { ja: string; en: string; cls: string }> = {
 };
 const LAYER: Record<string, string> = { toki: "border-toki", ba: "border-ba", koto: "border-koto", ma: "border-ma" };
 /** graph predicates in labels read as words, not ids (CLAUDE.md design 9) */
-const PRED: Record<string, string> = { destroyed_in: "焼失", rebuilt_in: "再建", built_in: "建立", describes: "記述", mentions: "言及", observed: "観察", named_as: "呼び名", dedicated_to: "祀る", depicts: "描く" };
-const plain = (s: string) => s.replace(/（([a-z_]+)(「[^」]*」)?）/g, (m, p: string, q?: string) => (PRED[p] ? `（${PRED[p]}${q ?? ""}）` : m));
+const PRED: Record<string, { ja: string; en: string }> = {
+  destroyed_in: { ja: "焼失", en: "destroyed" },
+  rebuilt_in: { ja: "再建", en: "rebuilt" },
+  built_in: { ja: "建立", en: "built" },
+  describes: { ja: "記述", en: "describes" },
+  mentions: { ja: "言及", en: "mentions" },
+  observed: { ja: "観察", en: "observed" },
+  named_as: { ja: "呼び名", en: "named" },
+  dedicated_to: { ja: "祀る", en: "dedicated to" },
+  depicts: { ja: "描く", en: "depicts" },
+};
+const plain = (s: string, lang: Lang) =>
+  s.replace(/（([a-z_]+)(「[^」]*」)?）/g, (m, p: string, q?: string) => (PRED[p] ? `（${PRED[p][lang]}${q ?? ""}）` : m));
 
-export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang }) {
-  const [lang, setLang] = useState<Lang>(initialLang);
+export function NoteView({ note }: { note: Note }) {
+  // the page language (FR-40): ?lang= or the cookie, shared with every other screen
+  const lang = useLang();
+  const setLang = useSetLang();
   const [narratives, setNarratives] = useState(note.narratives);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState(0);
@@ -161,7 +177,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
           // eslint-disable-next-line @next/next/no-img-element -- private, session-scoped cache file
           <img src={photo} alt="" className="max-h-[78vh] w-full rounded-md object-contain object-left" />
         ) : (
-          <div className="flex min-h-64 items-center justify-center border-y border-rule text-muted">空間解析：簡易表示</div>
+          <div className="flex min-h-64 items-center justify-center border-y border-rule text-muted">{t.simple}</div>
         )}
         <div className="flex flex-col gap-6">
           <div>
@@ -290,7 +306,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
                 <span className="block text-caption text-muted">
                   {confirmed[th.id] ? `${STATE.user_confirmed[lang]}（${STATE[th.state]?.[lang] ?? th.state}）` : (STATE[th.state]?.[lang] ?? th.state)}
                 </span>
-                {plain(th.label[lang])}
+                {plain(th.label[lang], lang)}
                 {(th.state === "pending" || th.state === "pencil") && (
                   <Button variant="quiet" onClick={() => toggleConfirm(th.id)} aria-pressed={Boolean(confirmed[th.id])} className="ml-1 text-caption" data-testid="confirm-thread">
                     {confirmed[th.id] ? t.unconfirm : t.confirm}

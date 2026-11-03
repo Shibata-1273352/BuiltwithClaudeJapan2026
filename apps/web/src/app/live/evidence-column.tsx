@@ -4,14 +4,14 @@
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
 import { AssociationThreads } from "./association-threads";
-import { EXIST_JA, LAYER_COLOR, STATE_JA } from "./labels";
+import { dict, useDict, useLang } from "../i18n";
+import { EXIST_LABEL, FACET_LABEL, LAYER_COLOR, STATE_LABEL } from "./labels";
 
-const FACET_JA: Record<string, string> = {
-  place_description: "場所の記述",
-  naming: "呼び名",
-  existence_timeline: "存在の年表",
-  historical_artifacts: "歴史的な作品",
-};
+const T = dict({
+  ja: { evidence: "根拠", title: "根拠となる資料", n: (n: number) => `${n} 節`, matrix: "観点×言語の検索", ja: "日本語", en: "英語", none: "見つからず", searching: "日英の資料を探しています。", before: "写真を読み終えたら、日英の資料を探します。", pub: "刊行・公開年（この場所の記述の年ではない）", time: "この場所について書かれた年", pubMark: " 刊", jaMark: "日", enMark: "英", kept: "採用", down: "格下げ" },
+  en: { evidence: "Evidence", title: "Sources", n: (n: number) => `${n} passages`, matrix: "Search by topic and language", ja: "Japanese", en: "English", none: "none found", searching: "Searching Japanese and English sources.", before: "Once the photo is read, Japanese and English sources are searched.", pub: "year published (not the year this place was described)", time: "the year this place was written about", pubMark: " pub.", jaMark: "ja", enMark: "en", kept: "kept", down: "downgraded" },
+});
+
 
 export function EvidenceColumn({
   s,
@@ -27,17 +27,19 @@ export function EvidenceColumn({
   setHot: (id: string | null) => void;
 }) {
   const searched = s.stages.retrieve !== undefined || s.stages.plan !== undefined;
+  const t = useDict(T);
+  const ui = useLang();
   return (
-    <section className="flex h-full min-h-0 flex-col gap-4" aria-label="根拠" data-testid="evidence-column">
+    <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.evidence} data-testid="evidence-column">
       <div className="flex items-baseline justify-between">
-        <h2 className="label">根拠となる資料</h2>
-        <span className="text-caption text-muted tabular-nums">{new Set(s.candidates.map((c) => c.passageId)).size} 節</span>
+        <h2 className="label">{t.title}</h2>
+        <span className="text-caption text-muted tabular-nums">{t.n(new Set(s.candidates.map((c) => c.passageId)).size)}</span>
       </div>
-      <table className="w-full table-fixed border-y border-rule text-caption" data-testid="search-matrix" aria-label="観点×言語の検索">
+      <table className="w-full table-fixed border-y border-rule text-caption" data-testid="search-matrix" aria-label={t.matrix}>
         <thead>
           <tr className="text-muted">
-            <th className="w-14 py-1.5 pl-4 text-left font-normal" />
-            {Object.values(FACET_JA).map((f) => (
+            <th className={`${ui === "ja" ? "w-14" : "w-24"} py-1.5 pl-4 text-left font-normal`} />
+            {Object.values(FACET_LABEL[ui]).map((f) => (
               <th key={f} className="py-1.5 text-left font-normal">
                 {f}
               </th>
@@ -47,13 +49,13 @@ export function EvidenceColumn({
         <tbody>
           {(["en", "ja"] as const).map((lang) => (
             <tr key={lang} className="border-t border-rule">
-              <td className="py-1.5 pl-4 text-muted">{lang === "ja" ? "日本語" : "英語"}</td>
-              {Object.keys(FACET_JA).map((f) => {
+              <td className="py-1.5 pl-4 text-muted">{lang === "ja" ? t.ja : t.en}</td>
+              {Object.keys(FACET_LABEL[ui]).map((f) => {
                 const g = [...s.candidateGroups].reverse().find((x) => x.facet === f && x.lang === lang);
                 return (
                   <td key={f} className="py-1.5">
                     <span className={`block h-5 tabular-nums transition-colors duration-500 ${g ? (g.notFound ? "text-muted line-through decoration-muted/60" : "text-paper") : searched ? "shimmer w-10 rounded-sm" : ""}`}>
-                      {g ? (g.notFound ? "見つからず" : `${g.found} 節`) : ""}
+                      {g ? (g.notFound ? t.none : t.n(g.found)) : ""}
                     </span>
                   </td>
                 );
@@ -62,7 +64,7 @@ export function EvidenceColumn({
           ))}
         </tbody>
       </table>
-      {cards.length === 0 && <p className="font-serif text-body text-muted">{searched ? "日英の資料を探しています。" : "写真を読み終えたら、日英の資料を探します。"}</p>}
+      {cards.length === 0 && <p className="font-serif text-body text-muted">{searched ? t.searching : t.before}</p>}
       <ul className="fade-end flex min-h-[50%] flex-1 flex-col overflow-y-auto pr-1 pb-10">
         <AnimatePresence initial={false}>
           {cards.map((c) => {
@@ -90,22 +92,22 @@ export function EvidenceColumn({
                     {c.title}
                   </span>
                   {c.year && (
-                    <span className={`font-serif text-body tabular-nums ${c.yearKind === "published" ? "text-muted" : "text-paper"}`} title={c.yearKind === "published" ? "刊行・公開年（この場所の記述の年ではない）" : "この場所について書かれた年"}>
+                    <span className={`font-serif text-body tabular-nums ${c.yearKind === "published" ? "text-muted" : "text-paper"}`} title={c.yearKind === "published" ? t.pub : t.time}>
                       {c.year}
-                      {c.yearKind === "published" ? " 刊" : ""}
+                      {c.yearKind === "published" ? t.pubMark : ""}
                     </span>
                   )}
-                  <span className="text-caption text-muted">{c.lang === "ja" ? "日" : "英"}</span>
+                  <span className="text-caption text-muted">{c.lang === "ja" ? t.jaMark : t.enMark}</span>
                 </div>
                 <p className="mt-1 line-clamp-2 text-small text-paper/70" lang={c.lang}>
                   {c.excerpt}
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted">
-                  {c.accepted > 0 && <span>採用 {c.accepted}</span>}
-                  {c.downgraded + c.rejected > 0 && <span>格下げ {c.downgraded + c.rejected}</span>}
+                  {c.accepted > 0 && <span>{t.kept} {c.accepted}</span>}
+                  {c.downgraded + c.rejected > 0 && <span>{t.down} {c.downgraded + c.rejected}</span>}
                   {c.existence && (
                     <span className={c.existence.value === "absent" ? "font-medium text-paper" : ""}>
-                      {EXIST_JA[c.existence.value]}
+                      {EXIST_LABEL[ui][c.existence.value]}
                     </span>
                   )}
                   {c.state && (
@@ -113,7 +115,7 @@ export function EvidenceColumn({
                       <svg width="16" height="4" aria-hidden>
                         <path d={broken ? "M0 2 H6 M10 2 H16" : "M0 2 H16"} stroke={color} strokeWidth="2" strokeDasharray={c.state === "pending" ? "3 2" : undefined} />
                       </svg>
-                      {STATE_JA[c.state] ?? c.state}
+                      {STATE_LABEL[ui][c.state] ?? c.state}
                     </span>
                   )}
                 </div>

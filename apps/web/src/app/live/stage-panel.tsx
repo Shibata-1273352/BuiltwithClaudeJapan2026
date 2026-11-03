@@ -1,6 +1,7 @@
 "use client";
 
 /** A panel that rises over the stage (舞台裏, 時をめくる, 言の地層) without leaving the run. */
+import { useLang } from "../i18n";
 import { m } from "motion/react";
 import { Button } from "../ui/button";
 
@@ -16,7 +17,7 @@ export function StagePanel({ title, onClose, children, testid, wide = false }: {
       <div className="flex items-baseline justify-between">
         <h2 className="font-serif text-lead">{title}</h2>
         <Button variant="quiet" onClick={onClose}>
-          閉じる
+          {useLang() === "ja" ? "閉じる" : "Close"}
         </Button>
       </div>
       <div className="mt-3">{children}</div>

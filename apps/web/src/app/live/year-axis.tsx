@@ -4,6 +4,7 @@
  * The year axis (6.2): sources light up at the year they were written; when the timeline arrives
  * it becomes the river band — solid where the thing stood, open where it did not.
  */
+import { useLang } from "../i18n";
 import { m } from "motion/react";
 import type { Ref } from "react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
@@ -39,6 +40,7 @@ export function YearAxis({
   onScrub?: (y: number) => void;
   scrubLabel?: string;
 }) {
+  const lang = useLang();
   const tl = s.timeline as { periods?: Period[]; name?: { ja: string } } | undefined;
   const periods = tl?.periods ?? [];
   const pos = (y: number) => `calc(${PAD}px + (100% - ${2 * PAD}px) * ${yearFrac(y)})`;
@@ -47,7 +49,7 @@ export function YearAxis({
       ref={axisRef}
       className={`relative h-full w-full touch-none transition-opacity duration-700 ${cards.length ? "opacity-100" : "opacity-0"} ${onScrub ? "cursor-ns-resize" : ""}`}
       data-testid="year-axis"
-      aria-label="年の軸"
+      aria-label={lang === "ja" ? "年の軸" : "Year axis"}
       onPointerDown={(e) => {
         if (!onScrub) return;
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -101,13 +103,13 @@ export function YearAxis({
             initial={{ scaleY: 0, opacity: 0 }}
             animate={{ scaleY: 1, opacity: 1 }}
             transition={{ duration: 0.7, delay: i * 0.15 }}
-            title={`${a}–${b} ${present ? "存在" : "不在"}`}
+            title={`${a}–${b} ${present ? (lang === "ja" ? "存在" : "there") : lang === "ja" ? "不在" : "not there"}`}
           >
             {!present && b - a > 30 && (
               <span className="absolute bottom-0 left-3 whitespace-nowrap text-caption leading-tight text-paper/80">
                 {a}–{b}
                 <br />
-                不在
+                {lang === "ja" ? "不在" : "not there"}
               </span>
             )}
           </m.div>

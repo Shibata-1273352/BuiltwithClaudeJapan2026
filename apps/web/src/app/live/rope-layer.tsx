@@ -15,7 +15,7 @@ import { AXIS_PAD } from "./year-axis";
 export type RopeSpec = {
   id: string;
   from: string; // anchor key, e.g. "obj:lantern"
-  to: string; // "card:<source>" | "guide:<seeIndex>"
+  to: string; // "card:<source>" | "guide:<seeIndex>" (from may also be "ask:<i>": an answer to its sources)
   kind: "silk" | "ink";
   color: string;
   /** ink: the cord passes through this year on the axis */
@@ -33,7 +33,7 @@ type Live = { spec: RopeSpec; ropes: Rope[]; els: SVGPathElement[]; grown: boole
 function attach(key: string, el: HTMLElement, origin: DOMRect): Pt {
   const r = el.getBoundingClientRect();
   if (key.startsWith("card:")) return { x: r.left - origin.left, y: r.top - origin.top + Math.min(r.height / 2, 28) };
-  if (key.startsWith("guide:")) return { x: r.right - origin.left, y: r.top - origin.top + Math.min(r.height / 2, 28) };
+  if (key.startsWith("guide:") || key.startsWith("ask:")) return { x: r.right - origin.left, y: r.top - origin.top + Math.min(r.height / 2, 28) };
   return { x: r.left - origin.left + r.width / 2, y: r.top - origin.top + r.height / 2 };
 }
 
