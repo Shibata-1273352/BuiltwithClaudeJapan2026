@@ -23,7 +23,7 @@ function Typed({ text, since, reduced, cps = 45 }: { text: string; since: number
 }
 
 /** What the see call asks Claude for (SEE_SYSTEM), ticked one by one while it works, all at once when it answers. */
-const ASK = ["看板・銘の文字を原文のまま読む", "読みと意味を日英で添える", "写っている要素と位置を囲む", "場所の候補を階層で挙げる", "立ち位置と向きを見立てる（鉛筆）"];
+const ASK = ["看板・銘の文字を原文のまま読む", "読みと意味を日英で添える", "写っている要素と位置を囲む", "場所の候補を階層で挙げる"];
 
 function SeeAsk({ s, since }: { s: LiveState; since: number }) {
   const answered = Boolean(s.see);

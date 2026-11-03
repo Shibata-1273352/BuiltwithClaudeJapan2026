@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateSee, wrapUntrusted } from "./index";
-import { checkViewpoint, type Viewpoint } from "./see";
+import { checkViewpoint, validateViewpoint, type Viewpoint } from "./see";
 
 const good = {
   elements: [
@@ -85,11 +85,12 @@ describe("viewpoint (FR-35, pencil)", () => {
     expect(checkViewpoint({ ...vp, position: { ja: " ", en: "y" } })).toBeNull();
     expect(checkViewpoint(null)).toBeNull();
   });
-  it("an output without the key (older recordings) still validates, with viewpoint null", () => {
-    const r = validateSee({ elements: [], places: [], notes: "" });
-    expect(r.ok && r.value.viewpoint).toBeNull();
+  it("the separate call: null is fine; a guess without premises becomes null", () => {
+    expect(validateViewpoint({ viewpoint: null })).toEqual({ ok: true, value: null });
+    expect(validateViewpoint({ viewpoint: { ...vp, premises: [] } })).toEqual({ ok: true, value: null });
+    expect(validateViewpoint({ viewpoint: vp })).toEqual({ ok: true, value: vp });
   });
   it("an invalid facing is a schema error", () => {
-    expect(validateSee({ elements: [], places: [], notes: "", viewpoint: { ...vp, facing: "behind" } }).ok).toBe(false);
+    expect(validateViewpoint({ viewpoint: { ...vp, facing: "behind" } }).ok).toBe(false);
   });
 });

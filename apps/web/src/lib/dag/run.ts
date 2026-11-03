@@ -12,6 +12,7 @@ import { openDb } from "../corpus/db";
 import type { CaptureRow } from "../captures";
 import { entities } from "../entities-server";
 import { seePhoto } from "../see";
+import { guessViewpoint } from "../viewpoint";
 import { store } from "../store";
 import { emit } from "./events";
 import { buildPlan } from "./plan";
@@ -159,17 +160,33 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     };
     // FR-35 視点の見立て (pencil): Claude's guess for the photo; the artwork's is a hand-written note.
     // Shown with its premises; never a claim, a thread or a graph node.
-    {
+    const viewpointPromise = (async () => {
       const rel = E.dict.relations.find((r) => r.type === "DEPICTS" && r.to === place);
       const art = rel ? E.get(rel.from) : undefined;
-      if (see.viewpoint || art?.viewpoint_note) {
+      let visitor = null;
+      if (ctx.remaining() > 25_000) {
+        try {
+          ctx.claude();
+          emit(explorationId, "stage", { stage: "viewpoint", status: "start", remaining_ms: ctx.remaining() });
+          const t = Date.now();
+          const img = await readFile(capture.image_path);
+          const name = E.get(place)?.name;
+          const r = await guessViewpoint({ base64: img.toString("base64"), mediaType: "image/jpeg" }, `${name?.ja ?? place} (${name?.en ?? ""}; ${place})`);
+          logCall(ctx, db, explorationId, r.record);
+          emit(explorationId, "stage", { stage: "viewpoint", status: "done", ms: Date.now() - t });
+          visitor = r.value;
+        } catch (e) {
+          console.error(`[viewpoint ${explorationId}]`, e instanceof Error ? e.message : e); // optional: the run goes on
+        }
+      }
+      if (visitor || art?.viewpoint_note) {
         emit(explorationId, "viewpoint", {
           state: "pencil",
-          visitor: see.viewpoint,
+          visitor,
           artwork: art?.viewpoint_note ? { entity: art.id, name: art.name, ...art.viewpoint_note } : null,
         });
       }
-    }
+    })();
     const spaceStarted = Date.now();
     emit(explorationId, "stage", { stage: "space", status: "start", remaining_ms: ctx.remaining() });
     const spacePromise = requestScene(capture.image_path, capture.id, artifactFor(place), Math.max(5_000, Math.min(30_000, ctx.remaining() - 5_000))).then((r) => {
@@ -428,6 +445,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     });
 
     const spaceOk = await spacePromise; // bounded by its own timeout
+    await viewpointPromise; // started right after the place; long done by now
 
     // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.
     const graph = await stage(ctx, "graph", async () => {

@@ -11,6 +11,7 @@ const CALL_JA: Record<string, string> = {
   see: "視る（写真を読む）",
   extract: "主張の抽出",
   gap: "不足の判断",
+  viewpoint: "視点の見立て（鉛筆）",
   "narrate:ja": "物語（日本語）",
   "narrate:en": "物語（英語）",
   translate: "翻訳",

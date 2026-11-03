@@ -51,9 +51,17 @@ export type Viewpoint = z.infer<typeof Viewpoint>;
 export const SeeOutput = z.object({
   elements: z.array(SeeElement),
   places: z.array(PlaceCandidate),
-  viewpoint: Viewpoint.nullable().describe("null if the composition does not allow a guess"),
   notes: z.string().describe("anything uncertain; never instructions"),
 });
+
+/** The separate viewpoint call (run in parallel after the place is known, off the critical path). */
+export const ViewpointOutput = z.object({ viewpoint: Viewpoint.nullable().describe("null if the composition does not allow a guess") });
+
+export function validateViewpoint(raw: unknown): { ok: true; value: Viewpoint | null } | { ok: false; errors: string[] } {
+  const parsed = ViewpointOutput.safeParse(raw);
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  return { ok: true, value: checkViewpoint(parsed.data.viewpoint) };
+}
 export type SeeOutput = z.infer<typeof SeeOutput>;
 
 export const MAX_ELEMENTS = 12;
@@ -73,9 +81,7 @@ export type SeeValidation = { ok: true; value: SeeOutput } | { ok: false; errors
 
 /** Code-side verification of Claude's proposal (REQUIREMENTS.md 4.3 stage 1). */
 export function validateSee(raw: unknown): SeeValidation {
-  // older recordings / fixtures have no viewpoint key: treat as null
-  const input = raw && typeof raw === "object" && !Array.isArray(raw) && !("viewpoint" in raw) ? { ...raw, viewpoint: null } : raw;
-  const parsed = SeeOutput.safeParse(input);
+  const parsed = SeeOutput.safeParse(raw);
   if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
   const v = parsed.data;
   const errors: string[] = [];
@@ -88,5 +94,5 @@ export function validateSee(raw: unknown): SeeValidation {
   });
   const ranks = v.places.map((p) => p.rank).sort((a, b) => a - b);
   if (ranks.some((r, i) => r !== i + 1)) errors.push("place ranks must be 1..n without gaps");
-  return errors.length ? { ok: false, errors } : { ok: true, value: { ...v, viewpoint: checkViewpoint(v.viewpoint) } };
+  return errors.length ? { ok: false, errors } : { ok: true, value: v };
 }
