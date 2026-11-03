@@ -115,7 +115,7 @@ export function NamesLoom({ names, artifact }: { names: NamesData; artifact: str
     <div ref={wrap} className="relative grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]" data-testid="names-loom">
       {/* the print, the regions */}
       <div className="flex flex-col gap-3">
-        <div ref={pic} className="relative mx-auto h-[min(48vh,30rem)] max-w-full lg:h-[min(70vh,46rem)] overflow-hidden rounded-md" style={{ aspectRatio: "1399 / 2048" }}>
+        <div ref={pic} className="relative mx-auto h-[min(48vh,30rem)] max-w-full lg:h-[min(60vh,40rem)] overflow-hidden rounded-md" style={{ aspectRatio: "1399 / 2048" }}>
           {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print */}
           <img src={`/api/cache/artifacts/${artifact}/image.jpg`} alt={print.title[lang]} className="size-full" />
           <svg viewBox="0 0 1 1" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 size-full" aria-hidden>

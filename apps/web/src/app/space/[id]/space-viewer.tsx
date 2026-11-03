@@ -256,7 +256,7 @@ export function SpaceViewer({
   // Before the 1866 fire the Kansei-era gate Hiroshige painted stood: open the print automatically.
   const overlayBase = ys && ys.state === "present" && year < 1866 ? Math.max(overlay, 0.85) : overlay;
   const overlayEff = inside ? 1 : overlayBase;
-  const photoOpacity = inside && !moving ? 0 : 1; // the photo stays under the print during the move and dissolves on arrival
+  const photoOpacity = inside ? 0 : 1; // lantern to lantern: the print lands on the photo's lantern and the photo dissolves
   const [fps, setFpsState] = useState(0);
   // FR-37: a device that cannot keep 30 fps (e.g. an older phone) gets the 2D view
   const fpsLog = useRef<number[]>([]);
@@ -336,7 +336,7 @@ export function SpaceViewer({
               targetZ={LAYER_Z[el.layer]}
               split={split}
               reduced={reduced}
-              opacity={(GATE_LAYERS.has(key) ? gateOpacity : 1) * (key === "people" ? people : 1) * photoOpacity}
+              opacity={(GATE_LAYERS.has(key) ? gateOpacity : 1) * (key === "people" ? people : 1) * (inside ? 0 : 1)}
               renderOrder={i + 1}
             />
           ))}
@@ -384,7 +384,7 @@ export function SpaceViewer({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: reduced ? 0 : 1.2, duration: 0.6 }}
-            className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-6 bg-gradient-to-t from-night/85 to-transparent px-6 pt-24 pb-8 lg:px-12 lg:pb-10"
+            className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-6 bg-gradient-to-b from-night/85 to-transparent px-6 pt-8 pb-24 lg:px-12 lg:pt-10"
             data-testid="space-inside"
           >
             <div className="max-w-[24rem]">
