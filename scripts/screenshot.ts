@@ -34,7 +34,8 @@ try {
   page.on("pageerror", (e) => errors.push(String(e)));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   await page.goto(base + route, { waitUntil: "networkidle" });
-  await page.waitForTimeout(2500);
+  // --wait <ms>: extra time before the shot (e.g. the camera move into the painting)
+  await page.waitForTimeout(rest.includes("--wait") ? Number(rest[rest.indexOf("--wait") + 1]) || 2500 : 2500);
   await page.screenshot({ path: path.join(outDir, `${slug}.png`) });
   // --fill testid=value (e.g. --fill year-slider=1878), then screenshot as <slug>-<value>.png
   const fi = rest.indexOf("--fill");

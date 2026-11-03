@@ -173,7 +173,16 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       // look at, not evidence: it never becomes a claim or a thread.
       if (!scene || !scene.elements.lantern || ctx.remaining() < 4_000) return Boolean(scene);
       const v = await requestVisual(scene.scene_id, "lantern", 5, Math.min(10_000, ctx.remaining() - 2_000));
-      if (v) emit(explorationId, "visual", { element: "lantern", hits: v.hits, ms: v.elapsed_ms, note: "似た図像（根拠ではない）" });
+      if (v) {
+        // a hit that is the same print as the artwork aligned to the photo opens "into the painting"
+        const aligned = scene.alignment?.ok ? scene.alignment.artifact : undefined;
+        const hits = v.hits.map((h) => {
+          const art = E.dict.entities.find((e) => e.external_ids?.edo100 === h.id);
+          const same = Boolean(art && aligned && `met-${art.external_ids?.met}` === aligned);
+          return { ...h, artwork: art?.id ?? null, into: same ? `/space/${scene.scene_id}?enter=1` : null };
+        });
+        emit(explorationId, "visual", { element: "lantern", hits, ms: v.elapsed_ms, note: "似た図像（根拠ではない）" });
+      }
       return true;
     });
 

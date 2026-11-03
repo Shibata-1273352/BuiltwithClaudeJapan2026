@@ -123,6 +123,8 @@ Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compo
 | FR-58 | **Visual search — lantern to lantern**: the lantern SAM 3 cut from the photo is embedded with SigLIP so400m (fp16) and compared with 118 public-domain Hiroshige prints (full image, overlapping tiles, and the lanterns SAM 3 finds in each print). Hiroshige's *Kinryūzan Temple in Asakusa* comes first. Shown as "similar images, not evidence", with the matching region outlined. | Done ([verification](docs/verification/visual-search.md); one gold print, one photo — an acceptance check, not an accuracy estimate) |
 | FR-43 | Travel note list (`/notes`) | Done |
 | FR-44 | あなたの確認: confirm a pencil / pending thread in the note (double line; evidence unchanged) | Done |
+| FR-45 | Guide らぶちゃん: one non-assertive line chosen by code from the state (never written by Claude, no facts) | Done |
+| FR-47 | **Replay a recording** (only when live fails, e.g. no signal on site): `/replay/<exploration id>` and `/present?replay=<id>` stream the stored events with their original pacing (waits capped at 4 s) under a "recording, not live" banner the whole time; no Claude call. Check: `npx tsx --env-file=.env scripts/e2e-replay.ts <base> <id>` | Done |
 
 ## Evaluation (`npm run eval`, REQUIREMENTS.md 10)
 

@@ -48,7 +48,7 @@ const PROBLEM_JA = (p: string) =>
           ? "根拠なし"
           : p;
 
-export function PresentLive() {
+export function PresentLive({ replayId }: { replayId?: string } = {}) {
   const [expId, setExpId] = useState<string | null>(null);
   const [events, setEvents] = useState<Ev[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +56,18 @@ export function PresentLive() {
 
   useEffect(() => {
     let es: EventSource | null = null;
+    if (replayId) {
+      // FR-47: a recording, never live; no polling for newer explorations
+      current.current = replayId;
+      es = new EventSource(`/api/explorations/${replayId}/events?pace=replay`);
+      const on = (e: MessageEvent) => {
+        const ev = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
+        setEvents((p) => (p.some((x) => x.seq === ev.seq) ? p : [...p, ev]));
+      };
+      for (const t of ["stage", "see", "place", "candidates", "gap", "claims", "existence", "names", "threads", "narrative", "space", "visual", "graph", "ai_call", "done", "failed"])
+        es.addEventListener(t, on);
+      return () => es?.close();
+    }
     const poll = async () => {
       try {
         const r = await fetch("/api/explorations/latest", { cache: "no-store" });
@@ -83,7 +95,7 @@ export function PresentLive() {
       clearInterval(t);
       es?.close();
     };
-  }, []);
+  }, [replayId]);
 
   const of = <T,>(type: string) => events.filter((e) => e.type === type).map((e) => e.data as T);
   const stages = of<Stage>("stage");
@@ -92,6 +104,7 @@ export function PresentLive() {
   const gap = of<Gap>("gap")[0];
   const narrative = of<{ sentences?: unknown[]; dropped?: { text: string; problems: string[] }[] }>("narrative")[0];
   const graph = of<{ saved: boolean; ms?: number }>("graph")[0];
+  const visual = of<{ hits: { title: string; score: number; crop?: string }[] }>("visual")[0];
   const done = of<{ elapsed_ms?: number; cost_usd?: number; claude_calls?: number }>("done")[0];
   const place = of<{ chosen?: { path: { name: { ja: string } }[] } }>("place")[0];
   const cost = calls.reduce((s, c) => s + c.costUsd, 0);
@@ -106,6 +119,11 @@ export function PresentLive() {
 
   return (
     <div className="grid flex-1 grid-cols-1 gap-8 text-xl lg:grid-cols-3" data-testid="present-live">
+      {replayId && (
+        <p role="status" className="rounded-lg bg-ba px-4 py-2 text-2xl font-bold text-paper lg:col-span-3" data-testid="replay-banner">
+          記録の再生：live ではありません（{replayId}）
+        </p>
+      )}
       <section className="flex flex-col gap-3">
         <h2 className="font-serif text-3xl">処理の流れ</h2>
         {error && <p className="text-ba">{error}</p>}
@@ -126,6 +144,12 @@ export function PresentLive() {
           {done?.elapsed_ms ? `${(done.elapsed_ms / 1000).toFixed(1)} 秒` : "…"} · Claude {calls.length} 回 · {tokens.toLocaleString()} tokens · ${cost.toFixed(3)}
         </p>
         {graph && <p className="text-base text-muted">Evidence Graph：{graph.saved ? `保存 ${graph.ms} ms（1トランザクション）` : "保存失敗"}</p>}
+        {visual?.hits[0] && (
+          <p className="text-base" data-testid="present-visual">
+            視覚で探す（SAM 3 → SigLIP）：{visual.hits[0].title}
+            <span className="text-muted">（類似度 {visual.hits[0].score.toFixed(2)}{visual.hits[0].crop?.startsWith("sam") ? "・提灯どうし" : ""}。根拠ではない）</span>
+          </p>
+        )}
       </section>
 
       <section className="flex flex-col gap-3">

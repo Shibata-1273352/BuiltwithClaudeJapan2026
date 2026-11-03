@@ -13,12 +13,16 @@ async function List() {
   return (
     <ul className="flex flex-col gap-3" data-testid="notes-list">
       {notes.map((n) => (
-        <li key={n.id}>
-          <a href={`/note/${n.id}`} className="flex min-h-11 items-baseline justify-between gap-4 rounded-lg border border-muted/30 px-4 py-3 hover:border-lantern">
+        <li key={n.id} className="flex items-stretch gap-2">
+          <a href={`/note/${n.id}`} className="flex min-h-11 flex-1 items-baseline justify-between gap-4 rounded-lg border border-muted/30 px-4 py-3 hover:border-lantern">
             <span className="font-serif text-xl">{n.place?.name.ja}</span>
             <span className="text-sm text-muted tabular-nums">
               {new Date(n.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} · {n.sentences} 文
             </span>
+          </a>
+          {/* FR-47: replay the recorded exploration (when live is not possible) */}
+          <a href={`/replay/${n.id}`} className="inline-flex min-h-11 items-center rounded-lg border border-muted/30 px-3 text-sm text-muted hover:border-ba" aria-label={`${n.place?.name.ja}の探索を記録から再生`}>
+            再生
           </a>
         </li>
       ))}
