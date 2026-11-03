@@ -4,6 +4,7 @@
  * 旅ノート (FR-42, screen 8): the photo and its cut-outs, the story, and for each sentence the claims
  * it cites with the original text, a reference translation and the source ticket (切符).
  */
+import { PostcardButton } from "../../postcard-button";
 import { useEffect, useState } from "react";
 import type { Cite, Lang, Note, NarrativeLike } from "@/lib/note";
 import { dict, useLang, useSetLang } from "../../i18n";
@@ -153,6 +154,8 @@ export function NoteView({ note }: { note: Note }) {
           </p>
           <h1 className="mt-2 font-serif text-display font-bold">{path.at(-1) ?? "—"}</h1>
         </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <PostcardButton expId={note.id} />
         <div className="flex rounded-sm border border-rule-strong" role="group" aria-label="language">
           {(["ja", "en"] as const).map((l) => (
             <button
@@ -169,6 +172,7 @@ export function NoteView({ note }: { note: Note }) {
               {l === "ja" ? "日本語" : "English"}
             </button>
           ))}
+        </div>
         </div>
       </header>
 

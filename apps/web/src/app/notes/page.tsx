@@ -1,17 +1,24 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { notesFor } from "@/lib/notes-list";
+import { notesFor, weaveInput } from "@/lib/notes-list";
 import { isPresenter } from "@/lib/presenter";
 import { sessionId } from "@/lib/session";
 import { LoadingText } from "../loading-text";
 import { NotesHeader, NotesList } from "./notes-view";
+import { TripWeave } from "./trip-weave-view";
 
 export const metadata = { title: "TSUMUGI — 旅ノート一覧" };
 
 async function List() {
   await connection();
   const notes = notesFor({ sid: await sessionId(), presenter: await isPresenter() });
-  return <NotesList notes={notes} />;
+  const weave = weaveInput(notes);
+  return (
+    <>
+      <TripWeave input={weave.places} titles={weave.titles} />
+      <NotesList notes={notes} />
+    </>
+  );
 }
 
 export default function NotesPage() {

@@ -25,8 +25,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/explorations/[i
   const g = checkGuards();
   if (!g.ok) return Response.json({ error: g.reason }, { status: g.reason === "killed" ? 503 : 429 });
   if (asksLastHour(id) >= ASK_PER_HOUR) return Response.json({ error: "hourly_limit" }, { status: 429 });
-  const placeEv = eventsAfter(id, 0).find((e) => e.type === "place")?.data as { path?: { name: { ja: string; en: string } }[] } | undefined;
-  const name = placeEv?.path?.[0]?.name;
+  const placeEv = eventsAfter(id, 0).find((e) => e.type === "place")?.data as { chosen?: { path?: { name: { ja: string; en: string } }[] } | null } | undefined;
+  const name = placeEv?.chosen?.path?.[0]?.name;
   try {
     const r = await ask(id, question, lang, name ? `${name.ja} / ${name.en}` : "");
     return Response.json({ question, lang, ...r.answer, passages: r.passages, costUsd: r.record?.costUsd ?? 0, elapsedMs: r.record?.elapsedMs ?? 0, model: r.record?.servedModel ?? null });

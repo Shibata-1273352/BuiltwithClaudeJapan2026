@@ -25,6 +25,7 @@ import { TextColumn } from "./text-column";
 import { RopeLayer, type RopeSpec } from "./rope-layer";
 import { ObjectsLayer } from "./objects-layer";
 import { AskPanel, type AskItem } from "./ask-panel";
+import { PostcardButton } from "../postcard-button";
 import { GuideCards } from "./guide-cards";
 import { WorldCard } from "./world-card";
 import { LAYER_COLOR } from "./labels";
@@ -269,6 +270,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
           {t.note}
         </ButtonLink>
       )}
+      {finished && expId && <PostcardButton expId={expId} />}
       {finished && s.timeline != null && (
         <Button onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
           {t.time}
