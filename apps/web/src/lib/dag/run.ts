@@ -21,6 +21,7 @@ import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
+import { findAssociations } from "../associations";
 import { requestScene, requestVisual } from "../inference";
 import { existenceRows } from "../existence-rows";
 import { narrativeFor, saveNarrative } from "../narrative-service";
@@ -442,6 +443,18 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       if (!r.ok) console.error(`[graph ${explorationId}]`, r.error);
       return r.ok;
     });
+
+    // 10. 連想の糸 (FR-59, pencil): what the graph associates with this place beyond this run's
+    // passages. Bounded (2 s); nothing is shown if Neo4j is down. Never a claim or a thread.
+    if (graph && ctx.remaining() > 3_000) {
+      const corpus = openDb({ readonly: true });
+      try {
+        const a = await findAssociations(place, new Set(all.map((r) => r.passageId)), corpus, Math.min(2_000, ctx.remaining() - 1_000));
+        emit(explorationId, "associations", a.ok ? { ok: true, items: a.items, ms: a.ms } : { ok: false, items: [] });
+      } finally {
+        corpus.close();
+      }
+    }
 
     const summary = {
       graph_saved: graph,

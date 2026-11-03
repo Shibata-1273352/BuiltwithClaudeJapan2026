@@ -19,7 +19,7 @@ export type ClaimRow = { id: string; passage_id: string; source_id?: string; sou
 export type ThreadRow = { id: string; claimId: string; layer: "toki" | "ba" | "koto" | "ma"; state: string; label: { ja: string; en: string }; evidence: string[] };
 export type ExistenceRow = { source: string; sourceTitle: string; time: { kind: string; start: string | null; end?: string | null } | null; value: "present" | "absent" | "unknown"; reason: string };
 export type VisualHit = { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[]; into?: string | null; artwork?: string | null };
-export type Association = { source: string; title: string; passage: string | null; score: number; path: string[] };
+export type Association = { passage: string; source: string; title: string; text: string; score: number; path: { id: string; label: string; text: string }[] };
 
 export type LiveState = {
   applied: Record<number, true>;

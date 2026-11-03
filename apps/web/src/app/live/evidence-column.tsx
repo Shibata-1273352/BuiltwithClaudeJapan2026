@@ -3,6 +3,7 @@
 /** The evidence column (6.2): one card per source, appearing as it is found, then judged. */
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
+import { AssociationThreads } from "./association-threads";
 import { EXIST_JA, LAYER_COLOR, STATE_JA } from "./labels";
 
 const FACET_JA: Record<string, string> = {
@@ -123,6 +124,7 @@ export function EvidenceColumn({
           })}
         </AnimatePresence>
       </ul>
+      <AssociationThreads s={s} />
     </section>
   );
 }
