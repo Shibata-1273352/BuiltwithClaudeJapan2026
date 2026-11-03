@@ -54,9 +54,12 @@ export type Note = {
   place: { entity: string; path: string[] } | null;
   see: { label: string; text_original: string | null; reading: string | null; meaning: { ja: string; en: string } | null }[];
   space: { url: string; aligned: boolean; elements: string[] } | null;
+  /** FR-58: prints that look like the cut-out lantern (similarity, not evidence) */
+  visual: { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[] }[];
   narratives: Partial<Record<Lang, NarrativeLike>>;
   cites: Record<string, Cite>;
-  threads: { id: string; layer: string; state: string; label: { ja: string; en: string } }[];
+  /** confirmedAt: FR-44, the viewer's own check of a pencil / pending thread (state itself unchanged) */
+  threads: { id: string; layer: string; state: string; label: { ja: string; en: string }; confirmedAt?: string }[];
   tickets: Ticket[];
   stats: { elapsed_ms?: number; cost_usd?: number; claude_calls?: number };
 };
@@ -83,6 +86,7 @@ export function buildNote(
   ev: StoredEvent[],
   sources: Map<string, SourceMeta>,
   cached: Partial<Record<Lang, NarrativeLike>> = {},
+  confirmations: Map<string, string> = new Map(),
 ): Note {
   const place = first<{ chosen?: { entity: string; path: { name: { ja: string } }[] } }>(ev, "place")?.chosen;
   const see = first<{ elements: Note["see"] }>(ev, "see")?.elements ?? [];
@@ -148,9 +152,10 @@ export function buildNote(
     place: place ? { entity: place.entity, path: place.path.map((p) => p.name.ja).reverse() } : null,
     see,
     space: space?.ok && space.url ? { url: space.url, aligned: Boolean(space.aligned), elements: space.elements ?? [] } : null,
+    visual: first<{ hits: Note["visual"] }>(ev, "visual")?.hits ?? [],
     narratives,
     cites,
-    threads: threads.map(({ id: tid, layer, state, label }) => ({ id: tid, layer, state, label })),
+    threads: threads.map(({ id: tid, layer, state, label }) => ({ id: tid, layer, state, label, confirmedAt: confirmations.get(tid) })),
     tickets,
     stats: { elapsed_ms: done.elapsed_ms, cost_usd: done.cost_usd, claude_calls: done.claude_calls },
   };

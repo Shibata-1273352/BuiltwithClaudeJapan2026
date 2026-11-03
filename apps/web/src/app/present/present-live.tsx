@@ -71,7 +71,7 @@ export function PresentLive() {
           const ev = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
           setEvents((p) => (p.some((x) => x.seq === ev.seq) ? p : [...p, ev]));
         };
-        for (const t of ["stage", "see", "place", "candidates", "gap", "claims", "existence", "names", "threads", "narrative", "space", "graph", "ai_call", "done", "failed"])
+        for (const t of ["stage", "see", "place", "candidates", "gap", "claims", "existence", "names", "threads", "narrative", "space", "visual", "graph", "ai_call", "done", "failed"])
           es.addEventListener(t, on);
       } catch {
         setError("通信に失敗しました");

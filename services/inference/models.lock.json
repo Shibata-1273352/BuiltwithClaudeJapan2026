@@ -8,5 +8,25 @@
     "repo": "depth-anything/Depth-Anything-V2-Small-hf",
     "revision": "5426e4f0f36572d16453bbda7a8389317b1bef99",
     "license": "Apache-2.0"
+  },
+  "siglip": {
+    "repo": "google/siglip-base-patch16-224",
+    "revision": "7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed",
+    "license": "Apache-2.0 (FR-58 visual search; safetensors)"
+  },
+  "siglip_large": {
+    "repo": "google/siglip-so400m-patch14-384",
+    "revision": "9fdffc58afc957d1a03a25b10dba0329ab15c2a3",
+    "license": "Apache-2.0 (FR-58 visual search, larger variant; safetensors)"
+  },
+  "siglip2": {
+    "repo": "google/siglip2-base-patch16-224",
+    "revision": "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2",
+    "license": "Apache-2.0 (FR-58 candidate: multilingual text incl. Japanese; no remote code)"
+  },
+  "rinna_clip": {
+    "repo": "rinna/japanese-clip-vit-b-16",
+    "revision": "ce22bc39e6f5dcb449e082954211acfb00c2227b",
+    "license": "Apache-2.0 (FR-58 candidate: Japanese image-text; no remote code)"
   }
 }

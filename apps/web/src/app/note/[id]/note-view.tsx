@@ -6,6 +6,7 @@
  */
 import { useEffect, useState } from "react";
 import type { Cite, Lang, Note, NarrativeLike } from "@/lib/note";
+import { VisualHitCard } from "../../visual-hit";
 
 const T = {
   ja: {
@@ -22,6 +23,9 @@ const T = {
     space: "間（ま）で見る",
     aligned: "広重の絵と位置合わせ済み",
     seen: "写真の中で読めたもの",
+    confirm: "確認しました",
+    unconfirm: "確認を取り消す",
+    visual: "提灯から提灯へ（似た図像。根拠ではありません）",
     noNarrative: "この言語の物語はまだありません。",
     make: "作る",
     derived: "推論（年表との照合）",
@@ -43,6 +47,9 @@ const T = {
     space: "View in 間 (ma)",
     aligned: "aligned to the Hiroshige print",
     seen: "Read in the photo",
+    confirm: "I checked this",
+    unconfirm: "Undo my check",
+    visual: "Lantern to lantern (similar images, not evidence)",
     noNarrative: "No story in this language yet.",
     make: "Write it",
     derived: "derived (checked against the chronology)",
@@ -69,6 +76,16 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState(0);
   const [refs, setRefs] = useState<Partial<Record<Lang, Record<string, string>>>>({});
+  const [confirmed, setConfirmed] = useState<Record<string, string | undefined>>(Object.fromEntries(note.threads.map((t) => [t.id, t.confirmedAt])));
+  async function toggleConfirm(threadId: string) {
+    const on = !confirmed[threadId];
+    const r = await fetch(`/api/explorations/${note.id}/confirmations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ thread_id: threadId, confirmed: on }),
+    });
+    if (r.ok) setConfirmed((p) => ({ ...p, [threadId]: on ? new Date().toISOString() : undefined }));
+  }
   const t = T[lang];
   const narrative: NarrativeLike | undefined = narratives[lang];
   const sentence = narrative?.sentences[selected];
@@ -170,6 +187,17 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
         </div>
       </section>
 
+      {note.visual.length > 0 && (
+        <section data-testid="note-visual">
+          <h2 className="mb-3 font-serif text-xl">{t.visual}</h2>
+          <ul className="flex gap-3 overflow-x-auto pb-2">
+            {note.visual.map((h) => (
+              <VisualHitCard key={h.id} h={h} width="w-28" />
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="grid gap-8 md:grid-cols-2">
         <div>
           <h2 className="mb-1 font-serif text-2xl">{t.story}</h2>
@@ -239,10 +267,29 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
         <ul className="grid gap-2 text-sm md:grid-cols-2">
           {note.threads
             .filter((th) => th.state !== "ink" || th.layer !== "koto")
-            .slice(0, 12)
+            .sort((a, b) => Number(b.state === "pending" || b.state === "pencil") - Number(a.state === "pending" || a.state === "pencil"))
+            .slice(0, 14)
             .map((th) => (
-              <li key={th.id} className={`border-l-4 pl-3 ${LAYER[th.layer] ?? ""} ${STATE[th.state]?.cls ?? ""}`}>
-                <span className="text-muted">[{STATE[th.state]?.[lang] ?? th.state}]</span> {th.label[lang]}
+              <li
+                key={th.id}
+                className={`border-l-4 pl-3 ${LAYER[th.layer] ?? ""} ${confirmed[th.id] ? STATE.user_confirmed.cls : (STATE[th.state]?.cls ?? "")}`}
+                data-testid={`thread-${th.state}`}
+              >
+                <span className="text-muted">
+                  [{confirmed[th.id] ? `${STATE.user_confirmed[lang]}（${STATE[th.state]?.[lang] ?? th.state}）` : (STATE[th.state]?.[lang] ?? th.state)}]
+                </span>{" "}
+                {th.label[lang]}
+                {(th.state === "pending" || th.state === "pencil") && (
+                  <button
+                    type="button"
+                    onClick={() => toggleConfirm(th.id)}
+                    aria-pressed={Boolean(confirmed[th.id])}
+                    className="ml-2 inline-flex min-h-11 items-center rounded-full border border-muted/50 px-3 text-xs"
+                    data-testid="confirm-thread"
+                  >
+                    {confirmed[th.id] ? t.unconfirm : t.confirm}
+                  </button>
+                )}
               </li>
             ))}
         </ul>

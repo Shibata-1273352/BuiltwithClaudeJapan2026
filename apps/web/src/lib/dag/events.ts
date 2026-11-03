@@ -20,6 +20,7 @@ export type EventType =
   | "names"
   | "timeline"
   | "space"
+  | "visual"
   | "narrative"
   | "graph"
   | "ai_call"

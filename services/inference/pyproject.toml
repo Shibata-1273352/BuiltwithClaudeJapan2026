@@ -18,6 +18,8 @@ dependencies = [
   "torchvision>=0.20",
   "python-multipart>=0.0.9",
   "opencv-python-headless>=4.10",
+  "sentencepiece>=0.2,<0.3",
+  "protobuf>=5,<7",
 ]
 
 [dependency-groups]
