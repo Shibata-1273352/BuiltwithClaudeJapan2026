@@ -197,6 +197,8 @@ export type SourceCard = {
   year: number | null;
   yearKind: "source_time" | "published" | null;
   excerpt: string;
+  /** sentence ids of the excerpt, joined by "|" (the key of its reference translation) */
+  excerptKey?: string;
   accepted: number;
   downgraded: number;
   rejected: number;
@@ -223,7 +225,10 @@ export function sourceCards(s: LiveState): SourceCard[] {
     else card.rejected++;
     // the first accepted excerpt, but a sentence wins over a heading ("A—B—C—D", a chapter's contents)
     const heading = (t: string) => (t.match(/—/g)?.length ?? 0) >= 3;
-    if (cl.status === "accepted" && cl.excerpt && (card.accepted === 1 || (heading(card.excerpt) && !heading(cl.excerpt)))) card.excerpt = cl.excerpt;
+    if (cl.status === "accepted" && cl.excerpt && (card.accepted === 1 || (heading(card.excerpt) && !heading(cl.excerpt)))) {
+      card.excerpt = cl.excerpt;
+      card.excerptKey = cl.sentence_ids.join("|");
+    }
   }
   for (const r of s.existence?.rows ?? []) {
     const card = by.get(r.source);

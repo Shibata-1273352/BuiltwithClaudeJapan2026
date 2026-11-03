@@ -39,7 +39,7 @@ const T = dict({
     sep: "、",
     searched: (n: number) => `Claude が足りない観点を判断し、追加で探した（${n} 節が見つかった）：`,
     story: "この場所の物語",
-    threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：${src} 資料`,
+    threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：糸のある資料 ${src}`,
   },
   en: {
     ask: ["Read the signs and inscriptions as written", "Add readings and meanings in Japanese and English", "Box what is in the photo", "Name the place, from wide to narrow"],
@@ -52,7 +52,7 @@ const T = dict({
     tried: (c: string) => `Places the photo may show: ${c}`,
     where: "Where is this photo?",
     received: "Photo received.",
-    broken: "Broken thread",
+    broken: "Not there that year",
     notYet: (p: string) => `${p || "it"} was gone`,
     notYetPermanent: (p: string) => `the permanent ${p || "structure"} was gone`,
     interim: (y: number) => `a temporary gate stood from ${y} (timeline)`,
@@ -65,7 +65,7 @@ const T = dict({
     sep: ", ",
     searched: (n: number) => `Claude judged what was missing and searched again (${n} passages found): `,
     story: "The story of this place",
-    threads: (n: number, b: number, src: number) => `${n} threads (${b} broken) from ${src} sources`,
+    threads: (n: number, b: number, src: number) => `${n} threads (${b} broken), from ${src} sources with threads`,
   },
 });
 
@@ -194,7 +194,7 @@ export function TextColumn({
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.found}>
-      <div className="fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12 [&>*]:shrink-0">
+      <div className="answer-col fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12 [&>*]:shrink-0">
         {/* the place (presenter/video: the first answer and the discovery name it, so the column keeps 1878 in frame) */}
         <div className={`min-h-28 ${docked ? "present-hide" : ""}`}>
           {docked ? (
@@ -235,7 +235,7 @@ export function TextColumn({
                 <span className="font-serif text-title">{(interim ? t.notYetPermanent : t.notYet)(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
               </p>
               {interim && <p className="present-hide mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
-              <p className="mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
+              <p className="present-hide mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
               <p className="present-hide mt-1 text-caption text-muted">{t.byCode}</p>
             </m.div>
           )}

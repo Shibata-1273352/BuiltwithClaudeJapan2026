@@ -19,7 +19,7 @@ export const FACING_JA = FACING.ja;
 
 const T = dict({
   ja: { faces: (who: string, f: string) => `${who}：${f}を向く`, n: "北", title: "視点の見立て", you: "あなた", hiroshige: "広重", facing: (f: string) => `${f}を向く`, from: (p: string, t: string) => `${p}から、${t}`, premises: "前提（Claude）：", premisesArt: "前提：", note: (a: string) => `（注記 ${a}）`, sep: "／" },
-  en: { faces: (who: string, f: string) => `${who}: facing ${f}`, n: "N", title: "Where you stand", you: "You", hiroshige: "Hiroshige", facing: (f: string) => `face ${f}`, from: (p: string, t: string) => `from ${p}, toward ${t}`, premises: "Assuming (Claude): ", premisesArt: "Assuming: ", note: (a: string) => ` (noted by ${a})`, sep: " / " },
+  en: { faces: (who: string, f: string) => `${who}: facing ${f}`, n: "N", title: "Where you stand", you: "You", hiroshige: "Hiroshige", facing: (f: string) => `face ${f}`, from: (p: string, t: string) => `${p.replace(/[.,;\s]+$/, "")}. ${t.replace(/[.\s]+$/, "")}.`, premises: "Assuming (Claude): ", premisesArt: "Assuming: ", note: (a: string) => ` (noted by ${a})`, sep: " / " },
 });
 
 
@@ -83,7 +83,6 @@ function ViewpointBody({ v, art }: { v: NonNullable<LiveState["viewpoint"]>; art
               <p className="mt-0.5 text-caption text-muted">
                 {t.premisesArt}
                 {art.premises.map((p) => p[lang]).join(t.sep)}
-                {t.note(art.annotated_by)}
               </p>
             </div>
           </div>

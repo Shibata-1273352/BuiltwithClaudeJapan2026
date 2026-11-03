@@ -24,7 +24,8 @@ const T = dict({
     ref: "参考訳（Claudeによる機械訳。根拠は原文）",
     refLoading: "参考訳を作っています…",
     threads: "糸",
-    tickets: "切符（出典）",
+    howChecked: (n: number) => `各文の確かめ方（糸 ${n} 本）`,
+    tickets: "切符（物語で引用した資料）",
     cited: "引用",
     space: "間（ま）で見る",
     aligned: "広重の絵と位置合わせ済み",
@@ -49,7 +50,8 @@ const T = dict({
     ref: "Reference translation (machine, by Claude; the original is the evidence)",
     refLoading: "Translating…",
     threads: "Threads",
-    tickets: "Tickets (sources)",
+    tickets: "Tickets (sources cited in the story)",
+    howChecked: (n: number) => `How each sentence was checked (${n} threads)`,
     cited: "cited",
     space: "View in 間 (ma)",
     aligned: "aligned to the Hiroshige print",
@@ -68,12 +70,12 @@ const T = dict({
 });
 
 const STATE: Record<string, { ja: string; en: string; cls: string }> = {
-  ink: { ja: "インク", en: "ink", cls: "border-solid" },
-  combined: { ja: "組み合わせ", en: "combined", cls: "border-solid" },
-  absent: { ja: "不在", en: "absent", cls: "border-dashed" },
-  conflict: { ja: "相違", en: "conflict", cls: "border-double" },
+  ink: { ja: "原文から", en: "from the source", cls: "border-solid" },
+  combined: { ja: "複数の資料が一致", en: "several sources agree", cls: "border-solid" },
+  absent: { ja: "その年はなかった", en: "not there that year", cls: "border-dashed" },
+  conflict: { ja: "資料が食い違う", en: "sources disagree", cls: "border-double" },
   pencil: { ja: "鉛筆", en: "pencil", cls: "border-dotted" },
-  pending: { ja: "確認待ち", en: "pending", cls: "border-dotted opacity-70" },
+  pending: { ja: "未確認", en: "not yet checked", cls: "border-dotted opacity-70" },
   user_confirmed: { ja: "あなたの確認", en: "confirmed by you", cls: "border-double" },
 };
 const LAYER: Record<string, string> = { toki: "border-toki", ba: "border-ba", koto: "border-koto", ma: "border-ma" };
@@ -90,7 +92,10 @@ const PRED: Record<string, { ja: string; en: string }> = {
   depicts: { ja: "描く", en: "depicts" },
 };
 const plain = (s: string, lang: Lang) =>
-  s.replace(/（([a-z_]+)(「[^」]*」)?）/g, (m, p: string, q?: string) => (PRED[p] ? `（${PRED[p][lang]}${q ?? ""}）` : m));
+  s
+    .replace(/（([a-z_]+)(「[^」]*」)?）/g, (m, p: string, q?: string) => (PRED[p] ? `（${PRED[p][lang]}${q ?? ""}）` : m))
+    .replace(/\(([a-z_]+)("[^"]*")?\)/g, (m, p: string, q?: string) => (PRED[p] ? `(${PRED[p][lang]}${q ? ` ${q}` : ""})` : m))
+    .replace(/\s*\bR\d+-\d+\b/g, "");
 
 export function NoteView({ note }: { note: Note }) {
   // the page language (FR-40): ?lang= or the cookie, shared with every other screen
@@ -298,7 +303,9 @@ export function NoteView({ note }: { note: Note }) {
       </section>
 
       <Section label={t.threads}>
-        <ul className="grid gap-x-10 gap-y-3 text-small md:grid-cols-2">
+        <details>
+        <summary className="min-h-11 cursor-pointer text-small text-muted hover:text-paper">{t.howChecked(note.threads.length)}</summary>
+        <ul className="mt-3 grid gap-x-10 gap-y-3 text-small md:grid-cols-2">
           {note.threads
             .filter((th) => th.state !== "ink" || th.layer !== "koto")
             .sort((a, b) => Number(b.state === "pending" || b.state === "pencil") - Number(a.state === "pending" || a.state === "pencil"))
@@ -321,6 +328,7 @@ export function NoteView({ note }: { note: Note }) {
               </li>
             ))}
         </ul>
+        </details>
       </Section>
 
       <Section label={t.tickets}>

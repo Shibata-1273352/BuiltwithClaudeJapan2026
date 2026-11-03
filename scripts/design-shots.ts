@@ -20,7 +20,10 @@ const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--ena
 const errors: string[] = [];
 async function ctxFor(w: number, h: number): Promise<BrowserContext> {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, isMobile: w < 500, hasTouch: w < 500 });
-  await ctx.addCookies([{ name: "tsumugi_token", value: process.env.ACCESS_TOKEN!, domain: new URL(base).hostname, path: "/", httpOnly: true, sameSite: "Strict" }]);
+  await ctx.addCookies([
+    { name: "tsumugi_token", value: process.env.ACCESS_TOKEN!, domain: new URL(base).hostname, path: "/", httpOnly: true, sameSite: "Strict" },
+    { name: "tsumugi_lang", value: process.argv.includes("--lang") ? process.argv[process.argv.indexOf("--lang") + 1] : "ja", domain: new URL(base).hostname, path: "/" },
+  ]);
   return ctx;
 }
 async function timed(ctx: BrowserContext, route: string, name: string, times: number[], full = false) {

@@ -48,11 +48,8 @@ try {
     await shot(page, `3-time-${y}`);
   }
   await page.getByTestId("time-panel").getByRole("button", { name: "閉じる" }).click();
-  // 1:45 言の地層
-  await page.getByTestId("names-toggle").click();
-  await page.waitForTimeout(700);
-  await shot(page, "4-names");
-  await page.getByTestId("names-panel").getByRole("button", { name: "閉じる" }).click();
+  // 言の地層 is not in the six-beat video (docs/demo-script.md): presenter mode hides its button
+  if (await page.getByTestId("names-toggle").isVisible()) fails.push("presenter mode shows the names button (not in the video)");
   // 2:15 / 2:40 舞台裏 + evaluation
   await page.getByTestId("backstage-toggle").click();
   await page.waitForTimeout(1200);

@@ -1,15 +1,15 @@
 "use client";
 
 /** The evidence column (6.2): one card per source, appearing as it is found, then judged. */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
 import { dict, useDict, useLang } from "../i18n";
 import { EXIST_LABEL, FACET_LABEL, LAYER_COLOR, STATE_LABEL } from "./labels";
 
 const T = dict({
-  ja: { evidence: "根拠", title: "根拠となる資料", n: (n: number) => `${n} 節`, matrix: "観点×言語の検索", ja: "日本語", en: "英語", none: "見つからず", searching: "日英の資料を探しています。", before: "写真を読み終えたら、日英の資料を探します。", pub: "刊行・公開年（この場所の記述の年ではない）", time: "この場所について書かれた年", pubMark: " 刊", jaMark: "日", enMark: "英", kept: "採用", down: "格下げ", more: (n: number) => `すべての資料を見る（${n}）` },
-  en: { evidence: "Evidence", title: "Sources", n: (n: number) => `${n} passages`, matrix: "Search by topic and language", ja: "Japanese", en: "English", none: "none found", searching: "Searching Japanese and English sources.", before: "Once the photo is read, Japanese and English sources are searched.", pub: "year published (not the year this place was described)", time: "the year this place was written about", pubMark: " pub.", jaMark: "ja", enMark: "en", kept: "kept", down: "downgraded", more: (n: number) => `See all sources (${n})` },
+  ja: { evidence: "根拠", title: "根拠となる資料", n: (n: number) => `${n} 節`, matrix: "観点×言語の検索", ja: "日本語", en: "英語", none: "見つからず", searching: "日英の資料を探しています。", before: "写真を読み終えたら、日英の資料を探します。", pub: "刊行・公開年（この場所の記述の年ではない）", time: "この場所について書かれた年", pubMark: " 刊", jaMark: "日", enMark: "英", kept: "採用", down: "格下げ", more: (n: number) => `すべての資料を見る（${n}）`, original: "原文（訳は Claude の参考訳）" },
+  en: { evidence: "Evidence", title: "Sources", n: (n: number) => `${n} passages`, matrix: "Search by topic and language", ja: "Japanese", en: "English", none: "none found", searching: "Searching Japanese and English sources.", before: "Once the photo is read, Japanese and English sources are searched.", pub: "year published (not the year this place was described)", time: "the year this place was written about", pubMark: " pub.", jaMark: "ja", enMark: "en", kept: "kept", down: "downgraded", more: (n: number) => `See all sources (${n})`, original: "original (translation by Claude, for reference)" },
 });
 
 
@@ -19,7 +19,9 @@ export function EvidenceColumn({
   register,
   hot,
   setHot,
+  expId = null,
 }: {
+  expId?: string | null;
   s: LiveState;
   cards: SourceCard[];
   register: (id: string) => (el: HTMLElement | null) => void;
@@ -30,6 +32,23 @@ export function EvidenceColumn({
   const t = useDict(T);
   const [allOnPhone, setAllOnPhone] = useState(false);
   const ui = useLang();
+  // crossing the language barrier: a source in the other language is shown in the reader's language
+  // (Claude's reference translation, cached per run), with the original kept below it as the evidence
+  const [tr, setTr] = useState<Record<string, string>>({});
+  const needsTr = cards.some((c) => c.lang !== ui && c.excerptKey);
+  useEffect(() => {
+    if (!expId || !needsTr) return;
+    let off = false;
+    fetch(`/api/explorations/${expId}/translations?lang=${ui}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!off && j?.items) setTr(j.items as Record<string, string>);
+      })
+      .catch(() => {});
+    return () => {
+      off = true;
+    };
+  }, [expId, ui, needsTr]);
   return (
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.evidence} data-testid="evidence-column">
       <div className="flex items-baseline justify-between">
@@ -86,9 +105,20 @@ export function EvidenceColumn({
                   )}
                   <span className="text-caption text-muted">{c.lang === "ja" ? t.jaMark : t.enMark}</span>
                 </div>
-                <p className={`${c.existence?.value === "absent" ? "" : "present-hide"} mt-1 line-clamp-2 text-small text-paper/70`} lang={c.lang}>
-                  {c.excerpt.replace(/^Title:\s*/, "")}
-                </p>
+                {c.excerptKey && c.lang !== ui && tr[c.excerptKey] ? (
+                  <div className={`${c.existence?.value === "absent" ? "" : "present-hide"} mt-1`}>
+                    <p className="line-clamp-2 text-small text-paper/85" lang={ui}>
+                      {tr[c.excerptKey]}
+                    </p>
+                    <p className="mt-0.5 line-clamp-1 text-caption text-muted" lang={c.lang}>
+                      {c.excerpt} <span className="whitespace-nowrap">— {t.original}</span>
+                    </p>
+                  </div>
+                ) : (
+                  <p className={`${c.existence?.value === "absent" ? "" : "present-hide"} mt-1 line-clamp-2 text-small text-paper/70`} lang={c.lang}>
+                    {c.excerpt.replace(/^Title:\s*/, "")}
+                  </p>
+                )}
                 <div className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted">
                   {c.existence && (
                     <span className={c.existence.value === "absent" ? "font-medium text-paper" : ""}>
