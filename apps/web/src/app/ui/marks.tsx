@@ -3,6 +3,7 @@
  * and the one pencil marker + legend that replaces repeated disclaimers.
  */
 import type { ReactNode } from "react";
+import { PencilWord } from "./pencil-word";
 
 export function Section({ label, aside, children, className = "", ...rest }: { label: ReactNode; aside?: ReactNode; children: ReactNode; className?: string } & Record<`data-${string}`, string> & { "aria-label"?: string }) {
   return (
@@ -27,7 +28,7 @@ export function StatusDot({ tone = "muted", pulse = false }: { tone?: "muted" | 
 }
 
 /** 鉛筆: an interpretation, a similarity or an association — never evidence (6.1 line style). */
-export function Pencil({ children = "鉛筆" }: { children?: ReactNode }) {
+export function Pencil({ children = <PencilWord /> }: { children?: ReactNode }) {
   return <span className="font-hand text-small text-muted underline decoration-dashed decoration-muted/70 underline-offset-4">{children}</span>;
 }
 

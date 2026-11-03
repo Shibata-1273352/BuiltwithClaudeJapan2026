@@ -258,7 +258,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   // one primary (the note), one secondary (the postcard), the rest as one quiet row — a flow, not a menu
   const quiet = [
     s.space?.aligned && s.at.visual !== undefined ? (
-      <Button key="overlay" variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} data-testid="overlay-toggle">
+      <Button key="overlay" variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} className="present-hide" data-testid="overlay-toggle">
         {overlayOn ? t.back : t.overlay}
       </Button>
     ) : null,
@@ -268,7 +268,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       </Button>
     ) : null,
     finished && s.names != null ? (
-      <Button key="names" variant="quiet" onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
+      <Button key="names" variant="quiet" onClick={() => toggle("names")} aria-expanded={panel === "names"} className="present-hide" data-testid="names-toggle">
         {t.names}
       </Button>
     ) : null,
@@ -403,7 +403,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                   <YearAxis s={s} cards={cards} axisRef={axisRef} scrub={scrub} onScrub={finished && s.timeline ? onScrub : undefined} scrubLabel={ys?.label[lang]} />
                 </div>
                 <div className={`order-3 min-h-0 lg:order-none ${s.place === null ? "hidden" : ""}`}>
-                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} />
+                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} />
                 </div>
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
