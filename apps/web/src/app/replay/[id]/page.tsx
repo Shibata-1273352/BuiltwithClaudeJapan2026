@@ -29,7 +29,7 @@ async function Replay({ params, searchParams }: { params: Promise<{ id: string }
     return (
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
         {/* eslint-disable-next-line @next/next/no-img-element -- the recorded photo (session-scoped cache) */}
-        <img src={photo} alt="" className="max-h-[50vh] w-auto self-center rounded-lg" />
+        <img src={photo} alt="" className="max-h-[50vh] w-auto self-center rounded-md" />
         <ExplorationView replay={{ explorationId: id, recordedAt: row.created_at }} />
       </main>
     );

@@ -6,6 +6,7 @@
  */
 import { m } from "motion/react";
 import type { LiveState } from "@/lib/live/state";
+import { Pencil } from "../ui/marks";
 
 const ANGLE: Record<string, number> = { north: 0, northeast: 45, east: 90, southeast: 135, south: 180, southwest: 225, west: 270, northwest: 315 };
 export const FACING_JA: Record<string, string> = {
@@ -46,34 +47,36 @@ export function ViewpointCard({ s }: { s: LiveState }) {
   // Hiroshige's side only once the print has actually been aligned to this photo
   const art = s.space?.aligned ? v.artwork : null;
   return (
-    <m.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-lg border border-dashed border-muted/50 p-3" data-testid="viewpoint" aria-label="視点の見立て">
-      <p className="text-xs text-muted">
-        <span className="font-hand text-paper">視点の見立て</span>（鉛筆：構図からの解釈。根拠ではありません）
+    <m.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} data-testid="viewpoint" aria-label="視点の見立て">
+      <p className="label">
+        視点の見立て <Pencil />
       </p>
-      {v.visitor && (
-        <div className="mt-2 flex gap-3">
-          <Compass facing={v.visitor.facing} color="var(--lantern)" label="あなた" />
-          <div className="min-w-0 text-sm">
-            <p>
-              <span className="text-lantern">あなた</span>：{v.visitor.position.ja}から、{v.visitor.toward.ja}（{FACING_JA[v.visitor.facing] ?? v.visitor.facing}）
-            </p>
-            <p className="mt-0.5 text-xs text-muted">前提（Claude）：{v.visitor.premises.map((p) => p.ja).join("／")}</p>
+      <div className="mt-2 flex flex-col gap-3">
+        {v.visitor && (
+          <div className="flex gap-3">
+            <Compass facing={v.visitor.facing} color="var(--paper)" label="あなた" />
+            <div className="min-w-0">
+              <p className="text-small">
+                <span className="font-medium">あなた</span> {FACING_JA[v.visitor.facing] ?? v.visitor.facing}を向く ── {v.visitor.position.ja}から、{v.visitor.toward.ja}
+              </p>
+              <p className="mt-0.5 text-caption text-muted">前提（Claude）：{v.visitor.premises.map((p) => p.ja).join("／")}</p>
+            </div>
           </div>
-        </div>
-      )}
-      {art && (
-        <div className="mt-2 flex gap-3">
-          <Compass facing={art.facing} color="var(--thread-toki)" label="広重" />
-          <div className="min-w-0 text-sm">
-            <p>
-              <span className="text-toki">広重</span>：{art.ja}
-            </p>
-            <p className="mt-0.5 text-xs text-muted">
-              前提：{art.premises.map((p) => p.ja).join("／")}（注記：{art.annotated_by}）
-            </p>
+        )}
+        {art && (
+          <div className="flex gap-3">
+            <Compass facing={art.facing} color="var(--thread-toki)" label="広重" />
+            <div className="min-w-0">
+              <p className="text-small">
+                <span className="font-medium text-toki">広重</span> {FACING_JA[art.facing] ?? art.facing}を向く ── {art.ja}
+              </p>
+              <p className="mt-0.5 text-caption text-muted">
+                前提：{art.premises.map((p) => p.ja).join("／")}（注記 {art.annotated_by}）
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </m.section>
   );
 }

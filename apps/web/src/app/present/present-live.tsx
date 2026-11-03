@@ -119,17 +119,17 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
   };
 
   return (
-    <div className="grid flex-1 grid-cols-1 gap-8 text-xl lg:grid-cols-3" data-testid="present-live">
+    <div className="grid flex-1 grid-cols-1 gap-8 text-lead lg:grid-cols-3" data-testid="present-live">
       {replayId && (
-        <p role="status" className="rounded-lg bg-ba px-4 py-2 text-2xl font-bold text-paper lg:col-span-3" data-testid="replay-banner">
+        <p role="status" className="rounded-md bg-ba px-4 py-2 text-title font-bold text-paper lg:col-span-3" data-testid="replay-banner">
           記録の再生：live ではありません（{replayId}）
         </p>
       )}
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-3xl">処理の流れ</h2>
+        <h2 className="font-serif text-title">処理の流れ</h2>
         {error && <p className="text-ba">{error}</p>}
-        {expId && <p className="text-sm text-muted">{expId}</p>}
-        {place?.chosen && <p className="text-2xl">{place.chosen.path.slice().reverse().map((p) => p.name.ja).join(" › ")}</p>}
+        {expId && <p className="text-small text-muted">{expId}</p>}
+        {place?.chosen && <p className="text-title">{place.chosen.path.slice().reverse().map((p) => p.name.ja).join(" › ")}</p>}
         <ol className="flex flex-col gap-2">
           {STAGES.map((s) => {
             const st = stageStatus(s);
@@ -141,12 +141,12 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
             );
           })}
         </ol>
-        <p className="mt-4 text-2xl tabular-nums" data-testid="present-totals">
+        <p className="mt-4 text-title tabular-nums" data-testid="present-totals">
           {done?.elapsed_ms ? `${(done.elapsed_ms / 1000).toFixed(1)} 秒` : "…"} · Claude {calls.length} 回 · {tokens.toLocaleString()} tokens · ${cost.toFixed(3)}
         </p>
-        {graph && <p className="text-base text-muted">Evidence Graph：{graph.saved ? `保存 ${graph.ms} ms（1トランザクション）` : "保存失敗"}</p>}
+        {graph && <p className="text-body text-muted">Evidence Graph：{graph.saved ? `保存 ${graph.ms} ms（1トランザクション）` : "保存失敗"}</p>}
         {visual?.hits[0] && (
-          <p className="text-base" data-testid="present-visual">
+          <p className="text-body" data-testid="present-visual">
             視覚で探す（SAM 3 → SigLIP）：{visual.hits[0].title}
             <span className="text-muted">（類似度 {visual.hits[0].score.toFixed(2)}{visual.hits[0].crop?.startsWith("sam") ? "・提灯どうし" : ""}。根拠ではない）</span>
           </p>
@@ -154,12 +154,12 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-3xl">Claudeの判断</h2>
+        <h2 className="font-serif text-title">Claudeの判断</h2>
         {gap?.assessment && (
-          <div className="rounded-lg border border-koto/40 p-4" data-testid="present-gap">
-            <p className="text-base text-muted">何が足りないか</p>
+          <div className="rounded-md border border-koto/40 p-4" data-testid="present-gap">
+            <p className="text-body text-muted">何が足りないか</p>
             <p>{gap.assessment}</p>
-            <ul className="mt-2 text-base">
+            <ul className="mt-2 text-body">
               {(gap.gaps ?? []).map((g, i) => (
                 <li key={i}>
                   → {g.reason}
@@ -167,11 +167,11 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
                 </li>
               ))}
             </ul>
-            {gap.found !== undefined && <p className="mt-1 text-base text-muted">追加で {gap.found} 節</p>}
+            {gap.found !== undefined && <p className="mt-1 text-body text-muted">追加で {gap.found} 節</p>}
           </div>
         )}
-        <h3 className="mt-2 text-2xl">呼び出しの記録</h3>
-        <table className="w-full text-base tabular-nums">
+        <h3 className="mt-2 text-title">呼び出しの記録</h3>
+        <table className="w-full text-body tabular-nums">
           <thead className="text-muted">
             <tr>
               <th className="text-left font-normal">段階</th>
@@ -193,15 +193,15 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
             ))}
           </tbody>
         </table>
-        {calls[0] && <p className="text-sm text-muted">model: {calls[0].model}</p>}
+        {calls[0] && <p className="text-small text-muted">model: {calls[0].model}</p>}
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-3xl">コードの検証</h2>
+        <h2 className="font-serif text-title">コードの検証</h2>
         <p>
           主張 {claims.length} 件 → 採用 {claims.length - downgraded.length} ・格下げ/却下 {downgraded.length}
         </p>
-        <ul className="text-base">
+        <ul className="text-body">
           {downgraded.slice(0, 6).map((c, i) => (
             <li key={i}>
               <span className="text-ba">✕</span> {c.source ?? ""}：{c.predicate}
@@ -215,7 +215,7 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
               物語 {narrative.sentences?.length ?? 0} 文を採用
               {narrative.dropped?.length ? ` ・ ${narrative.dropped.length} 文を除外` : ""}
             </p>
-            <ul className="text-base">
+            <ul className="text-body">
               {(narrative.dropped ?? []).map((d, i) => (
                 <li key={i}>
                   <span className="text-ba">✕</span> <span className="text-muted">{d.problems.map(PROBLEM_JA).join("・")}：</span>
@@ -225,7 +225,7 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
             </ul>
           </>
         )}
-        <p className="mt-auto text-base text-muted">
+        <p className="mt-auto text-body text-muted">
           目的はコードのDAGが固定し、Claudeは段階ごとの限られた判断だけを行う。出力はすべてコードが検査する（OWASP ASI01）。
         </p>
       </section>

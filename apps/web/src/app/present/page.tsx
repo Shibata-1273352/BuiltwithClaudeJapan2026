@@ -14,8 +14,8 @@ export default function PresentPage({ searchParams }: PageProps<"/present">) {
   return (
     <main className="flex min-h-screen flex-1 flex-col gap-8 px-12 py-10">
       <header className="flex items-start justify-between gap-8">
-        <h1 className="font-serif text-5xl">発表モード</h1>
-        <div className="text-base">
+        <h1 className="font-serif text-display">発表モード</h1>
+        <div className="text-body">
           <Suspense fallback={<p className="text-muted">接続を確認中…</p>}>
             <HealthPanel />
           </Suspense>

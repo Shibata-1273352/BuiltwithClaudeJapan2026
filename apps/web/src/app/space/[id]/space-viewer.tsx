@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "../../ui/button";
 
 /**
  * 間 (ma) layer, day-2 version: the photo splits into depth layers (FR-29, FR-32) and the
@@ -161,7 +162,7 @@ function Flat2D({ photo, art, rect, overlay, reason }: { photo: string; art: str
     <div className="flex h-full flex-col items-center justify-center gap-2 p-4" data-testid="space-2d">
       <div className="relative max-h-full">
         {/* eslint-disable-next-line @next/next/no-img-element -- session-scoped scene photo */}
-        <img src={photo} alt="" className="block max-h-[62vh] w-auto rounded" />
+        <img src={photo} alt="" className="block max-h-[62vh] w-auto rounded-sm" />
         {art && rect && overlay > 0 && (
           // eslint-disable-next-line @next/next/no-img-element -- public-domain print, aligned by anchors
           <img
@@ -172,7 +173,7 @@ function Flat2D({ photo, art, rect, overlay, reason }: { photo: string; art: str
           />
         )}
       </div>
-      <p className="text-xs text-muted">{reason}</p>
+      <p className="text-caption text-muted">{reason}</p>
     </div>
   );
 }
@@ -296,42 +297,31 @@ export function SpaceViewer({
         </Canvas>
         )}
         {!flat && (
-          <p className="pointer-events-none absolute right-3 top-3 rounded bg-night/70 px-2 py-1 text-xs text-muted">
+          <p className="pointer-events-none absolute right-3 top-3 rounded-sm bg-night/70 px-2 py-1 text-caption text-muted">
             {fps} fps
           </p>
         )}
       </div>
 
       <aside className="flex w-full flex-col gap-6 p-6 lg:w-96">
-        <h1 className="font-serif text-3xl">間（ま）</h1>
+        <h1 className="font-serif text-title">間（ま）</h1>
+        <p className="-mt-4 text-caption text-muted">写真を SAM 3 と深度で層に分け、広重の絵と重ねる</p>
         {/* 3D-only controls are hidden in the 2D view (FR-37) */}
         {!flat && (
-          <button
-            type="button"
-            className="min-h-11 rounded-full border border-ma px-5 text-ma"
-            onClick={() => setSplit(split ? 0 : performance.now())}
-          >
-            {split ? "平面に戻す" : "層に割る"}
-          </button>
+          <Button onClick={() => setSplit(split ? 0 : performance.now())}>{split ? "平面に戻す" : "層に割る"}</Button>
         )}
 
         {align && !flat && (
-          <button
-            type="button"
-            data-testid="enter-painting"
-            disabled={Boolean(moving)}
-            onClick={() => go(!inside)}
-            className="min-h-11 rounded-full bg-toki px-5 font-bold text-night disabled:opacity-50"
-          >
-            {inside ? "今へ戻る" : "絵の中へ（広重 1856）"}
-          </button>
+          <Button variant="primary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={() => go(!inside)}>
+            {inside ? "今へ戻る" : "絵の中へ ── 広重 1856"}
+          </Button>
         )}
 
         {hasPeople && !flat && (
           <label className="flex flex-col gap-2" data-testid="space-people">
             <span className="flex items-baseline justify-between">
               <span>人の層</span>
-              <span className="text-sm text-muted tabular-nums">{Math.round(people * 100)}%</span>
+              <span className="text-small text-muted tabular-nums">{Math.round(people * 100)}%</span>
             </span>
             <input
               type="range"
@@ -344,7 +334,7 @@ export function SpaceViewer({
               aria-label="人の層の濃さ"
               data-testid="people-slider"
             />
-            <span className="text-xs text-muted">人を薄くすると、その下は周囲から補った背景です（推定）。</span>
+            <span className="text-caption text-muted">人を薄くすると、その下は周囲から補った背景です（推定）。</span>
           </label>
         )}
 
@@ -352,7 +342,7 @@ export function SpaceViewer({
           <label className="flex flex-col gap-2" data-testid="space-time">
             <span className="flex items-baseline justify-between">
               <span>時をめくる</span>
-              <span className="font-serif text-3xl tabular-nums">{year}</span>
+              <span className="font-serif text-title tabular-nums">{year}</span>
             </span>
             <input
               type="range"
@@ -367,12 +357,12 @@ export function SpaceViewer({
             />
             <span className="flex flex-wrap gap-2">
               {[1856, 1878, 1905, 1960, 2026].map((q) => (
-                <button key={q} type="button" onClick={() => setYear(q)} className="min-h-11 rounded-full border border-muted/50 px-3 text-sm tabular-nums">
+                <button key={q} type="button" onClick={() => setYear(q)} className={`min-h-11 min-w-11 border-b-2 px-1 text-small tabular-nums ${q === year ? "border-paper text-paper" : "border-transparent text-muted hover:text-paper"}`}>
                   {q}
                 </button>
               ))}
             </span>
-            <span className="text-sm" data-testid="space-year-state" data-state={ys.state}>
+            <span className="text-small" data-testid="space-year-state" data-state={ys.state}>
               [{STATE_JA[ys.state]}] {ys.label.ja}
             </span>
           </label>
@@ -393,7 +383,7 @@ export function SpaceViewer({
               className="min-h-11 accent-[var(--thread-toki)]"
               aria-label="広重の絵を重ねる割合"
             />
-            <span className="text-sm text-muted">
+            <span className="text-small text-muted">
               {overlayBase > overlay ? "1866年の焼失より前は、広重が描いた門の時代として自動で重ねています。" : ""}
               位置合わせ：大提灯の下端と左端（資料側のアンカーは事前注記：{align.artifact_anchors_annotated_by}）
             </span>
@@ -402,8 +392,8 @@ export function SpaceViewer({
 
         {/* 6.4: same content as a list */}
         <section>
-          <h2 className="mb-2 text-lg">層の一覧</h2>
-          <ul className="flex flex-col gap-1 text-sm">
+          <h2 className="label mb-2">層の一覧</h2>
+          <ul className="flex flex-col gap-1 text-small">
             {elements
               .slice()
               .reverse()

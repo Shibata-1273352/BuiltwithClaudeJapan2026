@@ -61,7 +61,7 @@ export function Backstage({
     >
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
         <div>
-          <h3 className="text-xs font-bold text-lantern">
+          <h3 className="text-caption font-bold text-lantern">
             Claude の呼び出し（{calls.length} 回・並列は重なって見えます）
           </h3>
           <ul className="mt-2 flex flex-col gap-1.5">
@@ -71,21 +71,21 @@ export function Backstage({
               return (
                 <li
                   key={c.seq}
-                  className="grid grid-cols-[110px_1fr] items-center gap-2 text-xs"
+                  className="grid grid-cols-[110px_1fr] items-center gap-2 text-caption"
                 >
                   <span className="truncate text-muted">
                     {CALL_JA[c.stage] ?? c.stage}
                   </span>
-                  <span className="relative h-5 rounded bg-muted/10">
+                  <span className="relative h-5 rounded-sm bg-muted/10">
                     <m.span
-                      className="absolute inset-y-0 rounded bg-lantern/70"
+                      className="absolute inset-y-0 rounded-sm bg-lantern/70"
                       style={{ left: `${left}%` }}
                       initial={{ width: 0 }}
                       animate={{ width: `${width}%` }}
                       transition={{ duration: 0.5, delay: i * 0.08 }}
                     />
                     <span
-                      className="absolute inset-y-0 flex items-center pl-1 text-[10px] text-night tabular-nums"
+                      className="absolute inset-y-0 flex items-center pl-1 text-caption text-night tabular-nums"
                       style={{ left: `${left}%` }}
                     >
                       {(c.elapsedMs / 1000).toFixed(1)}s
@@ -95,16 +95,16 @@ export function Backstage({
               );
             })}
           </ul>
-          <p className="mt-1 text-[11px] text-muted">
+          <p className="mt-1 text-caption text-muted">
             モデル：{[...new Set(calls.map((c) => c.served))].join("、")}
             （サーバー側フォールバック有効。応答したモデルを表示）・費用 $
             {s.calls.reduce((a, c) => a + c.costUsd, 0).toFixed(3)}
           </p>
 
-          <h3 className="mt-4 text-xs font-bold text-koto">
+          <h3 className="mt-4 text-caption font-bold text-koto">
             コードが決めたこと・確かめたこと
           </h3>
-          <ul className="mt-1 list-disc pl-5 text-sm leading-relaxed">
+          <ul className="mt-1 list-disc pl-5 text-small leading-relaxed">
             <li>
               Claude の主張 {s.claims.length} 件を原文と照合：採用{" "}
               {s.claimTotals.accepted}・格下げ {s.claimTotals.downgraded}・却下{" "}
@@ -148,11 +148,11 @@ function EvalNumbers() {
   const e = evalSummary();
   return (
     <section data-testid="eval-numbers">
-      <h3 className="text-xs font-bold text-toki">
+      <h3 className="text-caption font-bold text-toki">
         評価（{e.run}・Batch API {e.batch.requests} 件 $
         {e.batch.cost_usd.toFixed(2)}）
       </h3>
-      <table className="mt-1 w-full text-sm">
+      <table className="mt-1 w-full text-small">
         <tbody className="[&_td]:py-0.5 [&_td:last-child]:text-right [&_td:last-child]:tabular-nums">
           <tr>
             <td>存在の判定：資料の「時」で照合</td>
@@ -193,7 +193,7 @@ function EvalNumbers() {
           </tr>
         </tbody>
       </table>
-      <p className="mt-1 text-[11px] text-muted">
+      <p className="mt-1 text-caption text-muted">
         手作りの小さな評価セット（{e.annotatedBy}
         ）。幻覚がゼロであることの証明ではありません。指示を書いた紙の写真でも乗っ取られないことは
         SEC-01〜03（実際の Claude 呼び出し）で検査。

@@ -7,6 +7,7 @@
 import { m } from "motion/react";
 import type { Ref } from "react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
+import { Dot } from "../ui/marks";
 import { yearFrac, yearOf } from "./labels";
 
 type Period = { state: string; start: string; end: string };
@@ -25,7 +26,7 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
       <div className="absolute top-4 bottom-4 left-1/2 w-px -translate-x-1/2 bg-muted/30" />
       {TICKS.map((y) => (
         <div key={y} className="absolute right-0 left-0 flex items-center" style={{ top: pos(y) }}>
-          <span className="w-full -translate-y-1/2 pr-[calc(50%+10px)] text-right text-[10px] text-muted/70 tabular-nums">{y}</span>
+          <span className="w-full -translate-y-1/2 pr-[calc(50%+10px)] text-right text-caption text-muted/70 tabular-nums">{y}</span>
         </div>
       ))}
       {/* the river: present = solid gold, absent = open */}
@@ -36,7 +37,7 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
         return (
           <m.div
             key={i}
-            className={`absolute left-1/2 -translate-x-1/2 rounded-full ${present ? "w-2 bg-toki/80 shadow-[0_0_10px_var(--thread-toki)]" : "w-2 border border-dashed border-ba/70"}`}
+            className={`absolute left-1/2 w-1.5 -translate-x-1/2 rounded-sm ${present ? "bg-toki/80" : "border border-dashed border-ba/70"}`}
             style={{ top: pos(a), height: `calc((100% - ${2 * PAD}px) * ${yearFrac(b) - yearFrac(a)})`, transformOrigin: "top" }}
             initial={{ scaleY: 0, opacity: 0 }}
             animate={{ scaleY: 1, opacity: 1 }}
@@ -44,7 +45,7 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
             title={`${a}–${b} ${present ? "存在" : "不在"}`}
           >
             {!present && b - a > 30 && (
-              <span className="absolute bottom-0 left-3 whitespace-nowrap text-[11px] leading-tight text-ba">
+              <span className="absolute bottom-0 left-3 whitespace-nowrap text-caption leading-tight text-ba">
                 {a} 焼失
                 <br />→ {b} 再建
               </span>
@@ -57,13 +58,15 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
         c.year ? (
           <m.span
             key={c.sourceId}
-            className={`absolute left-1/2 size-2.5 -translate-1/2 rounded-full ${c.yearKind === "published" ? "border border-lantern bg-night" : "bg-lantern shadow-[0_0_8px_var(--lantern)]"}`}
+            className="absolute left-1/2 -translate-1/2"
             style={{ top: pos(c.year) }}
             initial={{ x: -180, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
             title={`${c.title}（${c.year}）`}
-          />
+          >
+            <Dot className={`block size-2 ${c.yearKind === "published" ? "border border-paper bg-night" : "bg-paper"}`} />
+          </m.span>
         ) : null,
       )}
     </div>

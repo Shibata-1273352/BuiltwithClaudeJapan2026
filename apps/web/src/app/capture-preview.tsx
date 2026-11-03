@@ -10,6 +10,7 @@ import { boxAround, type Box } from "@/lib/capture/geometry";
 import { prepare, render, toJpeg, type Prepared } from "@/lib/capture/preprocess";
 import { ExplorationView } from "./exploration-view";
 import { UploadStage } from "./live/sample-stage";
+import { Button, buttonClass } from "./ui/button";
 
 type State =
   | { kind: "idle" }
@@ -61,8 +62,8 @@ export function CapturePreview() {
   }
 
   return (
-    <section className="flex w-full max-w-xl flex-col items-center gap-4">
-      <label className="flex min-h-11 cursor-pointer items-center rounded-full bg-lantern px-8 py-3 font-bold text-night">
+    <section className="flex w-full flex-col items-start gap-4">
+      <label className={buttonClass("secondary", "cursor-pointer")}>
         {state.kind === "ready" ? "撮り直す" : "写真を撮る・選ぶ"}
         <input
           type="file"
@@ -86,12 +87,12 @@ export function CapturePreview() {
           <canvas
             ref={out}
             onPointerDown={onTap}
-            className="max-h-[65vh] w-auto max-w-full cursor-crosshair touch-none rounded-lg"
+            className="max-h-[65vh] w-auto max-w-full cursor-crosshair touch-none rounded-md"
             aria-label="送信前のプレビュー。ぼかしたい所をタップすると追加でぼかします。"
             data-testid="preview"
           />
           <p
-            className="text-sm text-muted"
+            className="text-small text-muted"
             data-testid="faces"
             data-raw={state.debug ? JSON.stringify(state.prepared.raw) : undefined}
           >
@@ -99,31 +100,31 @@ export function CapturePreview() {
             {state.manual.length ? `（手動で ${state.manual.length} 件追加）` : ""}。
             検出漏れはあり得ます。気になる所はタップして追加でぼかしてください。
           </p>
-          <div className="flex gap-3">
-            {state.manual.length > 0 && (
-              <button
-                type="button"
-                className="min-h-11 rounded-full border border-muted px-5"
-                onClick={() => setState({ ...state, manual: state.manual.slice(0, -1) })}
-              >
-                手動のぼかしを1つ戻す
-              </button>
-            )}
-            <button
-              type="button"
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="primary"
               disabled={!jpeg || Boolean(sent)}
               onClick={() => {
                 if (!jpeg) return;
                 setAsList(new URLSearchParams(location.search).get("view") === "list");
                 setSent(jpeg.blob);
               }}
-              className="min-h-11 rounded-full bg-toki px-6 font-bold text-night disabled:opacity-40"
               data-testid="send"
             >
-              この写真で紡ぐ {jpeg ? `（${state.prepared.width}×${state.prepared.height}, ${Math.round(jpeg.bytes / 1024)}KB）` : ""}
-            </button>
+              この写真で紡ぐ
+            </Button>
+            {state.manual.length > 0 && (
+              <Button variant="quiet" onClick={() => setState({ ...state, manual: state.manual.slice(0, -1) })}>
+                手動のぼかしを1つ戻す
+              </Button>
+            )}
           </div>
-          <label className="flex min-h-11 items-center gap-2 text-sm">
+          {jpeg && (
+            <p className="text-caption text-muted tabular-nums">
+              送信するもの：{state.prepared.width}×{state.prepared.height}・{Math.round(jpeg.bytes / 1024)} KB・EXIF なし
+            </p>
+          )}
+          <label className="flex min-h-11 items-center gap-2 text-small">
             <input
               type="checkbox"
               checked={useLocation}
@@ -145,9 +146,6 @@ export function CapturePreview() {
         </div>
       )}
 
-      {state.kind === "idle" && (
-        <p className="text-sm text-muted">写真は端末の中で縮小・位置情報の除去・顔のぼかしをしてから送ります。</p>
-      )}
     </section>
   );
 }
