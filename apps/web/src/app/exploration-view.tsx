@@ -121,7 +121,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "space", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "space", "visual", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
   }, [jpeg, useLocation]);
@@ -140,6 +140,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const names = pick<NamesEvent>("names");
   const timelineData = pick<TimelineData>("timeline");
   const space = pick<{ ok: boolean; url?: string; aligned?: boolean; message?: string }>("space");
+  const visual = pick<{ element: string; hits: { id: string; title: string; commons: string; score: number; file: string }[] }>("visual");
 
   async function switchLang(next: "ja" | "en") {
     setLang(next);
@@ -296,6 +297,24 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
         <a href={`/note/${expId}?lang=${lang}`} className="inline-flex min-h-11 w-fit items-center rounded-full bg-lantern px-6 font-medium text-night" data-testid="note-link">
           {lang === "ja" ? "旅ノートを開く" : "Open the travel note"}
         </a>
+      )}
+      {visual && visual.hits.length > 0 && (
+        <section data-testid="visual" aria-label="提灯から提灯へ">
+          <h3 className="font-serif text-lg">提灯から提灯へ</h3>
+          <p className="text-xs text-muted">切り抜いた大提灯に似た図像（画像の類似度。根拠ではありません）</p>
+          <ul className="mt-2 flex gap-3 overflow-x-auto pb-2">
+            {visual.hits.map((h) => (
+              <li key={h.id} className="w-32 shrink-0 text-xs">
+                <a href={h.commons} target="_blank" rel="noreferrer noopener">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
+                  <img src={`/api/cache/visual/images/${h.file}`} alt={h.title} className="h-40 w-32 rounded object-cover" />
+                  <span className="mt-1 block leading-snug">{h.title}</span>
+                </a>
+                <span className="text-muted tabular-nums">類似度 {h.score.toFixed(2)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
       {space && (
         <p className="text-sm" data-testid="space-link">

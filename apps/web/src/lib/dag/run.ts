@@ -21,7 +21,7 @@ import { extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
-import { requestScene } from "../inference";
+import { requestScene, requestVisual } from "../inference";
 import { existenceRows } from "../existence-rows";
 import { narrativeFor, saveNarrative } from "../narrative-service";
 import { findNames, namePatterns, type CheckedClaim, type FoundName } from "@tsumugi/core";
@@ -167,7 +167,14 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
           ? { ok: true, scene_id: r.scene.scene_id, url: `/space/${r.scene.scene_id}`, elements: Object.keys(r.scene.elements), aligned: Boolean(r.scene.alignment?.ok), ms: r.scene.elapsed_ms }
           : { ok: false, reason: r.reason, message: "空間解析：簡易表示" }, // FR-34
       );
-      return r.ok;
+      return r.ok ? r.scene : null;
+    }).then(async (scene) => {
+      // FR-58 視覚で探す: the cut-out lantern looks for lanterns in pre-indexed prints. A pointer to
+      // look at, not evidence: it never becomes a claim or a thread.
+      if (!scene || !scene.elements.lantern || ctx.remaining() < 4_000) return Boolean(scene);
+      const v = await requestVisual(scene.scene_id, "lantern", 5, Math.min(10_000, ctx.remaining() - 2_000));
+      if (v) emit(explorationId, "visual", { element: "lantern", hits: v.hits, ms: v.elapsed_ms, note: "似た図像（根拠ではない）" });
+      return true;
     });
 
     // 3. Plan (FR-08)

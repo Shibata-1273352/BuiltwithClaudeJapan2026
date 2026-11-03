@@ -19,6 +19,44 @@ export type SceneResponse = z.infer<typeof SceneResponse>;
 
 export type SceneResult = { ok: true; scene: SceneResponse } | { ok: false; reason: "unavailable" | "timeout" | "invalid_response" | "error" };
 
+const VisualResponse = z.object({
+  query: z.object({ scene_id: z.string(), element: z.string(), bbox: z.array(z.number()).length(4) }),
+  hits: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z0-9-]{1,64}$/),
+        title: z.string().max(300),
+        commons: z.string().url(),
+        license: z.string().max(100),
+        file: z.string().regex(/^[a-z0-9][a-z0-9_.-]{0,63}\.jpg$/),
+        score: z.number(),
+        crop: z.string().max(16),
+      }),
+    )
+    .max(10),
+  elapsed_ms: z.number(),
+});
+export type VisualResponse = z.infer<typeof VisualResponse>;
+
+/** FR-58: similar prints for a scene element (e.g. the great lantern). Failure -> null (no visual layer). */
+export async function requestVisual(sceneId: string, element: string, k: number, timeoutMs: number): Promise<VisualResponse | null> {
+  const url = process.env.INFERENCE_URL ?? "http://127.0.0.1:8100";
+  const token = process.env.INFERENCE_TOKEN;
+  if (!token) return null;
+  const form = new FormData();
+  form.append("scene_id", sceneId);
+  form.append("element", element);
+  form.append("k", String(k));
+  try {
+    const r = await fetch(`${url}/visual-search`, { method: "POST", body: form, headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(timeoutMs) });
+    if (!r.ok) return null;
+    const p = VisualResponse.safeParse(await r.json());
+    return p.success ? p.data : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function requestScene(imagePath: string, sceneId: string, artifact: string | null, timeoutMs: number): Promise<SceneResult> {
   const url = process.env.INFERENCE_URL ?? "http://127.0.0.1:8100";
   const token = process.env.INFERENCE_TOKEN;

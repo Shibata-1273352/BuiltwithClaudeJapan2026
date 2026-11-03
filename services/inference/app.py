@@ -23,7 +23,7 @@ from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadF
 from PIL import Image
 from pydantic import BaseModel, Field
 
-from scripts.bench import LOCK, pick_device
+from scripts.bench import LOCK, data_dir, pick_device
 
 MAX_BYTES = 12 * 2**20
 MAX_PIXELS = 4096 * 4096
@@ -45,7 +45,7 @@ def require_token(authorization: Annotated[str | None, Header()] = None) -> None
         raise HTTPException(401, "unauthorized")
 
 
-def _load(kind: Literal["sam3", "depth"]):
+def _load(kind: Literal["sam3", "depth", "siglip"]):
     with _lock:
         if kind in _models:
             m, p, _ = _models[kind]
@@ -57,6 +57,10 @@ def _load(kind: Literal["sam3", "depth"]):
 
             p = Sam3Processor.from_pretrained(spec["repo"], revision=spec["revision"])
             m = Sam3Model.from_pretrained(spec["repo"], revision=spec["revision"]).to(device).eval()
+        elif kind == "siglip":
+            import visual
+
+            m, p = visual.load(device)
         else:
             from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 
@@ -213,6 +217,67 @@ async def scene(
         timings_ms=s["timings_ms"],
         elapsed_ms=round((time.perf_counter() - t0) * 1000),
     )
+
+
+class VisualHit(BaseModel):
+    id: str
+    title: str
+    commons: str
+    license: str
+    file: str
+    score: float
+    crop: str
+
+
+class VisualOut(BaseModel):
+    query: dict
+    hits: list[VisualHit]
+    elapsed_ms: int
+
+
+ELEMENT_RE = r"^[a-z][a-z0-9_]{0,31}$"
+_visual_index: dict = {}
+
+
+def _index():
+    import visual
+
+    path = data_dir() / "cache" / "visual" / "index"
+    if not (path / "index.json").exists():
+        raise HTTPException(503, "visual index not built")
+    mtime = (path / "index.json").stat().st_mtime
+    if _visual_index.get("mtime") != mtime:
+        _visual_index.update(mtime=mtime, index=visual.Index(path))
+    return _visual_index["index"]
+
+
+@app.post("/visual-search", response_model=VisualOut, dependencies=[Depends(require_token)])
+def visual_search(
+    scene_id: Annotated[str, Form(pattern=SCENE_ID_RE)],
+    element: Annotated[str, Form(pattern=ELEMENT_RE)],
+    k: Annotated[int, Form(ge=1, le=10)] = 5,
+) -> VisualOut:
+    """FR-58: crop `element` from the cached scene photo and find similar prints in the gallery."""
+    import json as _json
+
+    import visual
+
+    d = data_dir() / "cache" / "scenes" / scene_id
+    if not (d / "scene.json").exists():
+        raise HTTPException(404, "scene not found")
+    scene = _json.loads((d / "scene.json").read_text())
+    el = scene.get("elements", {}).get(element)
+    if not el:
+        raise HTTPException(404, "element not in scene")
+    img = Image.open(d / "photo.jpg").convert("RGB")
+    x1, y1, x2, y2 = el["bbox"]
+    crop = img.crop((round(x1 * img.width), round(y1 * img.height), round(x2 * img.width), round(y2 * img.height)))
+    model, proc = _load("siglip")
+    t0 = time.perf_counter()
+    q = visual.embed(model, proc, device, [crop])[0]
+    hits = _index().search(q, k=k)
+    return VisualOut(query={"scene_id": scene_id, "element": element, "bbox": el["bbox"]}, hits=[VisualHit(**h) for h in hits],
+                     elapsed_ms=round((time.perf_counter() - t0) * 1000))
 
 
 @app.post("/depth", response_model=DepthOut, dependencies=[Depends(require_token)])

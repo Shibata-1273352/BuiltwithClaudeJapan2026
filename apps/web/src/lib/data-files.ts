@@ -5,7 +5,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-export type CacheKind = "scenes" | "artifacts";
+export type CacheKind = "scenes" | "artifacts" | "visual";
 
 const ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const FILE_RE = /^[a-z0-9][a-z0-9_.-]{0,63}\.(png|jpg|json)$/;

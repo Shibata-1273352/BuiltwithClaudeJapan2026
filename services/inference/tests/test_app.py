@@ -63,6 +63,18 @@ def test_scene_rejects_path_like_ids():
     assert r.status_code == 422
 
 
+def test_visual_search_requires_token():
+    r = client.post("/visual-search", data={"scene_id": "cap_abc", "element": "lantern"})
+    assert r.status_code == 401
+
+
+def test_visual_search_rejects_bad_ids():
+    h = {"Authorization": "Bearer test-token"}
+    assert client.post("/visual-search", headers=h, data={"scene_id": "../x", "element": "lantern"}).status_code == 422
+    assert client.post("/visual-search", headers=h, data={"scene_id": "cap_abc", "element": "../x"}).status_code == 422
+    assert client.post("/visual-search", headers=h, data={"scene_id": "cap_abc", "element": "lantern", "k": 99}).status_code == 422
+
+
 def test_requires_prompt():
     r = client.post("/segment", headers={"Authorization": "Bearer test-token"},
                     files={"image": ("x.png", _png(), "image/png")})
