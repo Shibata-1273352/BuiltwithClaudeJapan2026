@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { periodsFrom, type ExistenceEvent } from "@tsumugi/core";
 import { describe, expect, it } from "vitest";
-import { labelRows, segments, yearState, type TimelineData } from "./time-river";
+import { labelRows, presentPeriodAround, segments, yearState, type TimelineData } from "./time-river";
 
 const tl = JSON.parse(readFileSync(path.join(import.meta.dirname, "../../../../corpus/timeline.json"), "utf8"));
 const events = (tl.existence_events as ExistenceEvent[]).filter((e) => e.entity === "ent:kaminarimon");
@@ -55,5 +55,14 @@ describe("river segments (FR-23)", () => {
     expect(s.map((x) => x.kind)).toEqual(["unknown", "absent", "unknown", "present", "unknown", "absent", "unknown", "present"]);
     expect(s.at(-1)!.end).toBeCloseTo(2026, 0);
     for (let i = 1; i < s.length; i++) expect(s[i].start).toBeCloseTo(s[i - 1].end, 5);
+  });
+});
+
+describe("the period a print belongs to (時をめくる shows Hiroshige only while his gate stood)", () => {
+  it("1856 lies in the period that ends at the 1866 fire; 1878 lies in none", () => {
+    const p = presentPeriodAround(d, 1856);
+    expect(p?.to).toBe(1866);
+    expect(p!.from).toBeLessThan(1856);
+    expect(presentPeriodAround(d, 1878)).toBeNull();
   });
 });

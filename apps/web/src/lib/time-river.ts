@@ -117,3 +117,14 @@ export function labelRows(xs: number[], minGap: number): number[] {
 export function sourceYear(t: TimelineData["sources"][number]["time"]): number | null {
   return t?.start ? Number(t.start.slice(0, 4)) : null;
 }
+
+/** The present period around a year (e.g. the gate Hiroshige painted in 1856 stood until its fire), or null. */
+export function presentPeriodAround(d: TimelineData, year: number): { from: number; to: number } | null {
+  for (const p of d.periods) {
+    if (p.state !== "present") continue;
+    const a = Number(p.start.slice(0, 4));
+    const b = Number(p.end.slice(0, 4));
+    if (year >= a && year <= b) return { from: a, to: b };
+  }
+  return null;
+}

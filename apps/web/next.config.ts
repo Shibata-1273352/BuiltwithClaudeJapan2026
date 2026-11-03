@@ -22,6 +22,8 @@ const csp = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // a second build directory lets a work build run beside the one being reviewed (NEXT_DIST_DIR=.next-work)
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   cacheComponents: true,
   partialPrefetching: true,
   transpilePackages: ["@tsumugi/core"],

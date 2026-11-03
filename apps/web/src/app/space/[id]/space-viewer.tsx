@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "../../ui/button";
+import { PrintDiorama } from "./diorama";
 import { Tag } from "../../ui/marks";
 
 const LAYER_JA: Record<string, string> = { lantern: "大提灯", lantern_base: "提灯の金具", gate: "門", people: "人" };
@@ -161,7 +162,16 @@ function Fps({ onFps }: { onFps: (n: number) => void }) {
 }
 
 /** FR-37: the same photo and overlay without WebGL (rect = the print's place in the photo, normalized). */
-function Flat2D({ photo, art, rect, overlay, reason }: { photo: string; art: string | null; rect: [number, number, number, number] | null; overlay: number; reason: string }) {
+function Flat2D({ photo, art, rect, overlay, reason, inside = false }: { photo: string; art: string | null; rect: [number, number, number, number] | null; overlay: number; reason: string; inside?: boolean }) {
+  // inside the painting there is only the painting: the whole print, not its place over the photo
+  if (inside && art)
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-2 p-4" data-testid="space-2d">
+        {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print */}
+        <img src={art} alt="歌川広重《浅草金龍山》" className="block max-h-[80vh] w-auto rounded-sm" />
+        <p className="text-caption text-muted">{reason}</p>
+      </div>
+    );
   return (
     <div className="flex h-full flex-col items-center justify-center gap-2 p-4" data-testid="space-2d">
       <div className="relative max-h-full">
@@ -193,12 +203,15 @@ export function SpaceViewer({
   timeline,
   autoEnter = false,
   force2d = false,
+  force3d = false,
 }: {
   id: string;
   scene: SceneJson;
   timeline?: TimelineData;
   autoEnter?: boolean;
   force2d?: boolean;
+  /** ?3d=1: keep 3D even below 30 fps (screenshots on a software renderer) */
+  force3d?: boolean;
 }) {
   const reduced = usePrefersReducedMotion();
   const [split, setSplit] = useState(0);
@@ -206,6 +219,7 @@ export function SpaceViewer({
   const [year, setYear] = useState(2026);
   const [inside, setInside] = useState(false); // FR-33: inside the painting
   const [moving, setMoving] = useState(0);
+  const [opened, setOpened] = useState(0); // the print opened into depth (arrival inside)
   const [aspect, setAspect] = useState(1.6);
   const controls = useRef<Controls>(null);
   const ys = timeline ? yearState(timeline, year) : null;
@@ -221,7 +235,7 @@ export function SpaceViewer({
   const setFps = (n: number) => {
     setFpsState(n);
     fpsLog.current.push(n);
-    if (!flat && shouldFall2D(fpsLog.current)) setFlat(true);
+    if (!flat && !force3d && shouldFall2D(fpsLog.current)) setFlat(true);
   };
   const [people, setPeople] = useState(1); // FR-36: fade the crowd only
   const hasPeople = Boolean(scene.elements.people);
@@ -238,6 +252,7 @@ export function SpaceViewer({
   }, [artRect, artZ, aspect]);
   // the year readout follows what is shown: inside the print it is the print's year
   const go = (into: boolean) => {
+    setOpened(0);
     setInside(into);
     setYear(into ? 1856 : 2026);
     setMoving(performance.now());
@@ -263,7 +278,7 @@ export function SpaceViewer({
     <div className="flex flex-1 flex-col lg:flex-row">
       <div className="relative h-[70vh] flex-1 lg:h-auto">
         {flat ? (
-          <Flat2D photo={file(scene.photo)} art={align ? `/api/cache/artifacts/${align.artifact}/image.jpg` : null} rect={align ? artifactRectInPhoto(align) : null} overlay={overlayEff} reason={force2d ? "指定により2D表示" : "この端末では3Dが30fpsに届かないため、2D表示に切り替えました"} />
+          <Flat2D photo={file(scene.photo)} art={align ? `/api/cache/artifacts/${align.artifact}/image.jpg` : null} rect={align ? artifactRectInPhoto(align) : null} overlay={overlayEff} inside={inside} reason={force2d ? "指定により2D表示" : "この端末では3Dが30fpsに届かないため、2D表示に切り替えました"} />
         ) : (
         <Canvas camera={{ position: [0, 0, CAMERA_Z], fov: 30 }} dpr={[1, 2]} gl={{ antialias: true }}>
           <color attach="background" args={["#0e1426"]} />
@@ -280,7 +295,17 @@ export function SpaceViewer({
               renderOrder={i + 1}
             />
           ))}
-          {align && artRect && overlayEff > 0 && (
+          {align && artRect && inside && opened > 0 && (
+            <PrintDiorama
+              image={`/api/cache/artifacts/${align.artifact}/image.jpg`}
+              depth={`/api/cache/artifacts/${align.artifact}/depth.png`}
+              rect={{ x: artRect.x * depthCompensation(artZ), y: artRect.y * depthCompensation(artZ), w: artRect.w * depthCompensation(artZ), h: artRect.h * depthCompensation(artZ) }}
+              z={artZ}
+              opened={opened}
+              reduced={reduced}
+            />
+          )}
+          {align && artRect && overlayEff > 0 && !(inside && opened > 0) && (
             <LayerPlane
               url={`/api/cache/artifacts/${align.artifact}/image.jpg`}
               rect={artRect}
@@ -298,7 +323,11 @@ export function SpaceViewer({
             minDistance={0.5}
             maxDistance={8}
           />
-          <CameraRig moving={moving} inside={inside} frame={artFrame} reduced={reduced} controls={controls} onDone={() => setMoving(0)} />
+          <CameraRig moving={moving} inside={inside} frame={artFrame} reduced={reduced} controls={controls} onDone={() => {
+              setMoving(0);
+              setOpened(inside ? performance.now() : 0);
+            }}
+          />
           <AspectProbe onAspect={setAspect} />
           <Fps onFps={setFps} />
         </Canvas>

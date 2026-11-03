@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note": "Where each entity of the dictionary appears in a print, for 言の地層 (names land on what they name). Boxes are [x1, y1, x2, y2] normalized to the print image as served (cache/artifacts/<id>/image.jpg). Drawn by hand on the image — an annotation, not a detection, not reviewed; never evidence, never a claim. An entity the print does not show has no entry and is said to be not in the picture.",
+  "prints": {
+    "met-56689": {
+      "title": { "ja": "歌川広重《名所江戸百景 浅草金龍山》1856", "en": "Utagawa Hiroshige, Kinryūzan Temple at Asakusa, 1856" },
+      "annotated_by": "hand (Claude Code session, 2026-11-03), unreviewed",
+      "regions": {
+        "ent:kaminarimon": { "boxes": [[0.35, 0.065, 0.96, 0.37], [0.07, 0.065, 0.23, 0.99]], "where": { "ja": "見る人が立つ門：頭上の大提灯と左の柱", "en": "the gate you stand in: the lantern overhead, the pillar at left" } },
+        "ent:hozomon": { "boxes": [[0.53, 0.58, 0.7, 0.675]], "where": { "ja": "雪の参道の奥の赤い門", "en": "the red gate deep in the snow" } },
+        "ent:sensoji": { "boxes": [[0.36, 0.49, 0.63, 0.585]], "where": { "ja": "門の向こうの大きな雪の屋根（本堂）", "en": "the great snowy roof beyond the gate (the main hall)" } },
+        "ent:kannon": { "boxes": [[0.36, 0.49, 0.63, 0.585]], "where": { "ja": "本堂の中（姿は描かれていない）", "en": "inside the main hall (not itself drawn)" } },
+        "ent:nakamise": { "boxes": [[0.25, 0.63, 0.95, 0.8]], "where": { "ja": "雪の参道と、その脇の店並み", "en": "the snowy approach and the shops along it" } },
+        "ent:asakusa": { "boxes": [[0.07, 0.065, 0.96, 0.99]], "where": { "ja": "絵のすべて", "en": "the whole picture" } }
+      }
+    }
+  }
+}

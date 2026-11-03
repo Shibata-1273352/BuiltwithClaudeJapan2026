@@ -21,6 +21,7 @@ cache/
 # Node / Next.js
 node_modules/
 .next/
+.next-work/
 out/
 coverage/
 *.tsbuildinfo

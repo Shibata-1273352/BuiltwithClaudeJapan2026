@@ -5,6 +5,7 @@
  * threads drawn across all of them. Every SSE event visibly changes something while the AI works.
  * "リスト表示" (6.4) shows the same running exploration as the accessible list.
  */
+import { hasPrintRegions, NamesLoom } from "./names-loom";
 import { plainLabel } from "./text-column";
 import { MuteToggle } from "./mute-toggle";
 import Link from "next/link";
@@ -13,8 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sourceCards } from "@/lib/live/state";
 import { ExplorationView } from "../exploration-view";
 import { NamesLayer, type NamesData } from "../names-layer";
-import type { TimelineData } from "@/lib/time-river";
-import { TimeRiver } from "../time-river";
+import { TimeTurn } from "./time-turn";
 import { Backstage } from "./backstage";
 import { StagePanel } from "./stage-panel";
 import { Button, ButtonLink } from "../ui/button";
@@ -33,7 +33,7 @@ import { WorldCard } from "./world-card";
 import { LAYER_COLOR } from "./labels";
 import { loomObjects } from "@/lib/live/objects";
 import { pluck } from "@/lib/live/feel";
-import { yearState, type TimelineData as RiverData } from "@/lib/time-river";
+import { presentPeriodAround, sourceYear, yearState, type TimelineData as RiverData } from "@/lib/time-river";
 import { dict, LangToggle, useDict, useLang } from "../i18n";
 
 const T = dict({
@@ -164,6 +164,14 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   // turning the years (FR-56 on the stage): the structure vanishes in an absent year, the print returns before the fire
   const ys = scrub !== null && s.timeline ? yearState(s.timeline as RiverData, scrub) : null;
   const absentNow = ys?.state === "absent";
+  // the print lays over the photo while the gate it shows stood (the period of the print's own year)
+  const printPeriod = useMemo(() => {
+    const tl = s.timeline as RiverData | undefined;
+    const art = (scene as { alignment?: { artifact?: string } } | null)?.alignment?.artifact;
+    const src = art ? tl?.sources.find((x) => x.source === art) : undefined;
+    const y = src ? sourceYear(src.time) : null;
+    return tl && y ? presentPeriodAround(tl, y) : null;
+  }, [s.timeline, scene]);
   const onScrub = useCallback((y: number) => {
     setScrub(y);
     const d = Math.floor(y / 10);
@@ -378,7 +386,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     photo={photoUrl}
                     elapsed={elapsed}
                     scene={scene}
-                    overlayOn={overlayOn || (ys?.state === "present" && scrub !== null && scrub < 1866)}
+                    overlayOn={overlayOn || (ys?.state === "present" && scrub !== null && printPeriod !== null && scrub >= printPeriod.from && scrub <= printPeriod.to)}
                     onAspect={setAspect}
                     aspect={aspect}
                     absent={absentNow}
@@ -407,12 +415,16 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
                   <StagePanel title={t.timeTitle(s.place?.path[0]?.name[lang] ?? "")} onClose={() => setPanel(null)} testid="time-panel" wide>
-                    <TimeRiver data={s.timeline as TimelineData} initialYear={1856} />
+                    <TimeTurn data={s.timeline as RiverData} sceneId={s.space?.scene_id ?? null} scene={scene as never} photo={photoUrl} cards={cards} />
                   </StagePanel>
                 )}
                 {panel === "names" && s.names != null && (
                   <StagePanel title={t.namesTitle} onClose={() => setPanel(null)} testid="names-panel" wide>
-                    <NamesLayer names={s.names as NamesData} lang={lang} />
+                    {hasPrintRegions((scene as { alignment?: { artifact?: string } } | null)?.alignment?.artifact) ? (
+                      <NamesLoom names={s.names as NamesData} artifact={(scene as { alignment: { artifact: string } }).alignment.artifact} />
+                    ) : (
+                      <NamesLayer names={s.names as NamesData} lang={lang} />
+                    )}
                   </StagePanel>
                 )}
                 <RopeLayer stageRef={stageRef} anchors={anchors} axisRef={axisRef} specs={specs} since={elapsed} hot={hot} reduced={reduced} pluckRef={pluckRef} />
