@@ -478,4 +478,6 @@ function count(cs: CheckedClaim[]) {
 const result = { run: RUN, model: CLAUDE_MODEL, cases: { version: cases.version, hash: casesHash, frozen_at: cases.frozen_at, annotated_by: cases.annotated_by }, perTarget, existence, citation, live, llm };
 writeFileSync(path.join(RESULTS, `${RUN}.json`), JSON.stringify(result, null, 2) + "\n");
 writeFileSync(path.join(RESULTS, `${RUN}.md`), (await import("./report")).report(result));
+// the app shows the latest run that called Claude (a --no-llm dry run never replaces it)
+if (!NO_LLM) writeFileSync(path.join(RESULTS, "latest.json"), JSON.stringify(result, null, 2) + "\n");
 console.log(`wrote evaluation/results/${RUN}.json and .md`);

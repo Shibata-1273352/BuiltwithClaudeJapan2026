@@ -95,7 +95,7 @@ export function useExploration(source: Source) {
       }
       let start: Response;
       if (source.kind === "sample") {
-        start = await fetch("/api/explorations/sample", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: source.name }) });
+        start = await fetch("/api/explorations/sample", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: source.name, lang: document.documentElement.lang === "en" ? "en" : "ja" }) });
       } else {
         setPhoto(URL.createObjectURL(source.jpeg));
         const form = new FormData();
