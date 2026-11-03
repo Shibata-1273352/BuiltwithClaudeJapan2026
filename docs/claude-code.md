@@ -31,7 +31,7 @@ API features in use (each chosen for a reason):
 - **Server-side fallback** (`server-side-fallback-2026-07-01`, `fallbacks: "default"`): a live
   demo must not stop on one model's capacity; the stage shows the model that actually answered.
 - **Adaptive thinking**, **effort** per stage, **prompt caching** of system prompts (ephemeral).
-- **Message Batches API** for the evaluation (`npm run eval`): 23 requests, $0.38 at 50% cost;
+- **Message Batches API** for the evaluation (`npm run eval`), at 50% cost (request count and cost in each report under `evaluation/results/`);
   the batch uses the same request builders as the live run, so the evaluation measures the
   product, not a copy of it.
 - Untrusted text (sources, OCR) is wrapped and Claude is told it is data, never instructions

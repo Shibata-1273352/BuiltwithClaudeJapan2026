@@ -29,7 +29,8 @@ const T = dict({
     broken: "切れた糸",
     notYet: (p: string) => `${p}は、まだなかった`,
     notYetPermanent: (p: string) => `恒久的な${p}は、まだなかった`,
-    interim: (y: number) => `仮設の門は${y}年から立っていた（年表）`,
+    byCodeShort: "年表との照合（コード）。Claude には判定させない",
+    interim: (y: number) => `${y}年に仮設の門が設けられた（年表）。その後もあったかは記録されていない`,
     byCode: "年表との照合はコード。Claude には判定させていません。",
     words: "写真の中の文字",
     judgment: "Claude の判断 ── 何が足りないか",
@@ -38,7 +39,8 @@ const T = dict({
     en: "英語",
     sep: "、",
     searched: (n: number) => `Claude が足りない観点を判断し、追加で探した（${n} 節が見つかった）：`,
-    story: "この場所の物語",
+    story: "この場所の物語 ── Claude が書き、一文ずつコードが確かめた",
+    skippedGap: "追加の探索はしなかった（残り時間が少ないため・コードの判断）",
     threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：糸のある資料 ${src}`,
   },
   en: {
@@ -55,7 +57,8 @@ const T = dict({
     broken: "Not there that year",
     notYet: (p: string) => `${p || "it"} was gone`,
     notYetPermanent: (p: string) => `the permanent ${p || "structure"} was gone`,
-    interim: (y: number) => `a temporary gate stood from ${y} (timeline)`,
+    byCodeShort: "checked against the timeline by code, not by Claude",
+    interim: (y: number) => `a temporary gate was put up in ${y} (timeline); whether one stood later is not recorded`,
     byCode: "Checked against the timeline by code — not left to Claude.",
     words: "Words in the photo",
     judgment: "Claude's judgment — what is missing",
@@ -64,7 +67,8 @@ const T = dict({
     en: "English",
     sep: ", ",
     searched: (n: number) => `Claude judged what was missing and searched again (${n} passages found): `,
-    story: "The story of this place",
+    story: "The story of this place — written by Claude, each sentence checked by code",
+    skippedGap: "No further search (little time left — the code's decision)",
     threads: (n: number, b: number, src: number) => `${n} threads (${b} broken), from ${src} sources with threads`,
   },
 });
@@ -237,6 +241,7 @@ export function TextColumn({
               {interim && <p className="present-hide mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
               <p className="present-hide mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
               <p className="present-hide mt-1 text-caption text-muted">{t.byCode}</p>
+              <p className="present-only mt-1 text-caption text-muted">{t.byCodeShort}</p>
             </m.div>
           )}
         </AnimatePresence>
@@ -265,6 +270,11 @@ export function TextColumn({
         )}
 
         {/* Claude's own judgment (gap.assessment), labelled as Claude's — not a code decision */}
+        {s.gap?.skipped === "time" && !s.gap.assessment && (
+          <p className="text-caption text-muted" data-testid="gap-skipped">
+            {t.skippedGap}
+          </p>
+        )}
         {s.gap?.assessment && !showStory && (
           <m.figure initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="claude-line">
             <figcaption className="label">{t.judgment}</figcaption>

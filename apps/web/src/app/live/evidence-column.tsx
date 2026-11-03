@@ -8,8 +8,8 @@ import { dict, useDict, useLang } from "../i18n";
 import { EXIST_LABEL, FACET_LABEL, LAYER_COLOR, STATE_LABEL } from "./labels";
 
 const T = dict({
-  ja: { evidence: "根拠", title: "根拠となる資料", n: (n: number) => `${n} 節`, matrix: "観点×言語の検索", ja: "日本語", en: "英語", none: "見つからず", searching: "日英の資料を探しています。", before: "写真を読み終えたら、日英の資料を探します。", pub: "刊行・公開年（この場所の記述の年ではない）", time: "この場所について書かれた年", pubMark: " 刊", jaMark: "日", enMark: "英", kept: "採用", down: "格下げ", more: (n: number) => `すべての資料を見る（${n}）`, original: "原文（訳は Claude の参考訳）" },
-  en: { evidence: "Evidence", title: "Sources", n: (n: number) => `${n} passages`, matrix: "Search by topic and language", ja: "Japanese", en: "English", none: "none found", searching: "Searching Japanese and English sources.", before: "Once the photo is read, Japanese and English sources are searched.", pub: "year published (not the year this place was described)", time: "the year this place was written about", pubMark: " pub.", jaMark: "ja", enMark: "en", kept: "kept", down: "downgraded", more: (n: number) => `See all sources (${n})`, original: "original (translation by Claude, for reference)" },
+  ja: { evidence: "根拠", title: "根拠となる資料", n: (n: number) => `${n} 節`, matrix: "観点×言語の検索", ja: "日本語", en: "英語", none: "見つからず", searching: "日英の資料を探しています。", before: "写真を読み終えたら、日英の資料を探します。", pub: "刊行・公開年（この場所の記述の年ではない）", time: "この場所について書かれた年", pubMark: " 刊", jaMark: "日", enMark: "英", kept: "採用", down: "格下げ", more: (n: number) => `すべての資料を見る（${n}）`, original: "原文", refLabel: "Claude の参考訳（根拠は下の原文）" },
+  en: { evidence: "Evidence", title: "Sources", n: (n: number) => `${n} passages`, matrix: "Search by topic and language", ja: "Japanese", en: "English", none: "none found", searching: "Searching Japanese and English sources.", before: "Once the photo is read, Japanese and English sources are searched.", pub: "year published (not the year this place was described)", time: "the year this place was written about", pubMark: " pub.", jaMark: "ja", enMark: "en", kept: "kept", down: "downgraded", more: (n: number) => `See all sources (${n})`, original: "original", refLabel: "Claude's reference translation (the evidence is the original below)" },
 });
 
 
@@ -107,11 +107,12 @@ export function EvidenceColumn({
                 </div>
                 {c.excerptKey && c.lang !== ui && tr[c.excerptKey] ? (
                   <div className={`${c.existence?.value === "absent" ? "" : "present-hide"} mt-1`}>
+                    <p className="text-caption text-muted">{t.refLabel}</p>
                     <p className="line-clamp-2 text-small text-paper/85" lang={ui}>
                       {tr[c.excerptKey]}
                     </p>
                     <p className="mt-0.5 line-clamp-1 text-caption text-muted" lang={c.lang}>
-                      {c.excerpt} <span className="whitespace-nowrap">— {t.original}</span>
+                      {c.excerpt}
                     </p>
                   </div>
                 ) : (
