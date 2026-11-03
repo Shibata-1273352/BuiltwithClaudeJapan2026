@@ -3,7 +3,6 @@
 /** The evidence column (6.2): one card per source, appearing as it is found, then judged. */
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
-import { AssociationThreads } from "./association-threads";
 import { dict, useDict, useLang } from "../i18n";
 import { EXIST_LABEL, FACET_LABEL, LAYER_COLOR, STATE_LABEL } from "./labels";
 
@@ -35,35 +34,21 @@ export function EvidenceColumn({
         <h2 className="label">{t.title}</h2>
         <span className="text-caption text-muted tabular-nums">{t.n(new Set(s.candidates.map((c) => c.passageId)).size)}</span>
       </div>
-      <table className="w-full table-fixed border-y border-rule text-caption" data-testid="search-matrix" aria-label={t.matrix}>
-        <thead>
-          <tr className="text-muted">
-            <th className={`${ui === "ja" ? "w-14" : "w-24"} py-1.5 pl-4 text-left font-normal`} />
-            {Object.values(FACET_LABEL[ui]).map((f) => (
-              <th key={f} className="py-1.5 text-left font-normal">
-                {f}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {(["en", "ja"] as const).map((lang) => (
-            <tr key={lang} className="border-t border-rule">
-              <td className="py-1.5 pl-4 text-muted">{lang === "ja" ? t.ja : t.en}</td>
-              {Object.keys(FACET_LABEL[ui]).map((f) => {
-                const g = [...s.candidateGroups].reverse().find((x) => x.facet === f && x.lang === lang);
-                return (
-                  <td key={f} className="py-1.5">
-                    <span className={`block h-5 tabular-nums transition-colors duration-500 ${g ? (g.notFound ? "text-muted line-through decoration-muted/60" : "text-paper") : searched ? "shimmer w-10 rounded-sm" : ""}`}>
-                      {g ? (g.notFound ? t.none : t.n(g.found)) : ""}
-                    </span>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* what was searched, in one line: topic × language, "none" struck through */}
+      <p className="flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted" data-testid="search-matrix" aria-label={t.matrix}>
+        {(["en", "ja"] as const).flatMap((lang) =>
+          Object.keys(FACET_LABEL[ui]).map((f) => {
+            const g = [...s.candidateGroups].reverse().find((x) => x.facet === f && x.lang === lang);
+            if (!g) return searched ? <span key={lang + f} className="shimmer inline-block h-4 w-16 rounded-sm" /> : null;
+            return (
+              <span key={lang + f} className={g.notFound ? "line-through decoration-muted/60" : ""}>
+                <span className="text-paper/80">{lang === "ja" ? t.jaMark : t.enMark}</span> {FACET_LABEL[ui][f]}
+                {g.notFound ? "" : ` ${g.found}`}
+              </span>
+            );
+          }),
+        )}
+      </p>
       {cards.length === 0 && <p className="font-serif text-body text-muted">{searched ? t.searching : t.before}</p>}
       <ul className="fade-end flex min-h-[50%] flex-1 flex-col overflow-y-auto pr-1 pb-10">
         <AnimatePresence initial={false}>
@@ -124,7 +109,6 @@ export function EvidenceColumn({
           })}
         </AnimatePresence>
       </ul>
-      <AssociationThreads s={s} />
     </section>
   );
 }

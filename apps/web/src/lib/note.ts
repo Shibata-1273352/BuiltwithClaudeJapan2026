@@ -51,7 +51,7 @@ export type Ticket = SourceMeta & { cited: number };
 export type Note = {
   id: string;
   captureId: string | null;
-  place: { entity: string; path: string[] } | null;
+  place: { entity: string; path: string[]; pathEn?: string[] } | null;
   see: { label: string; text_original: string | null; reading: string | null; meaning: { ja: string; en: string } | null }[];
   space: { url: string; aligned: boolean; elements: string[] } | null;
   /** FR-58: prints that look like the cut-out lantern (similarity, not evidence) */
@@ -88,7 +88,7 @@ export function buildNote(
   cached: Partial<Record<Lang, NarrativeLike>> = {},
   confirmations: Map<string, string> = new Map(),
 ): Note {
-  const place = first<{ chosen?: { entity: string; path: { name: { ja: string } }[] } }>(ev, "place")?.chosen;
+  const place = first<{ chosen?: { entity: string; path: { name: { ja: string; en?: string } }[] } }>(ev, "place")?.chosen;
   const see = first<{ elements: Note["see"] }>(ev, "see")?.elements ?? [];
   const space = first<{ ok: boolean; url?: string; aligned?: boolean; elements?: string[] }>(ev, "space");
   const threads = first<Thread[]>(ev, "threads") ?? [];
@@ -149,7 +149,7 @@ export function buildNote(
   return {
     id,
     captureId,
-    place: place ? { entity: place.entity, path: place.path.map((p) => p.name.ja).reverse() } : null,
+    place: place ? { entity: place.entity, path: place.path.map((p) => p.name.ja).reverse(), pathEn: place.path.map((p) => p.name.en ?? p.name.ja).reverse() } : null,
     see,
     space: space?.ok && space.url ? { url: space.url, aligned: Boolean(space.aligned), elements: space.elements ?? [] } : null,
     visual: first<{ hits: Note["visual"] }>(ev, "visual")?.hits ?? [],

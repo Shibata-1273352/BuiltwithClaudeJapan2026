@@ -59,7 +59,7 @@ export function TripWeave({ input, titles }: { input: WeavePlace[]; titles: Reco
                     key={`${i}:${sid}`}
                     d={`M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`}
                     fill="none"
-                    stroke="var(--thread-toki)"
+                    stroke="var(--paper)"
                     strokeOpacity={0.85 - k * 0.12}
                     strokeWidth={1.4}
                     initial={{ pathLength: 0 }}

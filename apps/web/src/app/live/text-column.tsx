@@ -46,7 +46,7 @@ const T = dict({
     where: "Where is this photo?",
     received: "Photo received.",
     broken: "Broken thread",
-    notYet: (p: string) => `${p} was not there yet`,
+    notYet: (p: string) => `${p || "it"} was gone`,
     byCode: "Checked against the timeline by code — not left to Claude.",
     words: "Words in the photo",
     judgment: "Claude's judgment — what is missing",
@@ -107,6 +107,9 @@ function SeeAsk({ s, since }: { s: LiveState; since: number }) {
     </m.div>
   );
 }
+
+/** "Kaminarimon (Thunder Gate)" → "Kaminarimon": the gloss is said once, in the title. */
+const shortName = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, "");
 
 function sourceOfClaim(s: LiveState, claimId: string): string | null {
   if (claimId.startsWith("cl:exist:")) return claimId.split(":").pop() ?? null;
@@ -196,7 +199,7 @@ export function TextColumn({
               </p>
               <p className="mt-1 flex items-baseline gap-4">
                 <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
-                <span className="font-serif text-title">{t.notYet(placeName?.[ui] ?? "")}</span>
+                <span className="font-serif text-title">{t.notYet(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
               </p>
               <p className="mt-2 font-serif text-body text-paper/80">{broken[0].label[ui].replace(/（[^（）]*（[^）]*）[^）]*）$|（[^）]*）$/, "")}</p>
               <p className="mt-1 text-caption text-muted">{t.byCode}</p>

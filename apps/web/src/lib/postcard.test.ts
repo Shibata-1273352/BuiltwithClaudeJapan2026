@@ -3,8 +3,8 @@ import { postcardData, sealOf } from "./postcard";
 
 const events = [
   { type: "place", data: { chosen: { path: [{ name: { ja: "雷門", en: "Kaminarimon" } }, { name: { ja: "浅草", en: "Asakusa" } }] } } },
-  { type: "see", data: { elements: [{ text_original: null }, { text_original: "平成二十五年" }, { text_original: "風雷神門" }] } },
-  { type: "guide", data: { notes: [{ element: 2 }] } },
+  { type: "see", data: { elements: [{ text_original: null }, { text_original: "松下幸之助", box: { w: 0.1, h: 0.05 } }, { text_original: "風雷神門", box: { w: 0.5, h: 0.5 } }] } },
+  { type: "guide", data: { notes: [{ element: 1 }, { element: 2 }] } },
   { type: "space", data: { ok: true, scene_id: "cap_x" } },
   { type: "claims", data: { claims: [{ id: "c1", source_id: "bird", status: "accepted" }, { id: "c2", source_id: "kafu", status: "rejected" }] } },
   { type: "threads", data: [{ claimId: "cl:exist:bird", state: "absent" }, { claimId: "c1", state: "ink" }] },
@@ -23,7 +23,7 @@ const titles = new Map([["bird", "Unbeaten Tracks in Japan"]]);
 
 describe("postcard: what the visitor takes away", () => {
   const d = postcardData(events, "en", null, titles);
-  it("the seal is the kanji of the touched element", () => {
+  it("the seal is the kanji of the largest guided element (the lantern, not the plate)", () => {
     expect(d.seal).toBe("風雷神門");
     expect(sealOf([null, "abc", "雷"])).toBeNull();
   });

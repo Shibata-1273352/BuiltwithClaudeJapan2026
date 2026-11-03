@@ -143,14 +143,14 @@ export function NoteView({ note }: { note: Note }) {
   const photo = note.space && note.captureId ? `/api/cache/scenes/${note.captureId}/photo.jpg` : null;
   const cutouts = note.space && note.captureId ? note.space.elements.filter((e) => e !== "people").map((e) => ({ e, src: `/api/cache/scenes/${note.captureId}/${e}.png` })) : [];
 
-  const path = note.place?.path ?? [];
+  const path = (lang === "en" ? note.place?.pathEn : undefined) ?? note.place?.path ?? [];
   return (
     <article className="flex flex-col gap-14" data-testid="travel-note" lang={lang}>
       <header className="flex flex-wrap items-end justify-between gap-6 border-b border-rule pb-6">
         <div>
           <p className="label">
             {t.title}
-            {path.length > 1 ? ` ／ ${path.slice(0, -1).join(" ／ ")}` : ""}
+            {path.length > 1 ? (lang === "en" ? ` / ${path.slice(0, -1).join(" / ")}` : ` ／ ${path.slice(0, -1).join(" ／ ")}`) : ""}
           </p>
           <h1 className="mt-2 font-serif text-display font-bold">{path.at(-1) ?? "—"}</h1>
         </div>
@@ -351,7 +351,7 @@ export function NoteView({ note }: { note: Note }) {
 
       <footer className="flex flex-wrap justify-between gap-4 border-t border-rule pt-4 text-caption text-muted tabular-nums">
         <span>
-          {note.id} · {t.stats(note.stats)}
+          {t.stats(note.stats)}
         </span>
         <LoomLegend />
       </footer>

@@ -254,7 +254,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
           <img src={`/api/cache/visual/images/${s.visual.hits[0].file}`} alt="" className="h-12 w-9 rounded-sm object-cover" />
           <span className="min-w-0">
             <span className="block text-caption text-muted">
-              {t.similar} {s.visual.hits[0].score.toFixed(2)} <Pencil />
+              {t.similar} <Pencil />
             </span>
             <span className="block truncate font-serif text-small">{s.visual.hits[0].title}</span>
           </span>
@@ -272,21 +272,23 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       )}
       {finished && expId && <PostcardButton expId={expId} />}
       {finished && s.timeline != null && (
-        <Button onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
+        <Button variant="quiet" onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
           {t.time}
         </Button>
       )}
       {finished && s.names != null && (
-        <Button onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
+        <Button variant="quiet" onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
           {t.names}
         </Button>
       )}
       {finished && s.space?.ok && s.space.url && (
-        <ButtonLink href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} data-testid="space-link">
+        <ButtonLink variant="quiet" href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} data-testid="space-link">
           {s.space.aligned ? t.intoPrint : t.space}
         </ButtonLink>
       )}
-      {into && !s.space?.aligned && finished && <ButtonLink href={into}>{t.intoThis}</ButtonLink>}
+      {into && !s.space?.aligned && finished && <ButtonLink variant="quiet" href={into}>
+          {t.intoThis}
+        </ButtonLink>}
     </>
   );
 

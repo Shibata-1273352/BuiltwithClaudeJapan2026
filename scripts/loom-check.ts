@@ -94,6 +94,7 @@ try {
   await page.getByTestId("backstage-toggle").click();
   const graph = page.getByTestId("graph-diagram");
   await graph.waitFor({ timeout: 10_000 }).catch(() => fails.push("no graph diagram in backstage"));
+  if (!(await page.getByTestId("associations").count())) fails.push("no associations in backstage");
   if (await graph.count()) {
     await graph.scrollIntoViewIfNeeded();
     await graph.screenshot({ path: path.join(out, `${lang}-10-graph.png`) });

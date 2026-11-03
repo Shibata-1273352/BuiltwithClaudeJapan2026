@@ -59,13 +59,16 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
       aspect = (x2 - x1) / Math.max(0.01, y2 - y1);
     }
   }
-  const placeMain = d.place ? (lang === "ja" ? d.place.ja : d.place.en) : "TSUMUGI";
-  const placeSub = d.place ? (lang === "ja" ? d.place.en : d.place.ja) : "";
+  // English: the short name large, the gloss with the Japanese below ("Kaminarimon" / "Thunder Gate · 雷門")
+  const gloss = d.place?.en.match(/\(([^)]*)\)\s*$/)?.[1] ?? null;
+  const shortEn = d.place ? d.place.en.replace(/\s*\([^)]*\)\s*$/, "") : "";
+  const placeMain = d.place ? (lang === "ja" ? d.place.ja : shortEn) : "TSUMUGI";
+  const placeSub = d.place ? (lang === "ja" ? d.place.en : [gloss, d.place.ja].filter(Boolean).join(" · ")) : "";
   const t =
     lang === "ja"
       ? { broken: (y: string) => `${y}年、${d.place?.ja ?? ""}は、まだなかった`, counts: `資料 ${d.counts.sources} · 採用した主張 ${d.counts.claims} · 糸 ${d.counts.threads}`, by: "Claude が読み、コードが確かめた", seal: "写真から読んだ文字" }
-      : { broken: (y: string) => `In ${y}, ${d.place?.en ?? ""} was not there yet`, counts: `${d.counts.sources} sources · ${d.counts.claims} claims kept · ${d.counts.threads} threads`, by: "Read by Claude, checked by code", seal: "words read from the photo" };
-  const cutH = 900;
+      : { broken: (y: string) => `In ${y}, ${shortEn || "it"} was gone`, counts: `${d.counts.sources} sources · ${d.counts.claims} claims kept · ${d.counts.threads} threads`, by: "Read by Claude, checked by code", seal: "words read from the photo" };
+  const cutH = 720;
   const cutW = Math.min(960, cutH * aspect);
 
   return new ImageResponse(

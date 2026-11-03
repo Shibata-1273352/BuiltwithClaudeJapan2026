@@ -49,6 +49,13 @@ const L = dict({
   },
 });
 
+/** Sources numbered in the order the answer first cites them. */
+function orderOf(segments: AskSegment[]): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const sg of segments) for (const c of sg.cites) if (!m.has(c.sourceId)) m.set(c.sourceId, m.size + 1);
+  return m;
+}
+
 export function AskPanel({ items, onAsk, register, disabled }: { items: AskItem[]; onAsk: (q: string) => void; register: (key: string) => (el: HTMLElement | null) => void; disabled?: boolean }) {
   const l = useDict(L);
   const [q, setQ] = useState("");
@@ -84,10 +91,23 @@ export function AskPanel({ items, onAsk, register, disabled }: { items: AskItem[
                 {it.segments!.map((sg, j) => (
                   <span key={j} className={sg.cites.length ? "text-paper" : "text-paper/60"}>
                     {sg.text}
-                    {sg.cites.length > 0 && <Cites cites={sg.cites} />}
+                    {sg.cites.length > 0 && <Cites cites={sg.cites} order={orderOf(it.segments!)} />}
                   </span>
                 ))}
               </p>
+            )}
+            {it.status === "done" && it.ok && (
+              <ol className="mt-1 flex flex-col text-caption text-muted">
+                {[...orderOf(it.segments!).entries()].map(([sid, n]) => {
+                  const c = it.segments!.flatMap((x) => x.cites).find((x) => x.sourceId === sid)!;
+                  return (
+                    <li key={sid}>
+                      {n}. {c.title}
+                      {c.year ? ` (${c.year})` : ""}
+                    </li>
+                  );
+                })}
+              </ol>
             )}
             {it.status === "done" && it.elapsedMs !== undefined && <p className="mt-1 text-caption text-muted tabular-nums">Claude · {l.meta((it.elapsedMs / 1000).toFixed(1), (it.costUsd ?? 0).toFixed(3))}</p>}
           </m.div>
@@ -121,13 +141,12 @@ export function AskPanel({ items, onAsk, register, disabled }: { items: AskItem[
   );
 }
 
-function Cites({ cites }: { cites: AskCitation[] }) {
+function Cites({ cites, order }: { cites: AskCitation[]; order: Map<string, number> }) {
   return (
     <>
       {cites.map((c, k) => (
-        <sup key={k} className="ml-0.5 font-sans text-caption text-muted" title={`${c.title}${c.year ? ` (${c.year})` : ""}: “${c.quote}”`}>
-          {c.title.split(/[ (（]/)[0]}
-          {c.year ? ` ${c.year}` : ""}
+        <sup key={k} className="ml-0.5 font-sans text-caption text-muted tabular-nums" title={`${c.title}${c.year ? ` (${c.year})` : ""}: “${c.quote}”`}>
+          {order.get(c.sourceId) ?? "?"}
         </sup>
       ))}
     </>

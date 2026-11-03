@@ -7,8 +7,8 @@ import { ButtonLink } from "./ui/button";
 export type VisualHit = { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[]; into?: string | null };
 
 const T = dict({
-  ja: { score: "類似度", lanterns: " ・提灯どうし", into: "この絵の中へ" },
-  en: { score: "similarity", lanterns: " · lantern to lantern", into: "Step into this print" },
+  ja: { score: "似ている", lanterns: " ・提灯どうし", into: "この絵の中へ" },
+  en: { score: "similar", lanterns: " · lantern to lantern", into: "Step into this print" },
 });
 
 export function VisualHitCard({ h, width = "w-32" }: { h: VisualHit; width?: string }) {
@@ -30,7 +30,7 @@ export function VisualHitCard({ h, width = "w-32" }: { h: VisualHit; width?: str
       </a>
       <span className="mt-1 block leading-snug">{h.title}</span>
       <span className="text-muted tabular-nums">
-        {t.score} {h.score.toFixed(2)}
+        {t.score}
         {h.crop?.startsWith("sam") ? t.lanterns : ""}
       </span>
       {/* the same print as the one aligned to the photo: open it in 間 and enter the painting */}

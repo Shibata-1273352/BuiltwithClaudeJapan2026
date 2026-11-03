@@ -4,6 +4,8 @@
  * 「この探索の舞台裏」: what Claude did and what code decided in this run — each Claude call on a
  * timeline (parallel calls overlap), the checks code ran on Claude's output and what they rejected.
  */
+import { stripNumbers } from "@/lib/live/state";
+import { AssociationThreads } from "./association-threads";
 import { GraphDiagram } from "./graph-diagram";
 import { m } from "motion/react";
 import { evalSummary } from "@/lib/eval-summary";
@@ -36,6 +38,7 @@ const CHECK: Record<string, { ja: string; en: string }> = {
 
 const T = dict({
   ja: {
+    totals: (n: ReturnType<typeof stripNumbers>) => `資料 ${n.sources} · 読んだ節 ${n.passages} · ${n.languages} 言語 · 採用 ${n.accepted} · 格下げ・却下 ${n.downgraded + n.rejected} · Claude ${n.claudeCalls} 回 · $${n.costUsd.toFixed(2)}`,
     title: "この探索の舞台裏",
     calls: (n: number) => `Claude の呼び出し（${n} 回・並列は重なって見えます）`,
     models: (models: string, cost: string) => `モデル：${models}（サーバー側フォールバック有効。応答したモデルを表示）・費用 $${cost}`,
@@ -62,6 +65,7 @@ const T = dict({
       `手作りの小さな評価セット（${by}）。幻覚がゼロであることの証明ではありません。指示を書いた紙の写真でも乗っ取られないことは SEC-01〜03（実際の Claude 呼び出し）で検査。`,
   },
   en: {
+    totals: (n: ReturnType<typeof stripNumbers>) => `${n.sources} sources · ${n.passages} passages read · ${n.languages} languages · ${n.accepted} kept · ${n.downgraded + n.rejected} downgraded / rejected · ${n.claudeCalls} Claude calls · $${n.costUsd.toFixed(2)}`,
     title: "Backstage of this exploration",
     calls: (n: number) => `Claude calls (${n}; parallel calls overlap)`,
     models: (models: string, cost: string) => `Models: ${models} (server-side fallback on; the model that answered is shown) · cost $${cost}`,
@@ -123,6 +127,9 @@ export function Backstage({
           <h3 className="text-caption font-bold text-lantern">
             {t.calls(calls.length)}
           </h3>
+          <p className="mt-1 text-caption text-muted tabular-nums" data-testid="backstage-totals">
+            {t.totals(stripNumbers(s))}
+          </p>
           <ul className="mt-2 flex flex-col gap-1.5">
             {calls.map((c, i) => {
               const left = ((Date.parse(c.startedAt) - t0) / span) * 100;
@@ -190,6 +197,9 @@ export function Backstage({
         <EvalNumbers />
       </div>
       {s.graph?.sketch && <GraphDiagram sketch={s.graph.sketch} />}
+      <div className="mt-6">
+        <AssociationThreads s={s} />
+      </div>
     </StagePanel>
   );
 }

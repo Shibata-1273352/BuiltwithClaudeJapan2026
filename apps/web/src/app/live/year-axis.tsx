@@ -81,13 +81,15 @@ export function YearAxis({
           style={{ top: pos(scrub ?? 2026) }}
           data-testid="time-handle"
         >
-          <span className="h-[3px] w-full rounded-sm bg-lantern" />
-          <span className="absolute -top-7 left-1/2 -translate-x-1/2 font-serif text-lead whitespace-nowrap text-lantern tabular-nums">{scrub ?? 2026}</span>
+          <span className="mx-auto h-[3px] w-1/2 rounded-sm bg-lantern" />
+          <span className="absolute top-1/2 left-[calc(50%+14px)] -translate-y-1/2 rounded-sm bg-night px-1 font-serif text-lead whitespace-nowrap text-lantern tabular-nums">{scrub ?? 2026}</span>
         </div>
       )}
-      {TICKS.map((y) => (
-        <div key={y} className="absolute right-0 left-0 flex items-center" style={{ top: pos(y) }}>
-          <span className="w-full -translate-y-1/2 pr-[calc(50%+10px)] text-right text-caption text-muted/50 tabular-nums">{y}</span>
+      {TICKS.filter((y) => scrub == null || Math.abs(y - scrub) > 14).map((y) => (
+        <div key={y} className="pointer-events-none absolute right-0 left-0 z-10 flex items-center" style={{ top: pos(y) }}>
+          <span className="w-full -translate-y-1/2 pr-[calc(50%+10px)] text-right text-caption tabular-nums">
+            <span className="rounded-sm bg-night px-0.5 text-muted/60">{y}</span>
+          </span>
         </div>
       ))}
       {/* the river: present = solid gold, absent = open */}
@@ -106,7 +108,7 @@ export function YearAxis({
             title={`${a}–${b} ${present ? (lang === "ja" ? "存在" : "there") : lang === "ja" ? "不在" : "not there"}`}
           >
             {!present && b - a > 30 && (
-              <span className="absolute bottom-0 left-3 whitespace-nowrap text-caption leading-tight text-paper/80">
+              <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-sm bg-night px-1 text-right whitespace-nowrap text-caption leading-tight text-paper/80">
                 {a}–{b}
                 <br />
                 {lang === "ja" ? "不在" : "not there"}

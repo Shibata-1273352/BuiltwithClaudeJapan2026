@@ -206,11 +206,11 @@ export function PhotoStage({
             initial={{ clipPath: "inset(0 0 0 100%)" }}
             animate={{ clipPath: "inset(0 0 0 0%)" }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.4, ease: "easeInOut" }}
+            transition={{ duration: 0.7, ease: "easeInOut" }}
             data-testid="stage-overlay"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print aligned to the photo */}
-            <img src={overlay!} alt={t.printAlt} className="size-full object-contain" />
+            <img src={overlay!} alt={t.printAlt} className="size-full object-cover" />
             <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night/90 to-transparent px-4 pt-10 pb-3 text-caption text-paper/80">
               {t.printCap}
               {facingLine && <span className="mt-0.5 block font-hand text-small text-paper" data-testid="facing-line">{facingLine}</span>}

@@ -34,7 +34,7 @@ type Claim = { id: string; source_id?: string; status: string };
 export function postcardData(events: Ev[], lang: "ja" | "en", story: Sentence[] | null, titles: Map<string, string>): PostcardData {
   const get = <T>(type: string) => events.find((e) => e.type === type)?.data as T | undefined;
   const place = get<{ chosen?: { path?: { name: Bi }[] } | null }>("place")?.chosen;
-  const see = get<{ elements?: { text_original?: string | null }[] }>("see");
+  const see = get<{ elements?: { text_original?: string | null; box?: { w: number; h: number } }[] }>("see");
   const guide = events.filter((e) => e.type === "guide").at(-1)?.data as { notes?: { element: number }[] } | undefined;
   const space = get<{ ok?: boolean; scene_id?: string }>("space");
   const claims = events.filter((e) => e.type === "claims").flatMap((e) => ((e.data as { claims?: Claim[] }).claims ?? []) as Claim[]);
@@ -43,14 +43,20 @@ export function postcardData(events: Ev[], lang: "ja" | "en", story: Sentence[] 
   // the story in the asked language (cached), else the run's own
   const sentences: Sentence[] = story ?? (events.filter((e) => e.type === "narrative").at(-1)?.data as { sentences?: Sentence[] } | undefined)?.sentences ?? [];
 
-  // the guide's elements first (the ones the visitor touched), then anything with writing
+  // the largest element with a guide note first (the lantern, not the donor's plate), then the rest by size
   const els = see?.elements ?? [];
-  const order = [...(guide?.notes ?? []).map((n) => n.element), ...els.map((_, i) => i)];
+  const area = (i: number) => (els[i]?.box ? els[i].box!.w * els[i].box!.h : 0);
+  const order = [...(guide?.notes ?? []).map((n) => n.element).sort((a, b) => area(b) - area(a)), ...els.map((_, i) => i).sort((a, b) => area(b) - area(a))];
   const seal = sealOf(order.map((i) => els[i]?.text_original));
 
   const sourceOf = (claimId: string) => (claimId.startsWith("cl:exist:") ? (claimId.split(":").pop() ?? null) : (claims.find((c) => c.id === claimId)?.source_id ?? null));
   const limit = lang === "ja" ? 70 : 150;
-  const s = sentences.find((x) => x.assertion_type !== "uncertain" && x.claim_ids.length > 0 && x.text.length <= limit) ?? null;
+  const absentFirst = threads.find((t) => t.state === "absent")?.claimId.split(":").pop();
+  const ok = (x: Sentence) => x.assertion_type !== "uncertain" && x.claim_ids.length > 0 && x.text.length <= limit;
+  // the sentence that tells the broken thread goes with the broken-thread line; else the first checked one
+  const tellsAbsent = (x: Sentence) => x.claim_ids.some((c) => sourceOf(c) === absentFirst);
+  const dated = (x: Sentence) => /\d{4}/.test(x.text);
+  const s = sentences.find((x) => ok(x) && tellsAbsent(x) && dated(x)) ?? sentences.find((x) => ok(x) && dated(x)) ?? sentences.find(ok) ?? null;
   const sentenceSource = s ? sourceOf(s.claim_ids[0]) : null;
 
   const absent = threads.find((t) => t.state === "absent");

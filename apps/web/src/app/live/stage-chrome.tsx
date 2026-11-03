@@ -34,7 +34,7 @@ export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: numb
           >
             <span className="text-caption text-muted tabular-nums">{st.parallel ? "∥" : String(i + 1).padStart(2, "0")}</span>
             <span className="font-serif text-body">{st[lang]}</span>
-            {status !== "waiting" && <span className="text-caption text-muted tabular-nums">{sec.toFixed(1)}</span>}
+            {status === "running" && <span className="text-caption text-muted tabular-nums">{sec.toFixed(1)}</span>}
           </li>
         );
       })}
@@ -53,7 +53,10 @@ function servedLabel(s: LiveState): string {
 }
 
 export function LiveChips({ s, finished, replay, note }: { s: LiveState; finished: boolean; replay?: boolean; note?: React.ReactNode }) {
-  const running = Object.entries(s.stages).filter(([, v]) => v.done === undefined).map(([k]) => k);
+  const running = Object.entries(s.stages)
+    .filter(([, v]) => v.done === undefined)
+    .map(([k]) => k)
+    .slice(-3);
   const claude = servedLabel(s);
   const t = useDict(T);
   const lang = useLang();
@@ -114,20 +117,10 @@ export function ResultStrip({ s, elapsed }: { s: LiveState; elapsed: number }) {
       </div>
       <div>
         <Num v={n.sources} label={t.sources} />
-        <Num v={n.passages} label={t.passages} />
-        <Num v={n.languages} label={t.langs} />
-      </div>
-      <div>
-        <Num v={n.accepted} label={t.accepted} />
-        <Num v={n.downgraded + n.rejected} label={t.down} accent="text-muted" />
       </div>
       <div>
         <Num v={n.threads} label={t.threads} />
         <Num v={n.broken} label={t.broken} />
-      </div>
-      <div>
-        <Num v={n.claudeCalls} label={t.calls} />
-        <Num v={n.costUsd} label={t.cost} digits={2} unit="$" />
       </div>
     </div>
   );
