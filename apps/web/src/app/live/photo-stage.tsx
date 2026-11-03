@@ -65,8 +65,8 @@ export function PhotoStage({
   aspect: number;
 }) {
   const reading = s.stages.see && !s.see;
-  const boxes = (s.see?.elements ?? []).slice(0, 6);
-  const sinceSee = s.at.see !== undefined ? elapsed - s.at.see : -1;
+  const boxes = (s.see?.elements ?? s.seeProgress?.elements ?? []).slice(0, 6);
+  const sinceSee = s.at.see !== undefined ? elapsed - s.at.see : s.at.see_progress !== undefined && boxes.length ? 0 : -1;
   const sincePlace = s.at.place !== undefined ? elapsed - s.at.place : -1;
   const sinceSpace = s.at.space !== undefined ? elapsed - s.at.space : -1;
   const sinceVisual = s.at.visual !== undefined ? elapsed - s.at.visual : -1;

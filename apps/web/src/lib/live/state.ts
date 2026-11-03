@@ -28,6 +28,8 @@ export type LiveState = {
   stages: Record<string, { started: number; done?: number; ms?: number }>;
   calls: { stage: string; model: string; served: string; startedAt: string; elapsedMs: number; costUsd: number; seq: number }[];
   see?: { elements: SeeElement[] };
+  /** while Claude is still writing: its thinking summary and the elements completed so far (display only) */
+  seeProgress?: { thinking: string; elements: SeeElement[]; seq: number };
   place?: { entity: string; path: { id: string; name: { ja: string; en: string } }[]; names?: string[] } | null;
   placeTried?: string[];
   notice?: { kind?: string; message: string };
@@ -70,6 +72,14 @@ export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
     case "see":
       n.see = { elements: (d.elements as SeeElement[]) ?? [] };
       break;
+    case "see_progress": {
+      // keep only well-formed elements (not validated yet): a box inside the photo
+      const els = ((d.elements as SeeElement[]) ?? []).filter(
+        (e) => e && e.box && [e.box.x, e.box.y, e.box.w, e.box.h].every((v) => typeof v === "number" && v >= 0 && v <= 1) && typeof e.label === "string",
+      );
+      if (!n.seeProgress || ev.seq > n.seeProgress.seq) n.seeProgress = { thinking: String(d.thinking ?? ""), elements: els, seq: ev.seq };
+      break;
+    }
     case "place": {
       const chosen = d.chosen as LiveState["place"];
       n.place = chosen ?? null;

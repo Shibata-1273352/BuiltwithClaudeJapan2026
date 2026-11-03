@@ -40,8 +40,8 @@ export function scheduleBeats(arrivals: Arrival[], { reduced = false }: { reduce
     if (a.type === "threads") show = Math.max(show, existenceShown + (HOLD.existence ?? 0));
     out.set(a.seq, show);
     if (a.type === "existence") existenceShown = show;
-    // bookkeeping events (stage timers, ai_call records) do not occupy the stage
-    if (a.type !== "stage" && a.type !== "ai_call" && a.type !== "received") free = show + (HOLD[a.type] ?? DEFAULT_HOLD);
+    // bookkeeping and live progress do not occupy the stage
+    if (a.type !== "stage" && a.type !== "ai_call" && a.type !== "received" && a.type !== "see_progress") free = show + (HOLD[a.type] ?? DEFAULT_HOLD);
   }
   return out;
 }

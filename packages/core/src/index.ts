@@ -1,5 +1,6 @@
 export * from "./domain";
 export * from "./see";
+export * from "./partial";
 export * from "./untrusted";
 export * from "./text";
 export * from "./entities";

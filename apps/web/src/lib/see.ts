@@ -3,7 +3,7 @@
  * Claude proposes; `validateSee` (packages/core) verifies before anything is used.
  */
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { SeeOutput, UNTRUSTED_POLICY, validateSee, type SeeValidation } from "@tsumugi/core";
+import { completedArrayItems, SeeOutput, UNTRUSTED_POLICY, validateSee, type SeeValidation } from "@tsumugi/core";
 import { CLAUDE_MODEL, claude, costOf, rateLimitHeaders, type CallRecord } from "./claude";
 
 export const SEE_SYSTEM = `You are the "see" stage of TSUMUGI, which links a traveler's photo of a Japanese place to historical sources.
@@ -19,29 +19,65 @@ Rules:
 
 export type SeeResult = { validation: SeeValidation; record: CallRecord };
 
-export async function seePhoto(image: { base64: string; mediaType: "image/jpeg" | "image/png" | "image/webp" }): Promise<SeeResult> {
+/** What Claude has produced so far, while it is still writing (for the live stage). */
+export type SeeProgress = { thinking: string; elements: unknown[] };
+
+/**
+ * Streamed, so the stage can show Claude's thinking summary and each element as soon as it is
+ * complete. The final message is validated exactly as before (validateSee); progress is display only.
+ * A server-side fallback may switch models mid-stream: the partial is kept and a `fallback` block
+ * marks the boundary, so the progress buffer restarts there.
+ */
+export async function seePhoto(
+  image: { base64: string; mediaType: "image/jpeg" | "image/png" | "image/webp" },
+  onProgress?: (p: SeeProgress) => void,
+): Promise<SeeResult> {
   const startedAt = new Date();
-  // create() (not parse()) so the raw response headers are available; validateSee parses the JSON.
-  const { data, response } = await claude()
-    .beta.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      thinking: { type: "adaptive" },
-      output_config: { effort: "medium", format: betaZodOutputFormat(SeeOutput) },
-      system: [{ type: "text", text: SEE_SYSTEM, cache_control: { type: "ephemeral" } }],
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: image.mediaType, data: image.base64 } },
-            { type: "text", text: "Analyze this photo." },
-          ],
-        },
-      ],
-    })
-    .withResponse();
+  const stream = claude().beta.messages.stream({
+    model: CLAUDE_MODEL,
+    max_tokens: 16000,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    thinking: { type: "adaptive", display: "summarized" },
+    output_config: { effort: "medium", format: betaZodOutputFormat(SeeOutput) },
+    system: [{ type: "text", text: SEE_SYSTEM, cache_control: { type: "ephemeral" } }],
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "image", source: { type: "base64", media_type: image.mediaType, data: image.base64 } },
+          { type: "text", text: "Analyze this photo." },
+        ],
+      },
+    ],
+  });
+  if (onProgress) {
+    let thinking = "";
+    let json = "";
+    let sent = 0;
+    let lastCount = -1;
+    const push = (force = false) => {
+      const now = Date.now();
+      const elements = completedArrayItems(json, "elements");
+      if (!force && now - sent < 300 && elements.length === lastCount) return;
+      sent = now;
+      lastCount = elements.length;
+      onProgress({ thinking: thinking.slice(-600), elements });
+    };
+    stream.on("streamEvent", (ev) => {
+      if (ev.type === "content_block_start" && (ev.content_block as { type: string }).type === "fallback") json = "";
+      if (ev.type !== "content_block_delta") return;
+      if (ev.delta.type === "thinking_delta") {
+        thinking += ev.delta.thinking;
+        push();
+      } else if (ev.delta.type === "text_delta") {
+        json += ev.delta.text;
+        push();
+      }
+    });
+  }
+  const { response } = await stream.withResponse();
+  const data = await stream.finalMessage();
 
   const record: CallRecord = {
     stage: "see",
@@ -64,7 +100,7 @@ export async function seePhoto(image: { base64: string; mediaType: "image/jpeg" 
   if (data.stop_reason === "refusal") {
     return { validation: { ok: false, errors: ["refused"] }, record };
   }
-  const text = data.content.find((b) => b.type === "text")?.text;
+  const text = data.content.filter((b) => b.type === "text").at(-1)?.text;
   if (!text) return { validation: { ok: false, errors: [`no text output (stop_reason=${data.stop_reason})`] }, record };
   let json: unknown;
   try {

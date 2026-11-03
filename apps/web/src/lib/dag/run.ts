@@ -95,7 +95,8 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     const see = await stage(ctx, "see", async () => {
       ctx.claude();
       const img = await readFile(capture.image_path);
-      const r = await seePhoto({ base64: img.toString("base64"), mediaType: "image/jpeg" });
+      // live progress for the stage (display only; never stored as a claim): thinking summary + finished elements
+      const r = await seePhoto({ base64: img.toString("base64"), mediaType: "image/jpeg" }, (p) => emit(explorationId, "see_progress", p));
       logCall(ctx, db, explorationId, r.record);
       if (!r.validation.ok) throw new Error(`see output rejected: ${r.validation.errors.join("; ")}`);
       emit(explorationId, "see", r.validation.value);
