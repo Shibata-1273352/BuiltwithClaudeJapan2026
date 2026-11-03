@@ -8,7 +8,8 @@ import { useEffect, useState } from "react";
 import type { Cite, Lang, Note, NarrativeLike } from "@/lib/note";
 import { VisualHitCard } from "../../visual-hit";
 import { Button, ButtonLink } from "../../ui/button";
-import { Pencil, PencilLegend, Section } from "../../ui/marks";
+import { Pencil, Section } from "../../ui/marks";
+import { LoomLegend } from "../../ui/legend";
 
 const T = {
   ja: {
@@ -332,7 +333,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
         <span>
           {note.id} · {t.stats(note.stats)}
         </span>
-        <PencilLegend />
+        <LoomLegend />
       </footer>
     </article>
   );

@@ -44,7 +44,7 @@ carry the structure, and light (lantern, the four threads) appears only where it
    night). `lantern` = "live" (Claude working, the photo anchor) and at most one highlight per view.
    Thread colors (時 gold, 場 vermilion, 言 light indigo, 間 sakura-nezumi) only for thread meaning —
    "absent / not found" is a line style and paper text, never vermilion. Zeros are `muted`. No glow
-   or colored shadow outside the thread layer and the photo anchor; no backdrop blur.
+   or colored shadow outside the threads (rope layer) and the lifted cut-outs; no backdrop blur.
 5. **Say it once.** One `<Pencil>` marker + one legend per view instead of repeated disclaimers
    (「根拠ではありません」 appears once in `src/app`). No meta-commentary in headings; an
    explanation goes in a caption line below. Labels stay next to line styles (not color alone).

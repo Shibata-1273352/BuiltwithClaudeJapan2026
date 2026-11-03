@@ -3,6 +3,7 @@
  * and presenter use the same function, so they always show the same thing. Order-independent
  * (events are keyed by type; lists are kept in seq order) and idempotent (a seq is applied once).
  */
+import type { GuideNote } from "@tsumugi/core";
 import type { EventType } from "../dag/event-types";
 
 export type LiveEvent = { seq: number; type: EventType | string; data: unknown };
@@ -36,6 +37,8 @@ export type LiveState = {
   space?: { ok: boolean; scene_id?: string; url?: string; elements?: string[]; aligned?: boolean; ms?: number; message?: string };
   visual?: { hits: VisualHit[] };
   viewpoint?: Viewpoint;
+  /** Loom guide notes (Claude's explanations, not evidence): cumulative, the newest event wins */
+  guide?: { notes: GuideNote[]; seq: number };
   associations?: { ok: boolean; items: Association[] };
   candidates: (Candidate & { seq: number })[];
   candidateGroups: { facet: string; lang: "en" | "ja"; found: number; notFound: boolean; seq: number }[];
@@ -96,6 +99,9 @@ export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
       break;
     case "visual":
       n.visual = { hits: (d.hits as VisualHit[]) ?? [] };
+      break;
+    case "guide":
+      if (!n.guide || ev.seq > n.guide.seq) n.guide = { notes: (d.notes as GuideNote[]) ?? [], seq: ev.seq };
       break;
     case "viewpoint":
       n.viewpoint = d as unknown as Viewpoint;

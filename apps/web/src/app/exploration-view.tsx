@@ -1,6 +1,7 @@
 "use client";
 import { buttonClass } from "./ui/button";
-import { Pencil, PencilLegend } from "./ui/marks";
+import { Pencil } from "./ui/marks";
+import { LoomLegend } from "./ui/legend";
 import { EVENT_TYPES } from "@/lib/dag/event-types";
 
 /**
@@ -332,7 +333,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
         <section data-testid="visual" aria-label="提灯から提灯へ">
           <h3 className="font-serif text-lead">提灯から提灯へ</h3>
           <p className="text-caption text-muted">切り抜いた大提灯に似た図像（画像の類似度） <Pencil /></p>
-          <PencilLegend />
+          <LoomLegend />
           <ul className="mt-2 flex gap-3 overflow-x-auto pb-2">
             {visual.hits.map((h) => (
               <VisualHitCard key={h.id} h={h} />

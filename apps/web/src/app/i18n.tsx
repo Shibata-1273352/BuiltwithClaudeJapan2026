@@ -6,7 +6,7 @@
  * Strings stay next to their component as `{ ja: {...}, en: {...} }`, and `dict()` makes the
  * compiler check that both languages have the same keys.
  */
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 export type Lang = "ja" | "en";
 const COOKIE = "tsumugi_lang";
@@ -18,19 +18,30 @@ function readCookie(): Lang | null {
   return (m?.[1] as Lang) ?? null;
 }
 
+// the language is an external store: the cookie (or ?lang=), with listeners for the toggle
+const listeners = new Set<() => void>();
+const subscribe = (f: () => void) => {
+  listeners.add(f);
+  return () => listeners.delete(f);
+};
+const snapshot = (): Lang => {
+  const q = new URLSearchParams(location.search).get("lang");
+  return q === "en" || q === "ja" ? q : (readCookie() ?? "ja");
+};
+
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("ja");
-  useEffect(() => {
-    const q = new URLSearchParams(location.search).get("lang");
-    const l = q === "en" || q === "ja" ? q : readCookie();
-    if (l && l !== "ja") setLangState(l);
-  }, []);
+  const lang = useSyncExternalStore(subscribe, snapshot, () => "ja" as Lang);
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
   const setLang = useCallback((l: Lang) => {
     document.cookie = `${COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
-    setLangState(l);
+    const u = new URL(location.href);
+    if (u.searchParams.has("lang")) {
+      u.searchParams.set("lang", l);
+      history.replaceState(null, "", u);
+    }
+    listeners.forEach((f) => f());
   }, []);
   return <Ctx.Provider value={{ lang, setLang }}>{children}</Ctx.Provider>;
 }

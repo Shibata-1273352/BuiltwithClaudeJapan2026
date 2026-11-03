@@ -16,12 +16,18 @@ import { TimeRiver } from "../time-river";
 import { Backstage } from "./backstage";
 import { StagePanel } from "./stage-panel";
 import { Button, ButtonLink } from "../ui/button";
-import { Pencil, PencilLegend } from "../ui/marks";
+import { Pencil } from "../ui/marks";
+import { LoomLegend } from "../ui/legend";
 import { EvidenceColumn } from "./evidence-column";
 import { PhotoStage, useScene } from "./photo-stage";
 import { LiveChips, ResultStrip, StepRail, Toasts } from "./stage-chrome";
 import { TextColumn } from "./text-column";
-import { ThreadLayer } from "./thread-layer";
+import { RopeLayer, type RopeSpec } from "./rope-layer";
+import { ObjectsLayer } from "./objects-layer";
+import { GuideCards } from "./guide-cards";
+import { LAYER_COLOR } from "./labels";
+import { loomObjects } from "@/lib/live/objects";
+import { pluck } from "@/lib/live/feel";
 import { useExploration, type Source } from "./use-exploration";
 import { YearAxis } from "./year-axis";
 
@@ -54,19 +60,58 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const toggle = (p: NonNullable<typeof panel>) => setPanel((v) => (v === p ? null : p));
   const [aspect, setAspect] = useState(3 / 4);
   const stageRef = useRef<HTMLDivElement>(null);
-  const anchorRef = useRef<HTMLSpanElement>(null);
   const axisRef = useRef<HTMLDivElement>(null);
-  const cardEls = useRef(new Map<string, HTMLElement>());
+  // every end a thread can tie to: obj:<key>, guide:<see index>, card:<source id>
+  const anchors = useRef(new Map<string, HTMLElement>());
   const register = useCallback(
     (id: string) => (el: HTMLElement | null) => {
-      if (el) cardEls.current.set(id, el);
-      else cardEls.current.delete(id);
+      if (el) anchors.current.set(id, el);
+      else anchors.current.delete(id);
     },
     [],
   );
+  const registerCard = useCallback((id: string) => register(`card:${id}`), [register]);
+  const pluckRef = useRef<(objKey: string) => number>(() => 0);
+  const [selectedObj, setSelectedObj] = useState<string | null>(null);
   usePresent();
   const scene = useScene(s.space?.ok ? s.space.scene_id : undefined);
   const cards = useMemo(() => sourceCards(s), [s]);
+  const seeEls = s.see?.elements ?? s.seeProgress?.elements;
+  const objects = useMemo(() => loomObjects(scene?.elements ?? null, seeEls ?? []), [scene, seeEls]);
+  const mainObj = objects.find((o) => o.key === "lantern") ?? objects.find((o) => o.png) ?? objects[0];
+  const selectedSee = objects.find((o) => o.key === selectedObj)?.seeIndex ?? null;
+  // touching an object plucks its threads: they swing, a note sounds, the device ticks
+  const onTouch = useCallback((key: string) => {
+    const len = pluckRef.current(key);
+    pluck(len || 300);
+  }, []);
+  const onSelectSee = useCallback((i: number) => setSelectedObj(objects.find((o) => o.seeIndex === i)?.key ?? null), [objects]);
+  const specs = useMemo<RopeSpec[]>(() => {
+    const out: RopeSpec[] = [];
+    // silk: each object to its guide note (Claude's explanation)
+    (s.guide?.notes ?? []).forEach((n, i) => {
+      const o = objects.find((x) => x.seeIndex === n.element);
+      if (o) out.push({ id: `silk:${n.element}`, from: `obj:${o.key}`, to: `guide:${n.element}`, kind: "silk", color: "var(--paper)", at: (s.at.guide ?? 0) + i * 200 });
+    });
+    // ink: the photo, through the source's year, to its evidence card
+    if (mainObj && s.at.threads !== undefined)
+      cards
+        .filter((c) => c.state)
+        .forEach((c, i) =>
+          out.push({
+            id: `ink:${c.sourceId}`,
+            from: `obj:${mainObj.key}`,
+            to: `card:${c.sourceId}`,
+            kind: "ink",
+            color: LAYER_COLOR[c.layer ?? "koto"],
+            year: c.year,
+            cut: c.state === "absent",
+            dashed: c.state === "pending",
+            at: s.at.threads! + i * 140,
+          }),
+        );
+    return out;
+  }, [s.guide, s.at.guide, s.at.threads, objects, mainObj, cards]);
   const finished = phase === "done";
   const replay = source.kind === "replay";
   const photoUrl = photo ?? (s.space?.scene_id ? `/api/cache/scenes/${s.space.scene_id}/photo.jpg` : null);
@@ -189,16 +234,45 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
             ) : (
               <div ref={stageRef} className="relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:grid-cols-[minmax(320px,1fr)_auto_96px_minmax(360px,480px)] lg:gap-8">
                 <div className="order-2 min-h-0 lg:order-none">
-                  <TextColumn s={s} cards={cards} elapsed={elapsed} reduced={reduced} hot={hot} setHot={setHot} actions={actions} />
+                  <TextColumn
+                    s={s}
+                    cards={cards}
+                    elapsed={elapsed}
+                    reduced={reduced}
+                    hot={hot}
+                    setHot={setHot}
+                    actions={actions}
+                    guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} />}
+                  />
                 </div>
                 <div className="order-1 flex h-[45vh] min-h-0 justify-center lg:order-none lg:h-full">
-                  <PhotoStage s={s} photo={photoUrl} elapsed={elapsed} scene={scene} anchorRef={anchorRef} overlayOn={overlayOn} onAspect={setAspect} aspect={aspect} />
+                  <PhotoStage
+                    s={s}
+                    photo={photoUrl}
+                    elapsed={elapsed}
+                    scene={scene}
+                    overlayOn={overlayOn}
+                    onAspect={setAspect}
+                    aspect={aspect}
+                    objects={
+                      <ObjectsLayer
+                        objects={objects}
+                        sceneId={s.space?.ok ? (s.space.scene_id ?? null) : null}
+                        lifted={Boolean(scene) && s.at.space !== undefined && elapsed - s.at.space > 1200}
+                        faded={false}
+                        selected={selectedObj}
+                        register={register}
+                        onTouch={onTouch}
+                        onSelect={(k) => setSelectedObj((v) => (v === k ? null : k))}
+                      />
+                    }
+                  />
                 </div>
                 <div className="hidden min-h-0 lg:block">
                   <YearAxis s={s} cards={cards} axisRef={axisRef} />
                 </div>
                 <div className="order-3 min-h-0 lg:order-none">
-                  <EvidenceColumn s={s} cards={cards} register={register} hot={hot} setHot={setHot} />
+                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} />
                 </div>
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
@@ -211,13 +285,13 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     <NamesLayer names={s.names as NamesData} lang="ja" />
                   </StagePanel>
                 )}
-                <ThreadLayer stageRef={stageRef} anchorRef={anchorRef} axisRef={axisRef} cardEls={cardEls} cards={cards} since={s.at.threads !== undefined ? elapsed - s.at.threads : -1} hot={hot} />
+                <RopeLayer stageRef={stageRef} anchors={anchors} axisRef={axisRef} specs={specs} since={elapsed} hot={hot} reduced={reduced} pluckRef={pluckRef} />
               </div>
             )}
 
             <footer className="flex flex-wrap items-end justify-between gap-4 border-t border-rule pt-4">
               <ResultStrip s={s} elapsed={elapsed} />
-              <PencilLegend />
+              <LoomLegend />
             </footer>
           </main>
         </LayoutGroup>

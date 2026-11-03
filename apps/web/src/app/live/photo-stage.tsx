@@ -6,9 +6,8 @@
  * aligned Hiroshige print wiping over it.
  */
 import { AnimatePresence, m } from "motion/react";
-import { useEffect, useState, type Ref } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { LiveState } from "@/lib/live/state";
-import { Dot } from "../ui/marks";
 import { FACING_JA } from "./viewpoint-card";
 
 type Scene = {
@@ -50,7 +49,7 @@ export function PhotoStage({
   photo,
   elapsed,
   scene,
-  anchorRef,
+  objects,
   overlayOn,
   onAspect,
   aspect,
@@ -59,7 +58,8 @@ export function PhotoStage({
   photo: string | null;
   elapsed: number;
   scene: Scene | null;
-  anchorRef: Ref<HTMLSpanElement>;
+  /** the touchable objects (Loom), drawn above the photo and the masks */
+  objects: ReactNode;
   overlayOn: boolean;
   onAspect: (a: number) => void;
   aspect: number;
@@ -70,7 +70,6 @@ export function PhotoStage({
   const sincePlace = s.at.place !== undefined ? elapsed - s.at.place : -1;
   const sinceSpace = s.at.space !== undefined ? elapsed - s.at.space : -1;
   const sinceVisual = s.at.visual !== undefined ? elapsed - s.at.visual : -1;
-  const anchor = anchorBox(s, scene);
   const masks = s.space?.ok && scene ? Object.entries(scene.elements).filter(([k]) => k !== "people") : [];
   const overlay = s.space?.aligned && scene?.alignment?.ok && scene.alignment.overlay && s.space.scene_id ? `/api/cache/scenes/${s.space.scene_id}/${scene.alignment.overlay}` : null;
   // the print wipes over the photo when the visual match lands, holds, then steps back (toggle brings it back)
@@ -190,13 +189,8 @@ export function PhotoStage({
         )}
       </AnimatePresence>
 
-      {/* anchor of the threads */}
-      {anchor && <span ref={anchorRef} aria-hidden className="absolute size-0" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }} />}
-      {anchor && s.at.threads !== undefined && (
-        <span aria-hidden className="absolute -translate-1/2" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }}>
-          <Dot className="block size-3 bg-lantern shadow-[0_0_16px_var(--lantern)]" />
-        </span>
-      )}
+      {/* the loom: touchable objects, each tying its threads */}
+      {!showOverlay && objects}
 
       {/* the place, big, before it docks into the text column */}
       <AnimatePresence>
