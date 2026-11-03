@@ -195,15 +195,15 @@ export function TextColumn({
   return (
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.found}>
       <div className="fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12 [&>*]:shrink-0">
-        {/* the place */}
-        <div className="min-h-28">
+        {/* the place (presenter/video: the first answer and the discovery name it, so the column keeps 1878 in frame) */}
+        <div className={`min-h-28 ${docked ? "present-hide" : ""}`}>
           {docked ? (
             <div>
-              <p className="label">{[...s.place!.path.slice(1)].reverse().map((p) => p.name[ui]).join(ui === "ja" ? " ／ " : " / ")}</p>
+              <p className="present-hide label">{[...s.place!.path.slice(1)].reverse().map((p) => p.name[ui]).join(ui === "ja" ? " ／ " : " / ")}</p>
               <m.h1 layoutId="place-ja" className={`mt-1 font-serif font-bold ${ui === "ja" ? "text-display" : "text-title leading-tight"}`} data-testid="place-title">
                 {ui === "ja" ? placeName.ja : placeName.en}
               </m.h1>
-              <m.p layoutId="place-en" className="font-serif text-lead text-paper/70 italic">
+              <m.p layoutId="place-en" className="present-hide font-serif text-lead text-paper/70 italic">
                 {ui === "ja" ? placeName.en : placeName.ja}
               </m.p>
             </div>
@@ -234,9 +234,9 @@ export function TextColumn({
                 <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
                 <span className="font-serif text-title">{(interim ? t.notYetPermanent : t.notYet)(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
               </p>
-              {interim && <p className="mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
+              {interim && <p className="present-hide mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
               <p className="mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
-              <p className="mt-1 text-caption text-muted">{t.byCode}</p>
+              <p className="present-hide mt-1 text-caption text-muted">{t.byCode}</p>
             </m.div>
           )}
         </AnimatePresence>
@@ -290,7 +290,7 @@ export function TextColumn({
 
         {/* the story, sentence by sentence (350 ms each), with source numbers */}
         {showStory && (
-          <article data-testid="narrative" lang={story?.lang ?? s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
+          <article className="present-hide" data-testid="narrative" lang={story?.lang ?? s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
             <p className="label">{t.story}</p>
             <div className="mt-2 flex flex-col gap-3">
               {sentences.map((x, i) => {

@@ -221,7 +221,9 @@ export function sourceCards(s: LiveState): SourceCard[] {
     if (cl.status === "accepted") card.accepted++;
     else if (cl.status === "downgraded") card.downgraded++;
     else card.rejected++;
-    if (cl.status === "accepted" && card.accepted === 1 && cl.excerpt) card.excerpt = cl.excerpt;
+    // the first accepted excerpt, but a sentence wins over a heading ("A—B—C—D", a chapter's contents)
+    const heading = (t: string) => (t.match(/—/g)?.length ?? 0) >= 3;
+    if (cl.status === "accepted" && cl.excerpt && (card.accepted === 1 || (heading(card.excerpt) && !heading(cl.excerpt)))) card.excerpt = cl.excerpt;
   }
   for (const r of s.existence?.rows ?? []) {
     const card = by.get(r.source);

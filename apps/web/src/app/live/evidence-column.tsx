@@ -86,7 +86,7 @@ export function EvidenceColumn({
                   )}
                   <span className="text-caption text-muted">{c.lang === "ja" ? t.jaMark : t.enMark}</span>
                 </div>
-                <p className="present-hide mt-1 line-clamp-2 text-small text-paper/70" lang={c.lang}>
+                <p className={`${c.existence?.value === "absent" ? "" : "present-hide"} mt-1 line-clamp-2 text-small text-paper/70`} lang={c.lang}>
                   {c.excerpt.replace(/^Title:\s*/, "")}
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted">

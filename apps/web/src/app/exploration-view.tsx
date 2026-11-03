@@ -399,7 +399,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
           <ul className="text-small">
             {existence.rows.map((r) => (
               <li key={r.source}>
-                <span className={r.value === "absent" ? "text-ba" : r.value === "present" ? "text-toki" : "text-muted"}>
+                <span className={r.value === "absent" ? "text-paper" : r.value === "present" ? "text-toki" : "text-muted"}>
                   {r.reason === "sources_disagree" ? t.withheld : EXIST_LABEL[r.value]?.[ui]}
                 </span>{" "}
                 {r.sourceTitle}
