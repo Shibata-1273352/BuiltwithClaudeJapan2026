@@ -1,9 +1,18 @@
 import type { Metadata, Viewport } from "next";
+import { EB_Garamond, Klee_One, Noto_Sans_JP, Shippori_Mincho } from "next/font/google";
 import "./globals.css";
+
+// 6.1: three typefaces — mincho / serif headings, gothic / sans body, handwriting for notes.
+// Self-hosted by next/font at build time (no runtime CDN; CSP unchanged). CJK files are large,
+// so they are not preloaded.
+const mincho = Shippori_Mincho({ weight: ["500", "700"], subsets: ["latin"], variable: "--nf-mincho", display: "swap", preload: false });
+const garamond = EB_Garamond({ subsets: ["latin"], variable: "--nf-garamond", display: "swap" });
+const gothic = Noto_Sans_JP({ weight: ["400", "500", "700"], subsets: ["latin"], variable: "--nf-gothic", display: "swap", preload: false });
+const hand = Klee_One({ weight: ["400", "600"], subsets: ["latin"], variable: "--nf-hand", display: "swap", preload: false });
 
 export const metadata: Metadata = {
   title: "TSUMUGI",
-  description: "時代も、場所も、言葉も、空間も越えて、日本を紡ぐ。",
+  description: "一枚の写真から、170年前の目へ。資料をつなぐ前に、時代・場所・言葉が本当につながるかを確かめる。",
 };
 
 export const viewport: Viewport = {
@@ -14,7 +23,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ja" className="h-full antialiased">
+    <html lang="ja" className={`h-full antialiased ${mincho.variable} ${garamond.variable} ${gothic.variable} ${hand.variable}`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

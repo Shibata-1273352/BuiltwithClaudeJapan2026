@@ -21,8 +21,28 @@
   --color-koto: var(--thread-koto);
   --color-ma: var(--thread-ma);
   --color-lantern: var(--lantern);
-  --font-sans: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
-  --font-serif: "Hiragino Mincho ProN", "Noto Serif JP", "Times New Roman", serif;
+  --font-sans: var(--nf-gothic), "Hiragino Sans", system-ui, sans-serif;
+  --font-serif: var(--nf-garamond), var(--nf-mincho), "Hiragino Mincho ProN", serif;
+  --font-hand: var(--nf-hand), "Klee One", "Hiragino Maru Gothic ProN", cursive;
+  --color-night-2: #151c33;
+  --color-ink: #0a0f1d;
+}
+
+/* 6.1: light floats like lanterns on the night (desktop only: glow is costly on phones) */
+@media (min-width: 1024px) {
+  .glow {
+    filter: drop-shadow(0 0 6px color-mix(in srgb, currentColor 55%, transparent));
+  }
+  .lantern-halo {
+    box-shadow: 0 0 60px -10px color-mix(in srgb, var(--lantern) 45%, transparent);
+  }
+}
+/* presenter (FR-46, P key / ?present=1): larger type for 1920x1080 */
+html[data-present] {
+  font-size: 22px;
+}
+html[data-present] .present-hide {
+  display: none !important;
 }
 
 body {
@@ -54,5 +74,40 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* 6.3: while Claude reads the photo — a lantern-colored sweep over a faint grid */
+.scan-sweep {
+  top: -6rem;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--lantern) 38%, transparent) 70%, var(--lantern) 72%, transparent 74%);
+  animation: scan-sweep 2.4s ease-in-out infinite;
+}
+@keyframes scan-sweep {
+  to {
+    top: 100%;
+  }
+}
+.scan-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--paper) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--paper) 12%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.scan-sweep {
+  box-shadow: 0 6px 18px -6px var(--lantern);
+}
+/* a waiting cell: light passes over it */
+.shimmer {
+  background-image: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--paper) 10%, transparent) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
   }
 }

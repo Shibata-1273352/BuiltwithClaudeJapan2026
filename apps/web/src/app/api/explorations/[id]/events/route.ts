@@ -1,4 +1,5 @@
 import { eventsAfter, subscribe, TERMINAL, type StoredEvent } from "@/lib/dag/events";
+import { isDemoReplay } from "@/lib/demo";
 import { isPresenter } from "@/lib/presenter";
 import { replaySchedule } from "@/lib/replay";
 import { sessionId } from "@/lib/session";
@@ -13,9 +14,11 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
   const { id } = await ctx.params;
   const sid = await sessionId();
   const presenter = await isPresenter(); // read-only presentation mode (FR-46)
-  if ((!sid && !presenter) || !/^exp_[0-9a-f]{20}$/.test(id)) return new Response(null, { status: 404 });
+  // the one public recording (DEMO_REPLAY_ID) may be replayed by anyone, but only as a recording
+  const demo = isDemoReplay(id) && new URL(req.url).searchParams.get("pace") === "replay";
+  if ((!sid && !presenter && !demo) || !/^exp_[0-9a-f]{20}$/.test(id)) return new Response(null, { status: 404 });
   const owner = store().prepare("SELECT session_id FROM explorations WHERE id = ?").get(id) as { session_id: string } | undefined;
-  if (!owner || (!presenter && owner.session_id !== sid)) return new Response(null, { status: 404 });
+  if (!owner || (!presenter && !demo && owner.session_id !== sid)) return new Response(null, { status: 404 });
 
   const url = new URL(req.url);
   const after = Number(req.headers.get("last-event-id") ?? url.searchParams.get("after") ?? 0) || 0;

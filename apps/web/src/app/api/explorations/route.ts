@@ -1,9 +1,6 @@
-import { randomUUID } from "node:crypto";
 import { getCapture } from "@/lib/captures";
-import { runExploration } from "@/lib/dag/run";
-import { checkGuards } from "@/lib/guards";
+import { startExploration } from "@/lib/explorations/start";
 import { sessionId } from "@/lib/session";
-import { store } from "@/lib/store";
 
 /** Start an exploration for one of this session's captures. Returns immediately; progress via SSE. */
 export async function POST(req: Request) {
@@ -19,13 +16,7 @@ export async function POST(req: Request) {
   if (typeof captureId !== "string" || !/^cap_[0-9a-f]{20}$/.test(captureId)) return Response.json({ error: "bad capture_id" }, { status: 400 });
   const cap = getCapture(captureId, sid);
   if (!cap) return Response.json({ error: "not_found" }, { status: 404 });
-  const g = checkGuards();
-  if (!g.ok) return Response.json({ error: g.reason }, { status: g.reason === "killed" ? 503 : 429 });
-
-  const id = `exp_${randomUUID().replace(/-/g, "").slice(0, 20)}`;
-  store()
-    .prepare("INSERT INTO explorations (id, capture_id, session_id, status, created_at) VALUES (?,?,?,?,?)")
-    .run(id, cap.id, sid, "running", new Date().toISOString());
-  void runExploration(id, cap); // background; the DAG enforces its own deadline
-  return Response.json({ exploration_id: id, events: `/api/explorations/${id}/events` }, { status: 202 });
+  const r = startExploration(cap, sid);
+  if (!r.ok) return Response.json({ error: r.error }, { status: r.status });
+  return Response.json({ exploration_id: r.exploration_id, events: r.events }, { status: 202 });
 }

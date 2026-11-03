@@ -5,28 +5,8 @@
 import { EventEmitter } from "node:events";
 import { store } from "../store";
 
-export type EventType =
-  | "received"
-  | "stage"
-  | "see"
-  | "place"
-  | "plan"
-  | "candidates"
-  | "gap"
-  | "claims"
-  | "existence"
-  | "conflicts"
-  | "threads"
-  | "names"
-  | "timeline"
-  | "space"
-  | "visual"
-  | "narrative"
-  | "graph"
-  | "ai_call"
-  | "notice"
-  | "done"
-  | "failed";
+export { EVENT_TYPES, type EventType } from "./event-types";
+import type { EventType } from "./event-types";
 
 export type StoredEvent = { seq: number; type: EventType; data: unknown; ts: string };
 

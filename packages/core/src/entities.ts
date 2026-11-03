@@ -22,6 +22,16 @@ export const EntitySeed = z.object({
   coords: z.object({ lat: z.number(), lon: z.number() }).optional(),
   external_ids: z.record(z.string(), z.string()).optional(),
   names: z.array(NameUsageSeed),
+  /** FR-35: an artwork's viewpoint, hand-written in pencil with its premises (never evidence) */
+  viewpoint_note: z
+    .object({
+      ja: z.string(),
+      en: z.string(),
+      facing: z.string(),
+      premises: z.array(z.object({ ja: z.string(), en: z.string() })),
+      annotated_by: z.string(),
+    })
+    .optional(),
 });
 
 export const EntityDictionary = z.object({

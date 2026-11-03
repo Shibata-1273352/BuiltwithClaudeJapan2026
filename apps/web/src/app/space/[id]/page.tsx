@@ -5,6 +5,7 @@ import { sourceTitles } from "@/lib/corpus/titles";
 import { readCacheJson } from "@/lib/data-files";
 import { entities } from "@/lib/entities-server";
 import { timelineData } from "@/lib/timeline-server";
+import { demoCaptureId } from "@/lib/demo";
 import { isPresenter } from "@/lib/presenter";
 import type { SceneJson } from "@/lib/scene";
 import { sessionId } from "@/lib/session";
@@ -21,7 +22,7 @@ async function Scene({ params, searchParams }: { params: Promise<{ id: string }>
   if (id.startsWith("cap_")) {
     const presenter = await isPresenter();
     const sid = await sessionId();
-    const own = presenter || (sid && store().prepare("SELECT 1 FROM captures WHERE id = ? AND session_id = ?").get(id, sid));
+    const own = presenter || id === demoCaptureId() || (sid && store().prepare("SELECT 1 FROM captures WHERE id = ? AND session_id = ?").get(id, sid));
     if (!own) notFound();
     // the subject is the place the exploration of this photo settled on
     const row = store().prepare("SELECT result_json FROM explorations WHERE capture_id = ? AND result_json IS NOT NULL ORDER BY created_at DESC LIMIT 1").get(id) as
