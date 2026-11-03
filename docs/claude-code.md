@@ -18,6 +18,14 @@ traveler would rely on in code. The live stage shows the same split while it run
 
 API features in use (each chosen for a reason):
 
+- **Native citations** (`search_result` blocks, one text block per sentence) for 「糸を引く」:
+  Claude answers a visitor's question from this run's passages only; code keeps a citation only if
+  its quote is in the corpus, and with none left the answer is "not in the sources" (`lib/ask.ts`).
+- **Model split**: Opus to read the photo and write the story; Sonnet for the gap judgment, the
+  viewpoint and the guide notes (Opus in fast mode for the live demo).
+- **Fast mode** (`speed: "fast"`) only for the live demo, retried at standard speed on rate limits.
+- **Streaming** of the reading and the story, so the first answer appears within seconds.
+
 - **Structured outputs** (`betaZodOutputFormat` / `zodOutputFormat`): every Claude answer is a
   zod schema; code validation runs on top.
 - **Server-side fallback** (`server-side-fallback-2026-07-01`, `fallbacks: "default"`): a live
@@ -47,3 +55,23 @@ API features in use (each chosen for a reason):
 - **Guard rails while working autonomously.** A gitleaks pre-commit hook (lefthook); `.env` is
   written only by a human; no destructive commands; costs reported per run
   (one live sample run ≈ $0.24).
+
+
+## What Claude Code made possible in the final week (2026-11-03/04)
+
+- **A judge's eye on demand.** The `design-critic` subagent (`.claude/agents/design-critic.md`)
+  reviewed the real screenshots against the CLAUDE.md design rules and the judging criteria three
+  times. Each round found what we no longer saw: a dashboard-like stage, raw scores on screen, a
+  seam where the print met the photo, the friend's second question unanswered in presenter mode.
+- **Rules that hold while moving fast.** A PostToolUse hook (`.claude/settings.json`) runs the
+  design rules test after every edit of a screen file and feeds a failure back to Claude in the
+  same turn, so a 4K pass or a new panel cannot quietly break the type scale or the glow rule.
+- **Knowing what to check.** The `tsumugi-verify` skill maps each kind of change to its check
+  script and its Claude cost; `scripts/acceptance.ts` runs all twelve screen checks in one go.
+- **Parallel work without collisions.** A subagent converted the remaining screens to ja/en while
+  the main thread built the cited Q&A; another scanned the requirements for unimplemented P0/P1
+  items (it found FR-16, now shown in the time panel). A second build directory (`NEXT_DIST_DIR`)
+  let the work build run beside the one the user was reviewing.
+- **Measured, not guessed.** Every performance change was profiled from the stored stage events
+  before and after (`scripts/profile-run.ts`): moving 間 to the start of the run and adding the
+  `/align` endpoint took the demo run from 24.8 s to 13.6–16.3 s.
