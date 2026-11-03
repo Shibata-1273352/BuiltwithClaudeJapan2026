@@ -40,7 +40,9 @@ def main() -> None:
     if sys.argv[1] == "build":
         gallery = json.loads((REPO / "corpus" / "visual-gallery.json").read_text())["items"]
         t0 = time.perf_counter()
-        info = visual.build_index(model, proc, device, gallery, DATA / "cache" / "visual" / "images", OUT)
+        lp = DATA / "cache" / "visual" / "lanterns.json"
+        lanterns = json.loads(lp.read_text())["items"] if lp.exists() and "--no-sam" not in sys.argv else None
+        info = visual.build_index(model, proc, device, gallery, DATA / "cache" / "visual" / "images", OUT, lanterns)
         print(json.dumps({**info, "seconds": round(time.perf_counter() - t0, 1)}))
     elif sys.argv[1] == "check":
         # FR-58 acceptance: the lantern cut-out of each scene finds a lantern print within the top 5.

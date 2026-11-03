@@ -10,6 +10,7 @@ import type { SeeOutput } from "@tsumugi/core";
 import type { Retrieved } from "@/lib/dag/retrieve";
 import type { ExistenceRow, Thread } from "@/lib/dag/threads";
 import type { TimelineData } from "@/lib/time-river";
+import { VisualHitCard, type VisualHit } from "./visual-hit";
 import { TimeRiver } from "./time-river";
 
 type CandidatesEvent = { facet: string; lang: "en" | "ja"; widened: string[]; found: number; notFound: boolean; candidates: Retrieved[] };
@@ -140,7 +141,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   const names = pick<NamesEvent>("names");
   const timelineData = pick<TimelineData>("timeline");
   const space = pick<{ ok: boolean; url?: string; aligned?: boolean; message?: string }>("space");
-  const visual = pick<{ element: string; hits: { id: string; title: string; commons: string; score: number; file: string }[] }>("visual");
+  const visual = pick<{ element: string; hits: VisualHit[] }>("visual");
 
   async function switchLang(next: "ja" | "en") {
     setLang(next);
@@ -304,14 +305,7 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
           <p className="text-xs text-muted">切り抜いた大提灯に似た図像（画像の類似度。根拠ではありません）</p>
           <ul className="mt-2 flex gap-3 overflow-x-auto pb-2">
             {visual.hits.map((h) => (
-              <li key={h.id} className="w-32 shrink-0 text-xs">
-                <a href={h.commons} target="_blank" rel="noreferrer noopener">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
-                  <img src={`/api/cache/visual/images/${h.file}`} alt={h.title} className="h-40 w-32 rounded object-cover" />
-                  <span className="mt-1 block leading-snug">{h.title}</span>
-                </a>
-                <span className="text-muted tabular-nums">類似度 {h.score.toFixed(2)}</span>
-              </li>
+              <VisualHitCard key={h.id} h={h} />
             ))}
           </ul>
         </section>

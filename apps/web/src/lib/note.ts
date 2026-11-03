@@ -55,7 +55,7 @@ export type Note = {
   see: { label: string; text_original: string | null; reading: string | null; meaning: { ja: string; en: string } | null }[];
   space: { url: string; aligned: boolean; elements: string[] } | null;
   /** FR-58: prints that look like the cut-out lantern (similarity, not evidence) */
-  visual: { id: string; title: string; commons: string; score: number; file: string }[];
+  visual: { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[] }[];
   narratives: Partial<Record<Lang, NarrativeLike>>;
   cites: Record<string, Cite>;
   threads: { id: string; layer: string; state: string; label: { ja: string; en: string } }[];

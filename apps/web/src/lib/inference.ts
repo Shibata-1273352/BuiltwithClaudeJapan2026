@@ -32,6 +32,7 @@ const VisualResponse = z.object({
         file: z.string().regex(/^[a-z0-9][a-z0-9_.-]{0,63}\.jpg$/),
         score: z.number(),
         crop: z.string().max(16),
+        box: z.array(z.number().min(0).max(1)).length(4).default([0, 0, 1, 1]),
       }),
     )
     .max(10),

@@ -50,32 +50,42 @@ def embed(model, proc, device: torch.device, images: list[Image.Image], batch: i
     return np.concatenate(out) if out else np.zeros((0, 768), dtype=np.float32)
 
 
-def crops(img: Image.Image) -> list[tuple[str, Image.Image]]:
+def crops(img: Image.Image, lanterns: list[dict] | None = None) -> list[tuple[str, Image.Image, list[float]]]:
+    """(name, image, normalized box). Grid tiles at two scales, plus the lanterns SAM 3 found in the
+    print (FR-58: the photo's lantern is compared with the print's lantern itself)."""
     w, h = img.size
-    out = [("full", img)]
+    out = [("full", img, [0.0, 0.0, 1.0, 1.0])]
     for g in GRIDS:
         tw, th = w / (g - (g - 1) / 3), h / (g - (g - 1) / 3)  # tiles overlap by a third
         sx, sy = (w - tw) / max(1, g - 1), (h - th) / max(1, g - 1)
         for r in range(g):
             for c in range(g):
                 x, y = c * sx, r * sy
-                out.append((f"g{g}r{r}c{c}", img.crop((round(x), round(y), round(x + tw), round(y + th)))))
+                out.append((f"g{g}r{r}c{c}", img.crop((round(x), round(y), round(x + tw), round(y + th))), [x / w, y / h, (x + tw) / w, (y + th) / h]))
+    for k, lan in enumerate(lanterns or []):
+        x1, y1, x2, y2 = lan["bbox"]
+        mx, my = (x2 - x1) * 0.1, (y2 - y1) * 0.1  # a little context around the lantern
+        b = [max(0.0, x1 - mx), max(0.0, y1 - my), min(1.0, x2 + mx), min(1.0, y2 + my)]
+        if (b[2] - b[0]) * w < 16 or (b[3] - b[1]) * h < 16:
+            continue
+        out.append((f"sam{k}", img.crop((round(b[0] * w), round(b[1] * h), round(b[2] * w), round(b[3] * h))), b))
     return out
 
 
-def build_index(model, proc, device, gallery: list[dict], image_dir: Path, out: Path) -> dict:
-    vecs, owners, names = [], [], []
+def build_index(model, proc, device, gallery: list[dict], image_dir: Path, out: Path, lanterns: dict | None = None) -> dict:
+    vecs, owners, names, boxes = [], [], [], []
     for i, item in enumerate(gallery):
         img = Image.open(image_dir / item["file"]).convert("RGB")
-        cs = crops(img)
-        vecs.append(embed(model, proc, device, [c for _, c in cs]))
+        cs = crops(img, (lanterns or {}).get(item["id"]))
+        vecs.append(embed(model, proc, device, [c for _, c, _ in cs]))
         owners += [i] * len(cs)
-        names += [n for n, _ in cs]
+        names += [n for n, _, _ in cs]
+        boxes += [[round(v, 4) for v in b] for _, _, b in cs]
     mat = np.concatenate(vecs).astype(np.float32)
     out.mkdir(parents=True, exist_ok=True)
     np.save(out / "vectors.npy", mat)
-    (out / "index.json").write_text(json.dumps({"model": LOCK[MODEL_KEY], "items": gallery, "owners": owners, "crops": names}, ensure_ascii=False))
-    return {"items": len(gallery), "crops": len(owners), "dim": int(mat.shape[1])}
+    (out / "index.json").write_text(json.dumps({"model": LOCK[MODEL_KEY], "items": gallery, "owners": owners, "crops": names, "boxes": boxes, "sam_lanterns": bool(lanterns)}, ensure_ascii=False))
+    return {"items": len(gallery), "crops": len(owners), "dim": int(mat.shape[1]), "sam_crops": sum(n.startswith("sam") for n in names)}
 
 
 class Index:
@@ -92,4 +102,13 @@ class Index:
             if o not in best or s > best[o][0]:
                 best[o] = (float(s), j)
         ranked = sorted(best.items(), key=lambda kv: -kv[1][0])[:k]
-        return [{**{x: self.meta["items"][o][x] for x in ("id", "title", "commons", "license", "file")}, "score": round(s, 4), "crop": self.meta["crops"][j]} for o, (s, j) in ranked]
+        boxes = self.meta.get("boxes")
+        return [
+            {
+                **{x: self.meta["items"][o][x] for x in ("id", "title", "commons", "license", "file")},
+                "score": round(s, 4),
+                "crop": self.meta["crops"][j],
+                "box": boxes[j] if boxes else [0.0, 0.0, 1.0, 1.0],
+            }
+            for o, (s, j) in ranked
+        ]

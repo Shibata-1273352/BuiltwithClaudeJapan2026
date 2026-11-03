@@ -227,6 +227,7 @@ class VisualHit(BaseModel):
     file: str
     score: float
     crop: str
+    box: list[float] = Field(min_length=4, max_length=4, description="normalized x1,y1,x2,y2 of the matching crop")
 
 
 class VisualOut(BaseModel):

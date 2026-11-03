@@ -6,6 +6,7 @@
  */
 import { useEffect, useState } from "react";
 import type { Cite, Lang, Note, NarrativeLike } from "@/lib/note";
+import { VisualHitCard } from "../../visual-hit";
 
 const T = {
   ja: {
@@ -177,13 +178,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
           <h2 className="mb-3 font-serif text-xl">{t.visual}</h2>
           <ul className="flex gap-3 overflow-x-auto pb-2">
             {note.visual.map((h) => (
-              <li key={h.id} className="w-28 shrink-0 text-xs">
-                <a href={h.commons} target="_blank" rel="noreferrer noopener">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
-                  <img src={`/api/cache/visual/images/${h.file}`} alt={h.title} className="h-36 w-28 rounded object-cover" />
-                  <span className="mt-1 block leading-snug">{h.title}</span>
-                </a>
-              </li>
+              <VisualHitCard key={h.id} h={h} width="w-28" />
             ))}
           </ul>
         </section>

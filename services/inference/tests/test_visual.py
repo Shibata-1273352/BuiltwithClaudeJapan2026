@@ -10,10 +10,18 @@ import visual
 
 def test_crops_cover_full_and_two_grids():
     cs = visual.crops(Image.new("RGB", (300, 450)))
-    assert [n for n, _ in cs][:1] == ["full"]
+    assert [n for n, _, _ in cs][:1] == ["full"]
     assert len(cs) == 1 + 2 * 2 + 3 * 3
-    for _, c in cs[1:]:
+    for _, c, _ in cs[1:]:
         assert 0 < c.width <= 300 and 0 < c.height <= 450
+
+
+def test_sam_lanterns_become_extra_crops_with_their_box():
+    cs = visual.crops(Image.new("RGB", (300, 450)), [{"score": 0.9, "bbox": [0.2, 0.0, 0.6, 0.3]}, {"score": 0.6, "bbox": [0.0, 0.0, 0.01, 0.01]}])
+    sam = [(n, b) for n, _, b in cs if n.startswith("sam")]
+    assert len(sam) == 1  # the tiny one is skipped
+    name, box = sam[0]
+    assert name == "sam0" and box[0] < 0.2 and box[2] > 0.6 and box[1] == 0.0  # 10% margin, clipped
 
 
 def test_item_score_is_its_best_crop(tmp_path):
