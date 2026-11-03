@@ -39,7 +39,8 @@ function quickYears(d: TimelineData): number[] {
   ].filter((y) => y >= FROM && y <= TO);
   return [...new Set(ys)].sort((a, b) => a - b).slice(0, 9);
 }
-const COLOR = { present: "var(--thread-toki)", absent: "var(--thread-ba)", unknown: "var(--muted)", withheld: "var(--muted)" } as const;
+// absent is a line style (dashed) in paper, not vermilion (CLAUDE.md design 4)
+const COLOR = { present: "var(--thread-toki)", absent: "color-mix(in srgb, var(--paper) 55%, transparent)", unknown: "var(--muted)", withheld: "var(--muted)" } as const;
 
 export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; initialYear?: number }) {
   const [year, setYear] = useState(initialYear);
@@ -60,7 +61,9 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
   const gy = 18;
   const px = x(year);
   const midX = (gx + px) / 2;
-  const midY = (gy + RIVER_Y) / 2 - 10;
+  const r = Math.min(36, Math.max(0, gx - px));
+  /** horizontal at the top from x0, a curved corner, then straight down to the year marker */
+  const drop = (x0: number) => (x0 - px > r ? `M ${x0} ${gy} H ${px + r} Q ${px} ${gy} ${px} ${gy + r} V ${RIVER_Y - 14}` : `M ${px} ${gy} V ${RIVER_Y - 14}`);
   const broken = s.state === "absent";
 
   return (
@@ -122,17 +125,17 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
           いまの{data.name?.ja ?? "門"}
         </text>
         <circle cx={gx} cy={gy} r={5} fill="var(--thread-toki)" />
-        {/* the thread */}
+        {/* the thread: from today's gate along the top, then down to the chosen year (above every label) */}
         {broken ? (
           <g className="thread-break" data-testid="thread" data-state="broken">
-            <path d={`M ${gx} ${gy} Q ${(gx + midX) / 2} ${gy + 8} ${midX + 18} ${midY - 6}`} stroke="var(--thread-ba)" strokeWidth={3} fill="none" />
-            <path d={`M ${midX - 18} ${midY + 6} Q ${(midX + px) / 2} ${RIVER_Y - 6} ${px} ${RIVER_Y}`} stroke="var(--thread-ba)" strokeWidth={3} fill="none" />
+            <path d={`M ${gx} ${gy} H ${midX + 14}`} stroke="var(--thread-toki)" strokeWidth={3} fill="none" />
+            <path d={drop(midX - 14)} stroke="var(--thread-toki)" strokeWidth={3} fill="none" strokeDasharray="6 6" />
           </g>
         ) : (
           <path
             data-testid="thread"
             data-state={s.state === "present" ? "intact" : "faint"}
-            d={`M ${gx} ${gy} Q ${midX} ${midY} ${px} ${RIVER_Y}`}
+            d={drop(gx)}
             stroke={COLOR[s.state]}
             strokeWidth={s.state === "present" ? 3.5 : 2}
             strokeDasharray={s.state === "present" ? undefined : "3 7"}

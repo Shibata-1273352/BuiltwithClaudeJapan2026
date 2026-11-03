@@ -236,8 +236,10 @@ export function SpaceViewer({
     const k = depthCompensation(artZ);
     return framePlane({ x: artRect.x * k, y: artRect.y * k, w: artRect.w * k, h: artRect.h * k }, artZ, 30, aspect);
   }, [artRect, artZ, aspect]);
+  // the year readout follows what is shown: inside the print it is the print's year
   const go = (into: boolean) => {
     setInside(into);
+    setYear(into ? 1856 : 2026);
     setMoving(performance.now());
   };
   const elements = Object.entries(scene.elements).sort((a, b) => LAYER_Z[a[1].layer] - LAYER_Z[b[1].layer]);
@@ -251,6 +253,7 @@ export function SpaceViewer({
     if (!autoEnter || !align) return;
     const t = setTimeout(() => {
       setInside(true);
+      setYear(1856);
       setMoving(performance.now());
     }, 1800);
     return () => clearTimeout(t);
