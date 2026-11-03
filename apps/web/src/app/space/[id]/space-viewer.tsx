@@ -162,14 +162,24 @@ function Fps({ onFps }: { onFps: (n: number) => void }) {
 }
 
 /** FR-37: the same photo and overlay without WebGL (rect = the print's place in the photo, normalized). */
-function Flat2D({ photo, art, rect, overlay, reason, inside = false }: { photo: string; art: string | null; rect: [number, number, number, number] | null; overlay: number; reason: string; inside?: boolean }) {
+function Flat2D({ photo, art, rect, overlay, reason, inside = false, onTry3d }: { photo: string; art: string | null; rect: [number, number, number, number] | null; overlay: number; reason: string; inside?: boolean; onTry3d?: () => void }) {
+  const why = (
+    <p className="flex items-center gap-3 text-caption text-muted">
+      {reason}
+      {onTry3d && (
+        <Button variant="quiet" onClick={onTry3d} data-testid="space-try-3d">
+          3Dで見る
+        </Button>
+      )}
+    </p>
+  );
   // inside the painting there is only the painting: the whole print, not its place over the photo
   if (inside && art)
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-4" data-testid="space-2d">
         {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print */}
         <img src={art} alt="歌川広重《浅草金龍山》" className="block max-h-[80vh] w-auto rounded-sm" />
-        <p className="text-caption text-muted">{reason}</p>
+        {why}
       </div>
     );
   return (
@@ -187,7 +197,7 @@ function Flat2D({ photo, art, rect, overlay, reason, inside = false }: { photo: 
           />
         )}
       </div>
-      <p className="text-caption text-muted">{reason}</p>
+      {why}
     </div>
   );
 }
@@ -232,10 +242,18 @@ export function SpaceViewer({
   // FR-37: a device that cannot keep 30 fps (e.g. an older phone) gets the 2D view
   const fpsLog = useRef<number[]>([]);
   const [flat, setFlat] = useState(force2d);
+  const [kept3d, setKept3d] = useState(false); // the visitor chose 3D after a fallback: never fall again
+  const mountedAt = useRef(0);
+  useEffect(() => {
+    mountedAt.current = performance.now();
+  }, []);
   const setFps = (n: number) => {
     setFpsState(n);
+    // heavy moments are not the device's steady speed: loading, the camera move, the print opening, a hidden tab
+    const now = performance.now();
+    if (document.visibilityState !== "visible" || moving || now - mountedAt.current < 4000 || (opened && now - opened < 2500)) return;
     fpsLog.current.push(n);
-    if (!flat && !force3d && shouldFall2D(fpsLog.current)) setFlat(true);
+    if (!flat && !force3d && !kept3d && shouldFall2D(fpsLog.current, 24, 5)) setFlat(true);
   };
   const [people, setPeople] = useState(1); // FR-36: fade the crowd only
   const hasPeople = Boolean(scene.elements.people);
@@ -278,7 +296,11 @@ export function SpaceViewer({
     <div className="flex flex-1 flex-col lg:flex-row">
       <div className="relative h-[70vh] flex-1 lg:h-auto">
         {flat ? (
-          <Flat2D photo={file(scene.photo)} art={align ? `/api/cache/artifacts/${align.artifact}/image.jpg` : null} rect={align ? artifactRectInPhoto(align) : null} overlay={overlayEff} inside={inside} reason={force2d ? "指定により2D表示" : "この端末では3Dが30fpsに届かないため、2D表示に切り替えました"} />
+          <Flat2D photo={file(scene.photo)} art={align ? `/api/cache/artifacts/${align.artifact}/image.jpg` : null} rect={align ? artifactRectInPhoto(align) : null} overlay={overlayEff} inside={inside} reason={force2d ? "指定により2D表示" : "この端末では3Dの動きが重いため、2D表示に切り替えました"} onTry3d={force2d ? undefined : () => {
+            fpsLog.current = [];
+            setKept3d(true);
+            setFlat(false);
+          }} />
         ) : (
         <Canvas camera={{ position: [0, 0, CAMERA_Z], fov: 30 }} dpr={[1, 2]} gl={{ antialias: true }}>
           <color attach="background" args={["#0e1426"]} />
