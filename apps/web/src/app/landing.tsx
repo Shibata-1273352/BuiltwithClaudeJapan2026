@@ -21,28 +21,26 @@ const T = dict({
     origin: "はじまり",
     scene: "浅草で、外国人の友人に「これ、なんて書いてあるの？　いつからあるの？」と聞かれて、答えられなかった。",
     sceneBy: "── 作者の体験",
-    career: "通信事業者で、人と人をつなぐ仕事をしてきました。いまつなぎたいのは、時と、場所と、人です。TSUMUGI は「紡ぐ」から。",
+    career: "通信事業者で、人と人をつないできた。いま紡ぎたいのは、時と、場所と、人。",
     hero: (
       <>
-        撮るだけで、
+        <span className="text-lantern">時と場所</span>を読み、
         <br />
-        目の前の日本が、
-        <br />
-        <span className="text-lantern">意味と物語</span>になる。
+        言葉の壁を越える。
       </>
     ),
-    sub: "看板の字を読み、文化をガイドし、明治の旅行記や江戸の浮世絵が語るこの場所の昔まで。歴史は、一文ずつ原典で確かめます。",
+    sub: "撮った場所が、いつ、何だったのか。日英の原典で確かめて、あなたの言葉で。",
     trySample: "雷門で試す",
     heroAlt: "TSUMUGI の画面：写真の文字の読み、いつからあるか、資料へ伸びる糸",
     own: "カメラで撮る",
     sampleNote: "例の写真は Wikimedia Commons の CC0。その場でライブに解析します。",
     moments: [
-      { img: "read", title: "読める、わかる", body: "看板の字の読みと意味、漢字のなりたち、その場でできること。" },
-      { img: "time", title: "時を超える", body: "いまの門はいつからあるのか。明治の旅行者は、門のない浅草を歩いていた。" },
-      { img: "postcard", title: "持ち帰る", body: "触れて、聞いて、確かめた一文を、絵はがきと旅ノートに。" },
+      { img: "time", title: "時を越える", body: "明治の旅人が歩いた日、ここに常設の門はなかった。" },
+      { img: "read", title: "言葉を越える", body: "縦書きの筆文字も、明治の英文も。" },
+      { img: "postcard", title: "持ち帰る", body: "確かめた一文を、絵はがきに。" },
     ],
     trustTitle: "安心して使える理由",
-    trust: "Claude が写真を読み、文化を解説し、物語を書きます。その年に本当にあったか、引用が原文どおりかは、コードが確かめます。資料にないことは「書かれていません」と答えます。",
+    trust: "読むのは Claude、確かめるのはコード。資料にないことは「書かれていません」。",
     numbers: (f: LandingFacts) => [
       { v: `${f.citationExactPct}%`, l: `引用が原文と一致（${f.citationN} 件）` },
       { v: `${f.rejected}/${f.fabricated}`, l: "作られた引用を拒否" },
@@ -51,10 +49,10 @@ const T = dict({
     evalNote: (run: string) => `評価：Batch API による一括評価（${run}）`,
     howLink: "しくみを見る",
     whereTitle: "いま使える場所",
-    full: (f: LandingFacts) => `資料と年表がそろっている場所：${f.places.map((p) => p.ja).join("、")}（日英の資料 ${f.sources} 点）`,
-    elsewhere: "それ以外の場所でも、写真の文字の読みとガイドは使えます。歴史は、資料がそろった場所だけで確かめます。",
+    full: (f: LandingFacts) => `${f.places.map((p) => p.ja).join("、")}（日英の資料 ${f.sources} 点）`,
+    elsewhere: "ほかの場所では、文字の読みとガイドだけ。",
     captureTitle: "目の前の景色を、一枚",
-    captureNote: "写真は端末の中で縮小・位置情報の除去・顔のぼかしをしてから送ります。",
+    captureNote: "位置情報は消し、顔はぼかしてから送ります。",
   },
   en: {
     nav: "Pages",
@@ -63,28 +61,26 @@ const T = dict({
     origin: "Where it began",
     scene: "In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer.",
     sceneBy: "— the maker’s own experience",
-    career: "My career has been at a telecom carrier — the job of connecting people. What I want to connect now is time, place and people. TSUMUGI comes from tsumugu, to weave.",
+    career: "I have spent my career at a telecom carrier, connecting people. Now I want to weave together time, place and people.",
     hero: (
       <>
-        Just take a photo —
+        Read <span className="text-lantern">time and place</span>.
         <br />
-        the Japan in front of you
-        <br />
-        turns into <span className="text-lantern">meaning and story</span>.
+        Cross the language barrier.
       </>
     ),
-    sub: "It reads the signs, guides you through the culture, and tells what Meiji-era travellers and Edo prints saw here. The history is checked, sentence by sentence, against the original sources.",
+    sub: "When was this place, and what was it? Checked in Japanese and English sources, told in your language.",
     trySample: "Try it at Kaminarimon",
     heroAlt: "The TSUMUGI stage: the words in the photo read, how long it has stood, threads to the sources",
     own: "Open the camera",
     sampleNote: "The example photo is CC0 from Wikimedia Commons, analysed live.",
     moments: [
-      { img: "read", title: "Read and understand", body: "What the sign says, what it means, how its kanji are built, and what to try right there." },
-      { img: "time", title: "Across time", body: "How long has this gate stood? A traveller of the Meiji era walked an Asakusa with no gate." },
-      { img: "postcard", title: "Take it home", body: "Touch, ask, and keep the checked sentence on a postcard and in your travel note." },
+      { img: "time", title: "Across time", body: "When a Meiji-era traveller walked here, no permanent gate stood." },
+      { img: "read", title: "Across languages", body: "Vertical brush lettering, Meiji-era English." },
+      { img: "postcard", title: "Take it home", body: "The checked sentence, on a postcard." },
     ],
     trustTitle: "Why you can rely on it",
-    trust: "Claude reads the photo, explains the culture and writes the story. Whether it stood that year, and whether a quote is the source’s own words, is checked by code. What the sources do not say, it says it does not know.",
+    trust: "Claude reads; code checks. What the sources do not say, it says so.",
     numbers: (f: LandingFacts) => [
       { v: `${f.citationExactPct}%`, l: `quotes match the original (${f.citationN})` },
       { v: `${f.rejected}/${f.fabricated}`, l: "fabricated quotes rejected" },
@@ -93,10 +89,10 @@ const T = dict({
     evalNote: (run: string) => `Evaluation: one batch run with the Batch API (${run})`,
     howLink: "See how it works",
     whereTitle: "Where it works today",
-    full: (f: LandingFacts) => `With sources and a reviewed timeline: ${f.places.map((p) => p.en).join(", ")} (${f.sources} Japanese and English sources)`,
-    elsewhere: "Anywhere else, the reading of the words in the photo and the guide still work. History is checked only where the sources are in place.",
+    full: (f: LandingFacts) => `${f.places.map((p) => p.en).join(", ")} (${f.sources} Japanese and English sources)`,
+    elsewhere: "Elsewhere: the reading and the guide only.",
     captureTitle: "The view in front of you, in one photo",
-    captureNote: "Your photo is resized, stripped of location data and face-blurred on your device before it is sent.",
+    captureNote: "Location removed and faces blurred before sending.",
   },
 });
 

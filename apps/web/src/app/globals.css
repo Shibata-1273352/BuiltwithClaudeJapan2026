@@ -72,6 +72,10 @@ html[data-present] {
   }
 }
 
+/* the quiet actions stay on one line in presenter mode (the video) */
+html[data-present] .quiet-row > * {
+  font-size: var(--text-small);
+}
 html[data-present] .present-hide {
   display: none !important;
 }

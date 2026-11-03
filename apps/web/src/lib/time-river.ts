@@ -147,6 +147,19 @@ const EV_EN: Record<string, string> = { rebuilt: "rebuilt", built: "built", move
  * that reaches today, the event that opened it, and the period before it with the event that closed it.
  * Null when the timeline has no present period reaching `now`.
  */
+/**
+ * In an absent year, was a temporary structure standing in the interim? The year of the first
+ * temporary event after the last loss up to `year` (e.g. 1868 for 1878 at Kaminarimon), or null.
+ * So the headline says "the permanent gate was not there", never "there was no gate".
+ */
+export function interimSince(d: Pick<TimelineData, "events">, year: number): number | null {
+  const y = (e: { time: { start: string } }) => Number(e.time.start.slice(0, 4));
+  const lost = d.events.filter((e) => e.event === "destroyed" && y(e) <= year).sort((a, b) => y(b) - y(a))[0];
+  if (!lost) return null;
+  const tmp = d.events.filter((e) => e.event === "temporary" && y(e) >= y(lost) && y(e) <= year).sort((a, b) => y(a) - y(b))[0];
+  return tmp ? y(tmp) : null;
+}
+
 export function sinceWhen(d: TimelineData, now: number): SinceWhen | null {
   const year = (iso: string | null | undefined) => (iso ? Number(iso.slice(0, 4)) : NaN);
   const present = d.periods.filter((p) => p.state === "present").map((p) => ({ from: year(p.start), to: year(p.end), p }));

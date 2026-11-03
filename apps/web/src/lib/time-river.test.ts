@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { periodsFrom, type ExistenceEvent } from "@tsumugi/core";
 import { describe, expect, it } from "vitest";
-import { labelRows, presentPeriodAround, segments, sinceWhen, yearState, type TimelineData } from "./time-river";
+import { interimSince, labelRows, presentPeriodAround, segments, sinceWhen, yearState, type TimelineData } from "./time-river";
 
 const tl = JSON.parse(readFileSync(path.join(import.meta.dirname, "../../../../corpus/timeline.json"), "utf8"));
 const events = (tl.existence_events as ExistenceEvent[]).filter((e) => e.entity === "ent:kaminarimon");
@@ -78,5 +78,18 @@ describe("since when? (the friend's second question, answered by code)", () => {
   });
   it("no present period reaching today: no answer", () => {
     expect(sinceWhen({ ...d, periods: [] }, 2026)).toBeNull();
+  });
+});
+
+describe("interimSince", () => {
+  const ev = (id: string, event: string, start: string) => ({ id, event, time: { start, end: start }, evidence: [] }) as never;
+  const d = { events: [ev("a", "built", "1795-01-01"), ev("b", "destroyed", "1866-01-28"), ev("c", "temporary", "1868-01-01"), ev("d", "temporary", "1905-01-01"), ev("e", "rebuilt", "1960-05-03")] };
+  it("names the first temporary structure after the loss", () => {
+    expect(interimSince(d, 1878)).toBe(1868);
+    expect(interimSince(d, 1910)).toBe(1868);
+  });
+  it("is null before any temporary structure, or with no loss", () => {
+    expect(interimSince(d, 1867)).toBeNull();
+    expect(interimSince({ events: [ev("a", "built", "1795-01-01")] }, 1878)).toBeNull();
   });
 });

@@ -291,7 +291,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
         </ButtonLink>
       )}
       {finished && expId && s.place && <PostcardButton expId={expId} />}
-      {quiet.length > 0 && <div className="col-span-2 flex flex-wrap items-center gap-x-1 lg:col-auto [&>*]:px-2">{quiet}</div>}
+      {quiet.length > 0 && <div className="quiet-row col-span-2 flex flex-wrap items-center gap-x-1 lg:col-auto [&>*]:px-2">{quiet}</div>}
     </>
   );
 
