@@ -30,7 +30,7 @@ import {
   type TimeValue,
 } from "@tsumugi/core";
 import { z } from "zod";
-import { CLAUDE_MODEL, claude, costOf } from "../../apps/web/src/lib/claude";
+import { CLAUDE_LIGHT_MODEL, CLAUDE_MODEL, claude, costOf } from "../../apps/web/src/lib/claude";
 import { openDb } from "../../apps/web/src/lib/corpus/db";
 import { searchEntities } from "../../apps/web/src/lib/corpus/search";
 import { buildPlan, type FacetPlan } from "../../apps/web/src/lib/dag/plan";
@@ -38,7 +38,7 @@ import { retrieveFacet, type Retrieved } from "../../apps/web/src/lib/dag/retrie
 import { claimThreads, existenceThreads } from "../../apps/web/src/lib/dag/threads";
 import { entities } from "../../apps/web/src/lib/entities-server";
 import { existenceRows } from "../../apps/web/src/lib/existence-rows";
-import { buildExtract, ExtractionOutput, selectForExtraction } from "../../apps/web/src/lib/extract";
+import { buildExtract, chunkForExtraction, ExtractionOutput, selectForExtraction } from "../../apps/web/src/lib/extract";
 import { buildGap, GapOutput, parseGap, searchGaps, summarizeForGap, validateGaps } from "../../apps/web/src/lib/gap";
 import { buildClaimCards, buildNarrate } from "../../apps/web/src/lib/narrate";
 import { store } from "../../apps/web/src/lib/store";
@@ -107,9 +107,9 @@ const state: { batches: Record<string, { id: string; hash: string }>; spent: num
   : { batches: {}, spent: 0 };
 const saveState = () => writeFileSync(statePath, JSON.stringify(state, null, 2));
 
-function params(system: string, user: string, maxTokens: number, effort: "low" | "medium", schema: z.ZodType): Record<string, unknown> {
+function params(system: string, user: string, maxTokens: number, effort: "low" | "medium", schema: z.ZodType, model: string = CLAUDE_MODEL): Record<string, unknown> {
   return {
-    model: CLAUDE_MODEL,
+    model,
     max_tokens: maxTokens,
     thinking: { type: "adaptive" },
     output_config: { effort, format: zodOutputFormat(schema) },
@@ -153,7 +153,7 @@ async function runBatch(stage: string, reqs: Req[]): Promise<Map<string, Res>> {
   for await (const r of await claude().messages.batches.results(id)) {
     if (r.result.type === "succeeded") {
       const m = r.result.message;
-      const cost = costOf(m.usage) * 0.5;
+      const cost = costOf(m.usage, m.model) * 0.5;
       state.spent += cost;
       out.set(r.custom_id, { text: m.content.find((c) => c.type === "text")?.text, stop: m.stop_reason, cost });
     } else out.set(r.custom_id, { text: undefined, stop: null, cost: 0, error: r.result.type });
@@ -347,19 +347,20 @@ for (const t of cases.targets) {
   const bItems: Item[] = B.map((c) => ({ passage: c.passageId, source: c.sourceId, subject: c.matched_entity ?? "", predicate: "mentions", value: null }));
   perTarget[t.id] = { retrieval: r, B_items: itemMetrics(t, bItems) };
   const sel = selectForExtraction(B);
-  const ex = {
-    D_en: buildExtract(db, E, t.entity, sel.filter((c) => c.lang === "en")),
-    D_ja: buildExtract(db, E, t.entity, sel.filter((c) => c.lang === "ja")),
-    N_en: buildExtract(db, E, t.entity, sel.filter((c) => c.lang === "en"), { relations: false }),
-    N_ja: buildExtract(db, E, t.entity, sel.filter((c) => c.lang === "ja"), { relations: false }),
-  };
+  const ex: Record<string, ReturnType<typeof buildExtract>> = {};
+  for (const lang of ["en", "ja"] as const)
+    chunkForExtraction(sel.filter((c) => c.lang === lang)).forEach((part, i) => {
+      ex[`D_${lang}_${i}`] = buildExtract(db, E, t.entity, part);
+      ex[`N_${lang}_${i}`] = buildExtract(db, E, t.entity, part, { relations: false });
+    });
   ctx[t.id] = { plan, B, sel, ex };
   if (NO_LLM) continue;
   reqs1.push({ custom_id: `${t.id}__C`, params: params(SELECT_SYSTEM, selectUser(t.entity, B), 6000, "low", SelectOutput) });
   for (const [k, e] of Object.entries(ex)) if (e.passages.length) reqs1.push({ custom_id: `${t.id}__${k}`, params: params(e.system, e.user, 16000, "low", ExtractionOutput) });
   const summary = summarizeForGap(plan, B, [], B.map((x) => ({ source: x.sourceId, value: existenceFor(t.entity, x.sourceId).value })));
   const g = buildGap(E, t.entity, summary);
-  reqs1.push({ custom_id: `${t.id}__gap`, params: params(g.system, g.user, g.max_tokens, g.effort, GapOutput) });
+  // the gap judgment runs on the light model at standard speed, as in the live DAG
+  reqs1.push({ custom_id: `${t.id}__gap`, params: params(g.system, g.user, g.max_tokens, g.effort, GapOutput, CLAUDE_LIGHT_MODEL) });
 }
 
 const existence = existenceEval();
@@ -383,10 +384,11 @@ if (!NO_LLM) {
     found2[t.id] = found;
     gaps[t.id] = { enough: out?.enough ?? null, assessment: out?.assessment ?? null, gaps: valid.map((v) => ({ facet: v.facet, lang: v.lang, terms: v.terms })), found: found.length };
     const s2 = selectForExtraction(found);
-    if (s2.length) {
-      ex2[t.id] = buildExtract(db, E, t.entity, s2);
-      reqs2.push({ custom_id: `${t.id}__D2`, params: params(ex2[t.id].system, ex2[t.id].user, 16000, "low", ExtractionOutput) });
-    }
+    chunkForExtraction(s2).forEach((part, i) => {
+      const k = `${t.id}__D2_${i}`;
+      ex2[k] = buildExtract(db, E, t.entity, part);
+      reqs2.push({ custom_id: k, params: params(ex2[k].system, ex2[k].user, 16000, "low", ExtractionOutput) });
+    });
   }
   const r2 = await runBatch("round2", reqs2);
 
@@ -401,9 +403,11 @@ if (!NO_LLM) {
   const methods: Record<string, Record<string, unknown>> = {};
   for (const t of cases.targets) {
     const c = ctx[t.id];
-    const D = claimsOf(t.id, ["D_en", "D_ja"], r1, c.ex, 1);
-    const N = claimsOf(t.id, ["N_en", "N_ja"], r1, c.ex, 1);
-    const D2 = ex2[t.id] ? claimsOf(t.id, ["D2"], r2, { D2: ex2[t.id] }, 2) : [];
+    const keys = (prefix: string) => Object.keys(c.ex).filter((k) => k.startsWith(prefix));
+    const D = claimsOf(t.id, keys("D_"), r1, c.ex, 1);
+    const N = claimsOf(t.id, keys("N_"), r1, c.ex, 1);
+    const d2keys = Object.keys(ex2).filter((k) => k.startsWith(`${t.id}__D2_`)).map((k) => k.slice(t.id.length + 2));
+    const D2 = claimsOf(t.id, d2keys, r2, Object.fromEntries(d2keys.map((k) => [k, ex2[`${t.id}__${k}`]])), 2);
     const toItems = (cs: CheckedClaim[]): Item[] =>
       cs.filter((x) => x.status === "accepted").map((x) => ({ passage: x.passage_id, source: srcOf(x.passage_id), subject: x.subject, predicate: x.predicate, value: x.value, status: x.status }));
     const proposedItems = (cs: CheckedClaim[]): Item[] => cs.map((x) => ({ passage: x.passage_id, source: srcOf(x.passage_id), subject: x.subject, predicate: x.predicate, value: x.value }));

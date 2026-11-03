@@ -18,7 +18,7 @@ import { emit } from "./events";
 import { buildPlan } from "./plan";
 import { retrieveFacet, type Retrieved } from "./retrieve";
 import { claimThreads, existenceThreads } from "./threads";
-import { extractClaims, selectForExtraction } from "../extract";
+import { chunkForExtraction, extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
 import { saveToGraph } from "../graph-write";
@@ -346,10 +346,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     // Latency (4.13): output length sets a call's time, so each language is split into two smaller
     // parallel calls (claim ids carry the passage id, so they stay unique), and the gap round's
     // extraction starts as soon as the gap judgment returns instead of waiting for round 1.
-    // ~2 passages per call: a call's time is set by its output (~100 tokens/s), so small calls in
-    // parallel finish together in ~4 s instead of one long call (measured 2026-11-03)
-    const PASSAGES_PER_CALL = 2;
-    const halves = <T,>(xs: T[]): T[][] => Array.from({ length: Math.ceil(xs.length / PASSAGES_PER_CALL) }, (_, i) => xs.slice(i * PASSAGES_PER_CALL, (i + 1) * PASSAGES_PER_CALL));
+    const halves = chunkForExtraction; // ~2 passages per call (extract.ts)
     const extractLang = async (lang: "en" | "ja") => (await Promise.all(halves(selected1.filter((c) => c.lang === lang)).map((part) => extractRound(1, part)))).flat();
     const round2 = opts.gapRound
       ? stage(ctx, "gap", runGap).then(async (found2) => {

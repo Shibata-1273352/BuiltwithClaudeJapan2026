@@ -173,6 +173,15 @@ export function buildExtract(
 
 /** p90 of an extraction call (measured 2026-11-03): past this, a second identical request is sent */
 export const EXTRACT_HEDGE_MS = Number(process.env.EXTRACT_HEDGE_MS ?? 7000);
+/**
+ * ~2 passages per extraction call: a call's time is set by its output (~100 tokens/s), so small calls
+ * in parallel finish together in ~4 s instead of one long call (measured 2026-11-03). Shared by the
+ * live DAG and the evaluation, so the evaluation measures the same requests.
+ */
+export const PASSAGES_PER_CALL = 2;
+export function chunkForExtraction<T>(xs: T[], size = PASSAGES_PER_CALL): T[][] {
+  return Array.from({ length: Math.ceil(xs.length / size) }, (_, i) => xs.slice(i * size, (i + 1) * size));
+}
 export const EXTRACT_PARAMS = { max_tokens: 16000, effort: "low" as const }; // latency budget (4.13); checks are in code
 export { ExtractionOutput, SYSTEM as EXTRACT_SYSTEM };
 
