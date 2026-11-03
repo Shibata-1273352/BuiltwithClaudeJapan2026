@@ -37,7 +37,7 @@ export function EvidenceColumn({
         <span className="text-caption text-muted tabular-nums">{t.n(new Set(s.candidates.map((c) => c.passageId)).size)}</span>
       </div>
       {/* what was searched, in one line: topic × language, "none" struck through */}
-      <p className="flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted" data-testid="search-matrix" aria-label={t.matrix}>
+      <p className="present-hide flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted" data-testid="search-matrix" aria-label={t.matrix}>
         {(["en", "ja"] as const).flatMap((lang) =>
           Object.keys(FACET_LABEL[ui]).map((f) => {
             const g = [...s.candidateGroups].reverse().find((x) => x.facet === f && x.lang === lang);

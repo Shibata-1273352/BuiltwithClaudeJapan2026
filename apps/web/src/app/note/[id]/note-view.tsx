@@ -333,7 +333,7 @@ export function NoteView({ note }: { note: Note }) {
                 </p>
                 <p className="mt-1 text-small">
                   {k.author ?? ""}
-                  {k.first_published ? ` · ${k.first_published}` : ""}
+                  {k.first_published ? ` · ${k.first_published}${lang === "ja" ? " 刊" : " (pub.)"}` : ""}
                 </p>
                 <p className="mt-2 text-caption text-muted">{[k.provider, k.edition, k.license].filter(Boolean).join(" · ")}</p>
                 {k.url && (

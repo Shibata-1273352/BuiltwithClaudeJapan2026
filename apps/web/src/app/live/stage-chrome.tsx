@@ -115,10 +115,10 @@ export function ResultStrip({ s, elapsed }: { s: LiveState; elapsed: number }) {
       <div>
         <Num v={sec} label={t.elapsed} digits={1} unit={t.sec} ticking />
       </div>
-      <div>
+      <div className="present-hide">
         <Num v={n.sources} label={t.sources} />
       </div>
-      <div>
+      <div className="present-hide">
         <Num v={n.threads} label={t.threads} />
         <Num v={n.broken} label={t.broken} />
       </div>

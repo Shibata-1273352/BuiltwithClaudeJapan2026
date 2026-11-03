@@ -224,20 +224,6 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
         <p className="font-serif text-title leading-snug" data-testid="time-label">
           {plainLabel(ys.label[lang], lang, data.name?.en)}
         </p>
-        <AnimatePresence mode="wait">
-          {writer && (
-            <m.figure key={writer.source} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-writer">
-              <figcaption className="label">{l.came(writer.year)}</figcaption>
-              <p className="mt-1 font-serif text-lead">{writer.title}</p>
-              {card?.excerpt && !/^Title:/.test(card.excerpt) && (
-                <blockquote className="mt-2 line-clamp-4 font-serif text-body text-paper/85" lang={card.lang}>
-                  {card.excerpt}
-                </blockquote>
-              )}
-              <p className={`mt-2 text-small ${writer.value === "absent" ? "text-toki" : "text-paper/80"}`}>{l.judged[writer.value] ?? writer.value}</p>
-            </m.figure>
-          )}
-        </AnimatePresence>
         {conflict && (
           <m.figure initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-conflict">
             <figcaption className="label">{l.conflict}</figcaption>
@@ -254,6 +240,20 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
             <p className="mt-2 text-caption text-paper/75">{conflict.explanation[lang]}</p>
           </m.figure>
         )}
+        <AnimatePresence mode="wait">
+          {writer && (
+            <m.figure key={writer.source} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-writer">
+              <figcaption className="label">{l.came(writer.year)}</figcaption>
+              <p className="mt-1 font-serif text-lead">{writer.title}</p>
+              {card?.excerpt && !/^Title:/.test(card.excerpt) && (
+                <blockquote className="mt-2 line-clamp-4 font-serif text-body text-paper/85" lang={card.lang}>
+                  {card.excerpt}
+                </blockquote>
+              )}
+              <p className={`mt-2 text-small ${writer.value === "absent" ? "text-toki" : "text-paper/80"}`}>{l.judged[writer.value] ?? writer.value}</p>
+            </m.figure>
+          )}
+        </AnimatePresence>
         <div>
           <p className="label">{l.events}</p>
           <ol className="mt-2 flex flex-col gap-1 text-small">

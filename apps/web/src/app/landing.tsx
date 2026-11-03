@@ -21,6 +21,7 @@ const T = dict({
     origin: "はじまり",
     scene: "浅草で、外国人の友人に「これ、なんて書いてあるの？　いつからあるの？」と聞かれて、答えられなかった。",
     sceneBy: "── 作者の体験",
+    career: "通信事業者で、人と人をつなぐ仕事をしてきました。いまつなぎたいのは、時と、場所と、人です。TSUMUGI は「紡ぐ」から。",
     hero: (
       <>
         撮るだけで、
@@ -62,6 +63,7 @@ const T = dict({
     origin: "Where it began",
     scene: "In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer.",
     sceneBy: "— the maker’s own experience",
+    career: "My career has been at a telecom carrier — the job of connecting people. What I want to connect now is time, place and people. TSUMUGI comes from tsumugu, to weave.",
     hero: (
       <>
         Just take a photo —
@@ -124,6 +126,7 @@ export function Landing({ facts }: { facts: LandingFacts }) {
             <figcaption className="label">{t.origin}</figcaption>
             <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
             <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
+            <p className="mt-3 text-small text-paper/80" data-testid="career">{t.career}</p>
           </figure>
           <h1 className="mt-10 font-serif text-title leading-tight font-bold sm:text-display">{t.hero}</h1>
           <p className="mt-6 max-w-[36em] text-body text-paper/80">{t.sub}</p>
