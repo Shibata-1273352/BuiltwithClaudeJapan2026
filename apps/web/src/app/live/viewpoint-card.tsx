@@ -8,7 +8,7 @@ import { m } from "motion/react";
 import type { LiveState } from "@/lib/live/state";
 
 const ANGLE: Record<string, number> = { north: 0, northeast: 45, east: 90, southeast: 135, south: 180, southwest: 225, west: 270, northwest: 315 };
-const FACING_JA: Record<string, string> = {
+export const FACING_JA: Record<string, string> = {
   north: "北",
   northeast: "北東",
   east: "東",

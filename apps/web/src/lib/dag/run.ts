@@ -200,6 +200,22 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return true;
     });
 
+    // the year axis needs a year per source: its own time for this site, else (marked) its publication year
+    const published = (() => {
+      const db = openDb({ readonly: true });
+      try {
+        return new Map((db.prepare("SELECT id, first_published FROM sources").all() as { id: string; first_published: number | null }[]).map((r) => [r.id, r.first_published]));
+      } finally {
+        db.close();
+      }
+    })();
+    const yearOfSource = (id: string): { year: number | null; yearKind: "source_time" | "published" | null } => {
+      const t = Number(sourceTime(id, place)?.start?.slice(0, 4));
+      if (t) return { year: t, yearKind: "source_time" };
+      const pub = published.get(id);
+      return pub ? { year: pub, yearKind: "published" } : { year: null, yearKind: null };
+    };
+
     // 3. Plan (FR-08)
     const plan = await stage(ctx, "plan", async () => {
       const p = buildPlan(E, place);
@@ -225,7 +241,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
               found: r.candidates.length,
               notFound: r.candidates.length === 0,
               // year: the source's own time for this site, so the live stage can place it on the year axis
-              candidates: r.candidates.map((c) => ({ ...c, text: c.text.slice(0, 400), year: Number(sourceTime(c.sourceId, place)?.start?.slice(0, 4)) || null })),
+              candidates: r.candidates.map((c) => ({ ...c, text: c.text.slice(0, 400), ...yearOfSource(c.sourceId) })),
             });
           }
         }

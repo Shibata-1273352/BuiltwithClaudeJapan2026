@@ -57,7 +57,7 @@ export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCar
         c.year ? (
           <m.span
             key={c.sourceId}
-            className="absolute left-1/2 size-2.5 -translate-1/2 rounded-full bg-lantern shadow-[0_0_8px_var(--lantern)]"
+            className={`absolute left-1/2 size-2.5 -translate-1/2 rounded-full ${c.yearKind === "published" ? "border border-lantern bg-night" : "bg-lantern shadow-[0_0_8px_var(--lantern)]"}`}
             style={{ top: pos(c.year) }}
             initial={{ x: -180, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}

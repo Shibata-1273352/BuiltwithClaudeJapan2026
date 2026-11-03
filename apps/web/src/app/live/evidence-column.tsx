@@ -36,7 +36,7 @@ export function EvidenceColumn({
       <table className="w-full table-fixed text-[11px]" data-testid="search-matrix" aria-label="観点×言語の検索">
         <thead>
           <tr className="text-muted">
-            <th className="w-8 text-left font-normal" />
+            <th className="w-12 text-left font-normal" />
             {Object.values(FACET_JA).map((f) => (
               <th key={f} className="font-normal">
                 {f}
@@ -99,7 +99,12 @@ export function EvidenceColumn({
                   <span className="min-w-0 flex-1 truncate font-serif text-[15px]" lang={c.lang}>
                     {c.title}
                   </span>
-                  {c.year && <span className="font-serif text-sm text-lantern tabular-nums">{c.year}</span>}
+                  {c.year && (
+                    <span className={`font-serif text-sm tabular-nums ${c.yearKind === "published" ? "text-muted" : "text-lantern"}`} title={c.yearKind === "published" ? "刊行・公開年（この場所の記述の年ではない）" : "この場所について書かれた年"}>
+                      {c.year}
+                      {c.yearKind === "published" ? " 刊" : ""}
+                    </span>
+                  )}
                   <span className="rounded bg-muted/15 px-1 text-[10px] text-muted">{c.lang === "ja" ? "日" : "英"}</span>
                 </div>
                 <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-paper/80" lang={c.lang}>

@@ -8,6 +8,7 @@
 import { AnimatePresence, m } from "motion/react";
 import { useEffect, useState, type Ref } from "react";
 import type { LiveState } from "@/lib/live/state";
+import { FACING_JA } from "./viewpoint-card";
 
 type Scene = {
   size: [number, number];
@@ -74,6 +75,10 @@ export function PhotoStage({
   // the print wipes over the photo when the visual match lands, holds, then steps back (toggle brings it back)
   const showOverlay = overlay && sinceVisual >= 0 && (overlayOn || sinceVisual < 5200);
   const placeName = s.place?.path[0]?.name; // leaf-first
+  // FR-35 in one line, at the moment the print lands: you and Hiroshige, facing (pencil)
+  const vf = s.viewpoint?.visitor?.facing;
+  const af = s.viewpoint?.artwork?.facing;
+  const facingLine = vf && af && FACING_JA[vf] && FACING_JA[af] ? (vf === af ? `あなたも広重も${FACING_JA[vf]}を向いている（見立て・鉛筆）` : `あなたは${FACING_JA[vf]}を、広重は${FACING_JA[af]}を向いている（見立て・鉛筆）`) : null;
 
   return (
     <div className="relative h-full max-w-full overflow-hidden rounded-xl bg-ink shadow-2xl ring-1 ring-muted/20" style={{ aspectRatio: aspect }} data-testid="stage-photo">
@@ -176,7 +181,10 @@ export function PhotoStage({
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print aligned to the photo */}
             <img src={overlay!} alt="広重『名所江戸百景 浅草金龍山』に写真を重ねたもの" className="size-full object-contain" />
-            <span className="absolute bottom-3 left-3 rounded bg-night/80 px-2 py-1 text-xs">広重 1856 と重ねる（位置合わせ：Claudeが付けた目印＋コード）</span>
+            <span className="absolute bottom-3 left-3 rounded bg-night/80 px-2 py-1 text-xs">
+              広重 1856 と重ねる（位置合わせ：Claudeが付けた目印＋コード）
+              {facingLine && <span className="mt-0.5 block font-hand text-sm text-paper" data-testid="facing-line">{facingLine}</span>}
+            </span>
           </m.div>
         )}
       </AnimatePresence>

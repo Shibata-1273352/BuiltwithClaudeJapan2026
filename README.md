@@ -86,7 +86,7 @@ npm run build && npm run start -w web -- -p 3000
 ## Checks
 
 ```bash
-npm test                      # vitest (184 tests)
+npm test                      # vitest (209 tests)
 npm run typecheck && npm run lint
 (cd services/inference && uv run pytest)   # inference server: token, input validation, visual search
 npm run test:security         # SEC-01..10 (SEC-01..03 call Claude; SEC_SKIP_LLM=1 to skip; SEC-08 needs Neo4j)
@@ -128,11 +128,32 @@ Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compo
 
 45,000 requests/min, 10M input tokens/min, 2M output tokens/min. One "see" call costs about $0.05.
 
+## The live stage (6.2–6.3)
+
+`/live` (「例で試す」 on the landing page) runs a **live** exploration of the CC0 Kaminarimon photo;
+your own photo opens the same stage. The photo stays put and every event changes it while the AI
+works (~45 s): a scan sweep and Claude's checklist while it reads, boxes and original-text labels,
+the place title, a facet × language search matrix, evidence cards with their year, SAM 3
+silhouettes wiping in, the aligned Hiroshige print wiping over the photo, threads that leave the
+photo, pass through the source's year on the axis and **snap where the gate did not exist**, then
+the cited story sentence by sentence. Above the photo: who is working right now (Claude /
+local GPU / code / Neo4j), a step rail with timers and an ETA; below: the result strip.
+
+- 「舞台裏」: each Claude call on a timeline (parallel calls overlap) and what code checked or rejected.
+- 「リスト表示」 or `?view=list`: the same run as the accessible list (6.4); `?motion=0` / reduced motion: no holds.
+- Presenter: press `P` or add `?present=1` (larger type for 1920×1080).
+- If live fails or is refused, the stage offers the one public recording (`DEMO_REPLAY_ID`), always labelled as a recording.
+- FR-35 視点の見立て and FR-59 連想の糸 are shown in pencil (interpretations, never evidence).
+
+Checks: `npx tsx --env-file=.env scripts/e2e-sample.ts <base>` (live, ~$0.24), `scripts/e2e-demo.ts <base> <id>` (the public recording from a fresh session), `scripts/stage-shots.ts <base> /replay/<id> [--phone] [--at 3,15,25,40]`.
+
 ## Beyond P0
 
 | ID | Feature | Status |
 | --- | --- | --- |
 | FR-58 | **Visual search — lantern to lantern**: the lantern SAM 3 cut from the photo is embedded with SigLIP so400m (fp16) and compared with 118 public-domain Hiroshige prints (full image, overlapping tiles, and the lanterns SAM 3 finds in each print). Hiroshige's *Kinryūzan Temple in Asakusa* comes first. Shown as "similar images, not evidence", with the matching region outlined. | Done ([verification](docs/verification/visual-search.md); one gold print, one photo — an acceptance check, not an accuracy estimate) |
+| FR-35 | **視点の見立て** (pencil): Claude's qualitative guess of where the photographer stands and faces, with its premises (dropped by code without them); Hiroshige's side is a hand-written, unreviewed note shown once the print is aligned. In the recorded run: *you face south, Hiroshige faced north* | Done |
+| FR-59 | **連想の糸** (pencil): personalized PageRank (α = 0.15, edge-type weights) from the place over a bounded Evidence Graph subgraph (4 hops, ≤ 3000 paths, 2 s); the top passages this run did not read, one per source first, with the linking path. Check: `npx tsx --env-file=.env scripts/check-associations.ts` | Done |
 | FR-27 | Tap a name in 言の地層 to compare how each source writes it, by language, with the original sentence (name highlighted) | Done |
 | FR-36 | 人の層: fade the crowd in 間 (SAM 3 people mask; people are also removed from the background plate, whose fill is an estimate) | Done (SAM 3 instead of YOLOX) |
 | FR-37 | Phones: 3D when the device keeps 30 fps, otherwise the 2D view (photo + aligned print); `?2d=1` forces it | Done (fallback; iPhone fps not measured yet) |
@@ -191,6 +212,9 @@ Last run 2026-11-03: **17/17 passed** (vitest), plus **12/12** inference-server 
 | SEC-10 | gitleaks over the git history | ✓ No leaks |
 
 ## How we use Claude Code
+
+See [`docs/claude-code.md`](docs/claude-code.md) for what Claude does versus what code decides, the API features in use, and how Claude Code was used to build this.
+
 
 This repository is developed with Claude Code. Day 1: the requirements were reviewed into a plan (with an independent review pass that caught a missing git base and a mis-located fixtures folder), then Claude Code scaffolded the monorepo, ran the SAM 3 / depth / Claude / Met verifications on the actual machine and recorded the results in `docs/verification/day1.md`.
 

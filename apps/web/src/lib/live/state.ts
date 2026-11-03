@@ -14,7 +14,7 @@ export type Viewpoint = {
   visitor: { position: Bi; facing: string; toward: Bi; premises: Bi[] } | null;
   artwork: { entity: string; name: Bi; ja: string; en: string; facing: string; premises: Bi[]; annotated_by: string } | null;
 };
-export type Candidate = { passageId: string; sourceId: string; sourceTitle: string; lang: "en" | "ja"; text: string; facet: string; relation?: string; year?: number | null };
+export type Candidate = { passageId: string; sourceId: string; sourceTitle: string; lang: "en" | "ja"; text: string; facet: string; relation?: string; year?: number | null; yearKind?: "source_time" | "published" | null };
 export type ClaimRow = { id: string; passage_id: string; source_id?: string; source?: string; lang?: "en" | "ja"; subject: string; predicate: string; value: string | null; status: string; excerpt: string; sentence_ids: string[]; failed_checks?: string[] };
 export type ThreadRow = { id: string; claimId: string; layer: "toki" | "ba" | "koto" | "ma"; state: string; label: { ja: string; en: string }; evidence: string[] };
 export type ExistenceRow = { source: string; sourceTitle: string; time: { kind: string; start: string | null; end?: string | null } | null; value: "present" | "absent" | "unknown"; reason: string };
@@ -172,6 +172,7 @@ export type SourceCard = {
   title: string;
   lang: "en" | "ja";
   year: number | null;
+  yearKind: "source_time" | "published" | null;
   excerpt: string;
   accepted: number;
   downgraded: number;
@@ -189,7 +190,7 @@ export function sourceCards(s: LiveState): SourceCard[] {
   const by = new Map<string, SourceCard>();
   for (const c of s.candidates) {
     if (by.has(c.sourceId)) continue;
-    by.set(c.sourceId, { sourceId: c.sourceId, title: c.sourceTitle, lang: c.lang, year: c.year ?? null, excerpt: c.text, accepted: 0, downgraded: 0, rejected: 0, existence: null, threads: [], state: null, layer: null, firstSeq: c.seq });
+    by.set(c.sourceId, { sourceId: c.sourceId, title: c.sourceTitle, lang: c.lang, year: c.year ?? null, yearKind: c.yearKind ?? (c.year ? "source_time" : null), excerpt: c.text, accepted: 0, downgraded: 0, rejected: 0, existence: null, threads: [], state: null, layer: null, firstSeq: c.seq });
   }
   for (const cl of s.claims) {
     const card = cl.source_id ? by.get(cl.source_id) : undefined;
@@ -203,7 +204,11 @@ export function sourceCards(s: LiveState): SourceCard[] {
     const card = by.get(r.source);
     if (!card) continue;
     card.existence = r;
-    if (card.year == null && r.time?.start) card.year = Number(r.time.start.slice(0, 4)) || null;
+    // the existence judgment's time wins over a publication year
+    if ((card.year == null || card.yearKind === "published") && r.time?.start) {
+      card.year = Number(r.time.start.slice(0, 4)) || card.year;
+      card.yearKind = "source_time";
+    }
   }
   for (const t of s.threads ?? []) {
     const card = by.get(threadSource(t));
