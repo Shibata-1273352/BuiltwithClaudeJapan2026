@@ -25,7 +25,7 @@ import { buildClaimCards, narrate } from "../narrate";
 import { graphSketch } from "../graph-sketch";
 import { buildGraphParams, saveToGraph } from "../graph-write";
 import { findAssociations } from "../associations";
-import { requestScene, requestVisual } from "../inference";
+import { requestAlign, requestScene, requestVisual } from "../inference";
 import { existenceRows } from "../existence-rows";
 import { narrativeFor, saveNarrative } from "../narrative-service";
 import { findNames, namePatterns, type CheckedClaim, type FoundName } from "@tsumugi/core";
@@ -92,6 +92,25 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
   };
   try {
     emit(explorationId, "received", { capture_id: capture.id, size: [capture.width, capture.height], location: capture.lat != null });
+
+    const sceneFor = (artifact: string | null) => {
+      const started = Date.now();
+      emit(explorationId, "stage", { stage: "space", status: "start", remaining_ms: ctx.remaining() });
+      return requestScene(capture.image_path, capture.id, artifact, Math.max(5_000, Math.min(30_000, ctx.remaining() - 5_000))).then((r) => {
+        emit(explorationId, "stage", { stage: "space", status: "done", ms: Date.now() - started });
+        emit(
+          explorationId,
+          "space",
+          r.ok
+            ? { ok: true, scene_id: r.scene.scene_id, url: `/space/${r.scene.scene_id}`, elements: Object.keys(r.scene.elements), aligned: Boolean(r.scene.alignment?.ok), ms: r.scene.elapsed_ms }
+            : { ok: false, reason: r.reason, message: "空間解析：簡易表示" }, // FR-34
+        );
+        return r.ok ? r.scene : null;
+      });
+    };
+    // 間 starts with the run, in parallel with Claude's reading: masks, depth and layers do not need
+    // the place (only the alignment to a print does, and that is cheap and comes later)
+    const scenePromise = sceneFor(null).catch(() => null);
 
     // 1. See (Claude): cultural elements and place candidates
     const see = await stage(ctx, "see", async () => {
@@ -173,21 +192,6 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         console.error(`[guide ${explorationId}]`, e instanceof Error ? e.message : e);
       }
     };
-    const sceneFor = (artifact: string | null) => {
-      const started = Date.now();
-      emit(explorationId, "stage", { stage: "space", status: "start", remaining_ms: ctx.remaining() });
-      return requestScene(capture.image_path, capture.id, artifact, Math.max(5_000, Math.min(30_000, ctx.remaining() - 5_000))).then((r) => {
-        emit(explorationId, "stage", { stage: "space", status: "done", ms: Date.now() - started });
-        emit(
-          explorationId,
-          "space",
-          r.ok
-            ? { ok: true, scene_id: r.scene.scene_id, url: `/space/${r.scene.scene_id}`, elements: Object.keys(r.scene.elements), aligned: Boolean(r.scene.alignment?.ok), ms: r.scene.elapsed_ms }
-            : { ok: false, reason: r.reason, message: "空間解析：簡易表示" }, // FR-34
-        );
-        return r.ok ? r.scene : null;
-      });
-    };
 
     if (!place) {
       // FR-19: say what was tried — Claude's candidates and the registered sites — and cite nothing
@@ -207,7 +211,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       // which is only a candidate (never matched to the dictionary, never a claim)
       const top = see.places.slice().sort((a, b) => a.rank - b.rank)[0]?.hierarchy.filter((h) => h.type !== "artwork").at(-1);
       const candidate = top ? { ja: top.name_ja || top.name_en, en: top.name_en || top.name_ja } : { ja: "写真の場所", en: "the place in the photo" };
-      await Promise.all([guideFor(candidate), sceneFor(null).catch(() => null)]);
+      await Promise.all([guideFor(candidate), scenePromise]);
       emit(explorationId, "done", { status: "no_known_place", claude_calls: ctx.claudeCalls, cost_usd: ctx.costUsd });
       finish("done", { place: null });
       return;
@@ -252,7 +256,19 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         });
       }
     })();
-    const spacePromise = sceneFor(artifactFor(place)).then(async (scene) => {
+    const spacePromise = scenePromise.then(async (built) => {
+      // the place is known now: align the scene to its print (saved anchors; a fraction of a second)
+      let scene = built;
+      const art = artifactFor(place);
+      if (scene && art) {
+        const a = await requestAlign(scene.scene_id, art, Math.max(2_000, Math.min(8_000, ctx.remaining() - 2_000)));
+        if (a?.ok) {
+          scene = { ...scene, alignment: a };
+          emit(explorationId, "space", { ok: true, scene_id: scene.scene_id, url: `/space/${scene.scene_id}`, elements: Object.keys(scene.elements), aligned: true, ms: scene.elapsed_ms });
+        }
+      }
+      return scene;
+    }).then(async (scene) => {
       // FR-58 視覚で探す: the cut-out lantern looks for lanterns in pre-indexed prints. A pointer to
       // look at, not evidence: it never becomes a claim or a thread.
       if (!scene || !scene.elements.lantern || ctx.remaining() < 4_000) return Boolean(scene);
@@ -505,7 +521,6 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return r.sentences;
     });
 
-    const spaceOk = await spacePromise; // bounded by its own timeout
     await viewpointPromise; // started right after the place; long done by now
     await guidePromise;
 
@@ -554,6 +569,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       }
     }
 
+    const spaceOk = await spacePromise; // 間 ran in parallel the whole time (bounded by its own timeout)
     const summary = {
       graph_saved: graph,
       space: spaceOk ? `/space/${capture.id}` : "degraded",

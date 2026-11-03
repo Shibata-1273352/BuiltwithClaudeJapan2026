@@ -264,6 +264,20 @@ def build_photo_scene(models: "Models", img: Image.Image, scene_id: str, artifac
     return scene
 
 
+def align_saved(scene_id: str, artifact_id: str) -> dict:
+    """Align an already built scene to an artifact (the scene is made before the place is known;
+    alignment needs only the saved photo anchors). Updates scene.json; returns the alignment."""
+    out = data_dir() / "cache" / "scenes" / scene_id
+    scene = json.loads((out / "scene.json").read_text())
+    anchors = [Anchor(a["name"], a["x"], a["y"]) for a in scene.get("anchors", [])]
+    if not anchors or not (ANNOTATIONS / f"{artifact_id}.json").exists():
+        return {"ok": False, "reason": "no anchors or no annotated artifact"}
+    photo = Image.open(out / scene["photo"]).convert("RGB")
+    scene["alignment"] = align(photo, anchors, artifact_id, out)
+    (out / "scene.json").write_text(json.dumps(scene, ensure_ascii=False, indent=2))
+    return scene["alignment"]
+
+
 def align(photo: Image.Image, photo_anchors: list[Anchor], artifact_id: str, out: Path) -> dict:
     ann = json.loads((ANNOTATIONS / f"{artifact_id}.json").read_text())
     art_img_path = data_dir() / "samples" / ann["image_file"]
