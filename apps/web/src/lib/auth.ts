@@ -21,7 +21,33 @@ export type AuthInput = {
   secFetchSite?: string | null;
   /** Hosts this request was addressed to (Host, X-Forwarded-Host) plus configured public origins. */
   allowedHosts?: string[];
+  /** LOCAL_NO_AUTH: a direct local request (see isDirectLocal) may skip the token. */
+  localBypass?: boolean;
 };
+
+const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
+const LOOPBACK_IPS = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
+/** Headers only a tunnel / CDN / reverse proxy adds; any of them means "not direct". */
+const PROXY_ONLY_HEADERS = ["forwarded", "x-real-ip", "cf-connecting-ip", "cf-ray", "cdn-loop", "true-client-ip"];
+const hostOnly = (h: string | null) => (h ?? "").toLowerCase().trim().replace(/:\d+$/, "");
+
+/**
+ * A request typed into a browser on this machine: opted in (LOCAL_NO_AUTH=1), addressed to a
+ * loopback host, and coming from a loopback address. Next itself fills X-Forwarded-Host (= Host)
+ * and X-Forwarded-For (= the socket's address) when they are missing, so those may be present but
+ * must be loopback. A tunnel (cloudflared) also connects from localhost, but it addresses the
+ * public host, puts the real client in X-Forwarded-For and adds Cf-* headers — it never qualifies,
+ * so the public URL always needs the token.
+ */
+export function isDirectLocal(enabled: string | undefined, headers: Headers): boolean {
+  if (enabled !== "1") return false;
+  if (!LOCAL_HOSTS.has(hostOnly(headers.get("host")))) return false;
+  const fwdHost = headers.get("x-forwarded-host");
+  if (fwdHost !== null && !fwdHost.split(",").every((h) => LOCAL_HOSTS.has(hostOnly(h)))) return false;
+  const fwdFor = headers.get("x-forwarded-for");
+  if (fwdFor !== null && !fwdFor.split(",").every((ip) => LOOPBACK_IPS.has(ip.trim()))) return false;
+  return PROXY_ONLY_HEADERS.every((h) => !headers.has(h));
+}
 
 export type AuthDecision =
   | { kind: "allow" }
@@ -52,7 +78,8 @@ export function decideAccess(i: AuthInput): AuthDecision {
     return { kind: "set-cookie-and-redirect", location: clean.pathname + clean.search, token: queryToken };
   }
 
-  if (!i.cookieToken || !safeEqual(i.cookieToken, i.expectedToken)) {
+  // A direct local request skips only the token; state changes still need the same origin (below).
+  if (!i.localBypass && (!i.cookieToken || !safeEqual(i.cookieToken, i.expectedToken))) {
     return { kind: "deny", status: 401, reason: "missing or invalid token" };
   }
 
