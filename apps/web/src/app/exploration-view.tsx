@@ -10,6 +10,8 @@ import type { SeeOutput } from "@tsumugi/core";
 import type { Retrieved } from "@/lib/dag/retrieve";
 import type { ExistenceRow, Thread } from "@/lib/dag/threads";
 import type { TimelineData } from "@/lib/time-river";
+import { guideLine } from "@/lib/guide";
+import { Guide } from "./guide";
 import { VisualHitCard, type VisualHit } from "./visual-hit";
 import { TimeRiver } from "./time-river";
 
@@ -163,8 +165,34 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
     : undefined;
   const threads = pick<Thread[]>("threads");
 
+  // FR-45: the guide's line is chosen by code from what the screen shows (never written by Claude)
+  const conflictsEv = pick<unknown[]>("conflicts");
+  const guide = guideLine(
+    {
+      phase:
+        status === "完了"
+          ? notice && /特定できませんでした/.test(notice.message)
+            ? "no_place"
+            : "done"
+          : status.startsWith("送信")
+            ? "sending"
+            : status === "探索中…"
+              ? "exploring"
+              : /失敗|できませんでした/.test(status)
+                ? "failed"
+                : "idle",
+      absent: existence?.rows.filter((r) => r.value === "absent").length,
+      withheld: existence?.rows.filter((r) => r.reason === "sources_disagree").length,
+      conflicts: Array.isArray(conflictsEv) ? conflictsEv.length : 0,
+      pending: threads?.filter((t) => t.state === "pending" || t.state === "pencil").length,
+      visual: Boolean(visual?.hits.length),
+      degraded: space ? !space.ok : false,
+    },
+    lang,
+  );
   return (
     <section className="flex w-full flex-col gap-4 rounded-lg border border-muted/30 p-4" data-testid="exploration">
+      <Guide line={guide} />
       <p className="font-bold" data-testid="exploration-status">
         {status}
       </p>
