@@ -7,6 +7,7 @@ best-matching crop. Similarity is a pointer to look at, never evidence (the UI s
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -16,14 +17,22 @@ from PIL import Image
 from scripts.bench import LOCK
 
 GRIDS = (2, 3)  # tiles per side; tiles overlap by 1/3 of their size
+# models.lock.json key. so400m: the lantern finds Hiroshige's Kinryūzan print at rank 1 where the
+# base model ranks it ~21st of 118 (docs/verification/visual-search.md). fp16 on GPU: same ranking, 1.8 GB.
+MODEL_KEY = os.environ.get("VISUAL_MODEL", "siglip_large")
+
+
+def index_dir(data: Path) -> Path:
+    return data / "cache" / "visual" / f"index-{MODEL_KEY}"
 
 
 def load(device: torch.device):
     from transformers import AutoImageProcessor, AutoModel
 
-    spec = LOCK["siglip"]
+    spec = LOCK[MODEL_KEY]
     proc = AutoImageProcessor.from_pretrained(spec["repo"], revision=spec["revision"])  # images only: no tokenizer
-    model = AutoModel.from_pretrained(spec["repo"], revision=spec["revision"], use_safetensors=True).to(device).eval()
+    dtype = torch.float16 if device.type in ("mps", "cuda") else torch.float32
+    model = AutoModel.from_pretrained(spec["repo"], revision=spec["revision"], use_safetensors=True, torch_dtype=dtype).to(device).eval()
     return model, proc
 
 
@@ -32,6 +41,7 @@ def embed(model, proc, device: torch.device, images: list[Image.Image], batch: i
     out = []
     for i in range(0, len(images), batch):
         inputs = proc(images=[im.convert("RGB") for im in images[i : i + batch]], return_tensors="pt").to(device)
+        inputs["pixel_values"] = inputs["pixel_values"].to(next(model.parameters()).dtype)
         f = model.get_image_features(**inputs)
         if not isinstance(f, torch.Tensor):  # newer transformers return an output object
             f = f.pooler_output
@@ -64,7 +74,7 @@ def build_index(model, proc, device, gallery: list[dict], image_dir: Path, out: 
     mat = np.concatenate(vecs).astype(np.float32)
     out.mkdir(parents=True, exist_ok=True)
     np.save(out / "vectors.npy", mat)
-    (out / "index.json").write_text(json.dumps({"model": LOCK["siglip"], "items": gallery, "owners": owners, "crops": names}, ensure_ascii=False))
+    (out / "index.json").write_text(json.dumps({"model": LOCK[MODEL_KEY], "items": gallery, "owners": owners, "crops": names}, ensure_ascii=False))
     return {"items": len(gallery), "crops": len(owners), "dim": int(mat.shape[1])}
 
 

@@ -242,7 +242,7 @@ _visual_index: dict = {}
 def _index():
     import visual
 
-    path = data_dir() / "cache" / "visual" / "index"
+    path = visual.index_dir(data_dir())
     if not (path / "index.json").exists():
         raise HTTPException(503, "visual index not built")
     mtime = (path / "index.json").stat().st_mtime

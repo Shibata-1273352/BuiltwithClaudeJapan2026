@@ -23,7 +23,7 @@ import visual  # noqa: E402
 
 REPO = ROOT.parent.parent
 DATA = Path(os.environ["DATA_DIR"])
-OUT = DATA / "cache" / "visual" / "index"
+OUT = visual.index_dir(DATA)
 
 
 def scene_crop(scene_id: str, element: str) -> Image.Image:
