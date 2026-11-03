@@ -1,24 +1,34 @@
 # TSUMUGI
 
-> 時代も、場所も、言葉も、空間も越えて、日本を紡ぐ。
+> 撮るだけで、目の前の日本が、意味と物語になる。
+> Take a photo — the Japan in front of you turns into meaning and story.
 
-Take a photo of a place in Japan. TSUMUGI gathers evidence across people, places, sources and eras, verifies each claim against its sources, keeps disagreements and gaps visible, and weaves it all into one story in a layered 3D space.
+**Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer.
 
-- Requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
-- Verification results: [day 1](docs/verification/day1.md), [day 2](docs/verification/day2.md)
+**Who it is for.** Travellers who love Japan, and the Japanese friends who show them around: standing in front of a gate, a sign or a lantern, with a phone.
+
+**What it does.**
+
+1. **The first answer, in seconds.** Claude reads the writing in the photo (風雷神門 — the Gate of the Wind and Thunder Gods), and code answers *how long it has been here* from a reviewed timeline (the present gate since its rebuilding).
+2. **Touch, and it explains.** The objects lift off the photo (SAM 3); touch one and it trembles, its threads are plucked; Claude's guide note says what to look at, why it matters, what to try, and how the kanji are built (雷 = 雨 + 田).
+3. **Across time.** Turn the years: the gate burns away at its fire and rises when rebuilt; in 1878 Isabella Bird walked an Asakusa with no gate — judged by code against the timeline, never by Claude; where the sources disagree, both are shown.
+4. **Ask.** Claude answers from this run's sources only, with native citations checked against the original; what the sources do not say, it says it does not know.
+5. **Into the print, and home.** Hiroshige's 1856 print opens into depth with snow falling; the names each source used land on what they name in it; a postcard and a travel note keep the checked sentence.
+6. **Anywhere.** At a place with no sources, the reading and the guide still work; history is told only where it can be checked.
+
+**Why it can be relied on.** Claude reads, explains and writes; every yes or no a traveller relies on is decided by code (claims checked against the sentence they cite, existence judged against a reviewed timeline, citations re-checked). The evaluation runs as one Batch API job and the numbers on screen are computed from it — see [`evaluation/results/`](evaluation/results/) (the latest report, `latest.json`, is what the app reads) and the in-app page `/how`.
+
+**Where it works today.** Full history (sources and a reviewed timeline): Kaminarimon (Sensō-ji), Konpon Chūdō (Kan'ei-ji, Ueno), Azuma Bridge (Sumida River). Everywhere else: the reading and the guide.
+
+- In the app: `/` (start), `/live` (try it at Kaminarimon), `/how` (how Claude is used, measured), `/notes` (travel notes and the trip weave).
+- Demo script (video): [`docs/demo-script.md`](docs/demo-script.md) · How Claude and Claude Code are used: [`docs/claude-code.md`](docs/claude-code.md)
+- Final verification (integration, acceptance, performance): [`docs/verification/final-2026-11-04.md`](docs/verification/final-2026-11-04.md)
+- Requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) · Earlier verification: [day 1](docs/verification/day1.md), [day 2](docs/verification/day2.md)
 - Timeline reviews (human): [Kaminarimon](docs/verification/timeline-review.md) (approved 2026-11-03), [Ueno / Azuma Bridge](docs/verification/timeline-review-ueno-azumabashi.md) (pending)
 
 Built for Built with Claude Japan 2026.
 
-**Sites** (13.2):
-
-| Site | Time layer | Naming layer | Example run |
-| --- | --- | --- | --- |
-| Kaminarimon, Asakusa (demo) | burned 1866, permanent gate not rebuilt until 1960; Bird 1878 / Kafū 1914 absent | 雷門 / 風雷神門 / Kwan-non temple / 二王門 … | 34.7 s, 18 claims |
-| Konpon Chūdō, Kan'ei-ji, Ueno | former hall burned 1868-07-04; present hall moved here 1879 (built 1638 at Kitain) — Kōun 1868 / Bird 1878 "not yet moved here" | Uyeno / Uyéno / 上野 / 東叡山 / 中堂 / 瑠璃殿 | 40.4 s, 10 claims |
-| Azuma Bridge, Sumida River | built 1774, iron 1887, present bridge 1930/1931 (unresolved) | 吾妻橋 / 大川橋 / Adzuma Bridge / 隅田川 / 大川 | 43.5 s, 12 claims |
-
-Per site: `/time?entity=ent:kaminarimon` (or `ent:konponchudo`, `ent:azumabashi`); judgments without Claude: `npx tsx scripts/check-existence.ts ent:konponchudo`.
+**Not done / not measured:** choosing another place candidate when Claude's first match is wrong (FR-07); narrowing search by a time range (FR-55); haptics, sound and frame rate on a real phone; French (FR-41).
 
 ## Layout
 
@@ -169,6 +179,18 @@ Across time and space, Claude weaves the world — and the visitor weaves along.
 
 Checks (no Claude unless noted): `scripts/loom-check.ts <base> <replay id> [--lang en] [--no-ask]` (touch, open, drag, the years, a question ~$0.01, the map, the graph), `scripts/notes-shot.ts <base>`, `scripts/camera-check.ts <base>` (Chromium's fake camera).
 
+## Performance (2026-11-04)
+
+After the Loom features (guide notes, ropes, cut-outs, questions), measured with `scripts/profile-run.ts`
+(details: [`docs/verification/final-2026-11-04.md`](docs/verification/final-2026-11-04.md)):
+fast mode, models warm — **24.8 s → 13.6–16.3 s** to `done`; standard speed — 30.4 s → 27.0 s.
+What changed: 間 (SAM 3 + depth) starts with the run, in parallel with Claude's reading, because it
+needs no place; only the alignment to the print waits for the place, and it is computed later from
+the saved anchors (`POST /align` on the inference server, a fraction of a second); the evidence graph
+is saved right after the story instead of waiting for 間; the inference models stay loaded for 30 min.
+The friend's first question is answered as Claude's reading streams in (~3 s), the second as soon as
+the place is known (the timeline is sent right after the place).
+
 ## Performance (2026-11-03)
 
 One live run of the CC0 Kaminarimon sample, server-side time to `done` (`scripts/profile-run.ts <id>`):
@@ -257,10 +279,13 @@ Last run 2026-11-03: **17/17 passed** (vitest), plus **12/12** inference-server 
 
 ## How we use Claude Code
 
-See [`docs/claude-code.md`](docs/claude-code.md) for what Claude does versus what code decides, the API features in use, and how Claude Code was used to build this.
+See [`docs/claude-code.md`](docs/claude-code.md). The project assets that were used, checked in:
 
-
-This repository is developed with Claude Code. Day 1: the requirements were reviewed into a plan (with an independent review pass that caught a missing git base and a mis-located fixtures folder), then Claude Code scaffolded the monorepo, ran the SAM 3 / depth / Claude / Met verifications on the actual machine and recorded the results in `docs/verification/day1.md`.
+- **Plan → review**: every large change was planned in plan mode and reviewed by an advisor pass before code.
+- **Subagents**: research, the ja/en pass, a requirements gap scan, and fresh-eyes design critiques against the judging criteria ([`.claude/agents/design-critic.md`](.claude/agents/design-critic.md), three rounds).
+- **Skills**: the `claude-api` skill before every API change (citations, Batch, fast mode); [`.claude/skills/tsumugi-verify`](.claude/skills/tsumugi-verify/SKILL.md) — which check to run for which change.
+- **Hooks**: [`.claude/settings.json`](.claude/settings.json) runs the design rules test (`apps/web/src/design.test.ts`) after every edit of a screen file, and feeds a failure back to Claude ([`scripts/hooks/design-check.mjs`](scripts/hooks/design-check.mjs)); gitleaks runs before every commit (lefthook).
+- **Verified on the machine**: every screen by screenshot scripts, the whole by `scripts/acceptance.ts`.
 
 ## License
 

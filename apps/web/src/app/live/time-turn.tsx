@@ -44,6 +44,7 @@ const L = dict({
     temporary: "仮設の門",
     print: "広重がこの年に見た門",
     events: "この門の出来事",
+    conflict: "資料が食い違う",
   },
   en: {
     play: "Let the years flow",
@@ -56,6 +57,7 @@ const L = dict({
     temporary: "a temporary gate",
     print: "the gate as Hiroshige saw it",
     events: "What happened to this gate",
+    conflict: "The sources disagree",
   },
 });
 
@@ -82,6 +84,14 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
   const writer = writers.filter((w) => Math.abs(w.year - year) <= 3).sort((a, b) => Math.abs(a.year - year) - Math.abs(b.year - year))[0] ?? null;
   const card = writer ? cards.find((c) => c.sourceId === writer.source) : undefined;
   const lastEvent = [...events].reverse().find((e) => e.year <= year) ?? null;
+  // FR-16: where the sources disagree about this event, both sides and why (never resolved by Claude)
+  type Conflict = { id: string; about: string; explanation: { ja: string; en: string }; sides?: { value: string; evidence: string[]; gregorian?: string }[] };
+  const conflicts = ((data as unknown as { conflicts?: Conflict[] }).conflicts ?? []) as Conflict[];
+  const conflict = lastEvent && year - lastEvent.year <= 3 ? conflicts.find((c) => c.about === lastEvent.id && c.sides?.length) : undefined;
+  const titleOf = (evidence: string[]) => {
+    const src = evidence[0]?.split(":")[0];
+    return (src && (data.sources.find((x) => x.source === src)?.title ?? cards.find((c) => c.sourceId === src)?.title)) || src || "";
+  };
 
   // the gate's state, and how we got here (a fire burns it away; a rebuild raises it)
   const stood = ys.state === "present";
@@ -228,6 +238,22 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
             </m.figure>
           )}
         </AnimatePresence>
+        {conflict && (
+          <m.figure initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-conflict">
+            <figcaption className="label">{l.conflict}</figcaption>
+            <ul className="mt-2 flex flex-col gap-2">
+              {conflict.sides!.map((sd, i) => (
+                <li key={i} className="text-small">
+                  <span className="font-serif text-body" lang="ja">
+                    {sd.value}
+                  </span>
+                  <span className="ml-2 text-caption text-muted">— {titleOf(sd.evidence)}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-caption text-paper/75">{conflict.explanation[lang]}</p>
+          </m.figure>
+        )}
         <div>
           <p className="label">{l.events}</p>
           <ol className="mt-2 flex flex-col gap-1 text-small">

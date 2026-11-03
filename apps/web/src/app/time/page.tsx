@@ -35,7 +35,7 @@ async function River({ searchParams }: { searchParams: Promise<{ entity?: string
       <TimeRiver data={data} initialYear={1856} />
       <p className="text-small text-muted">
         年表の典拠は各出来事の出典を参照。陰暦は国立天文台の暦日データベースで換算。
-        {data.reviewed ? ` 人の確認：${data.reviewed.by}（${data.reviewed.at ?? ""}）` : " 人の確認：未"}
+        {data.reviewed ? ` 人が確認済み${data.reviewed.at ? `（${data.reviewed.at}）` : ""}` : " 人の確認：未"}
       </p>
     </>
   );

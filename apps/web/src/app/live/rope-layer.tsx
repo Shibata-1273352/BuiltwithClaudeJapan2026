@@ -168,12 +168,12 @@ export function RopeLayer({
             {parts.map((part) =>
               s.kind === "ink" ? (
                 <g key={part}>
-                  <path data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke={s.color} strokeWidth={2} strokeLinecap="round" strokeDasharray={s.dashed ? "0.02 0.015" : undefined} />
+                  <path data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke={s.color} strokeWidth={2} style={{ ["--sw" as string]: 2 }} strokeLinecap="round" strokeDasharray={s.dashed ? "0.02 0.015" : undefined} />
                   {/* the twist of a cord: a thin light strand along it */}
-                  <path data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke="var(--paper)" strokeOpacity={0.35} strokeWidth={0.7} strokeDasharray="0.006 0.006" />
+                  <path data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke="var(--paper)" strokeOpacity={0.35} strokeWidth={0.7} style={{ ["--sw" as string]: 0.7 }} strokeDasharray="0.006 0.006" />
                 </g>
               ) : (
-                <path key={part} data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke={s.color} strokeWidth={1} strokeOpacity={0.55} />
+                <path key={part} data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke={s.color} strokeWidth={1} style={{ ["--sw" as string]: 1 }} strokeOpacity={0.55} />
               ),
             )}
           </g>

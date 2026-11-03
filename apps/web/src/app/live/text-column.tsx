@@ -5,6 +5,7 @@
  * the photo, Claude's judgment of what is missing (labelled as Claude's), the broken thread, and
  * finally the story, sentence by sentence, each citing its sources.
  */
+import { FirstAnswer } from "./first-answer";
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
 import { threadSource } from "@/lib/live/state";
@@ -20,7 +21,8 @@ const T = dict({
     reading: "読んでいます",
     thinking: "Claude の思考（要約・ライブ）",
     found: "わかったこと",
-    noPlace: (c: string) => `場所を一つに決められませんでした${c ? `（候補：${c}）` : ""}`,
+    noPlace: "この場所の資料はまだ持っていません。歴史は確かめていないので、ここでは写真の文字の読みとガイドだけを出します。",
+    tried: (c: string) => `写真から推定した場所の候補：${c}`,
     where: "この写真は、どこだろう。",
     received: "写真を受け取りました。",
     broken: "切れた糸",
@@ -42,7 +44,8 @@ const T = dict({
     reading: "reading",
     thinking: "Claude's thinking (summary, live)",
     found: "What we found",
-    noPlace: (c: string) => `Could not settle on one place${c ? ` (candidates: ${c})` : ""}`,
+    noPlace: "We do not have sources for this place yet. Its history is not checked, so here you get the reading of the words in the photo and the guide.",
+    tried: (c: string) => `Places the photo may show: ${c}`,
     where: "Where is this photo?",
     received: "Photo received.",
     broken: "Broken thread",
@@ -178,7 +181,7 @@ export function TextColumn({
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.found}>
-      <div className="fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12">
+      <div className="fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12 [&>*]:shrink-0">
         {/* the place */}
         <div className="min-h-28">
           {docked ? (
@@ -192,13 +195,17 @@ export function TextColumn({
               </m.p>
             </div>
           ) : s.place === null ? (
-            <p className="text-small text-muted" data-testid="place-unknown">
-              {t.noPlace(s.placeTried?.join(t.sep) ?? "")}
-            </p>
+            <div data-testid="place-unknown">
+              <p className="border-l-2 border-rule-strong pl-4 font-serif text-lead">{t.noPlace}</p>
+              {s.placeTried?.length ? <p className="mt-2 pl-4 text-caption text-muted">{t.tried(s.placeTried.join(t.sep))}</p> : null}
+            </div>
           ) : (
             <p className="font-serif text-display text-paper/80">{s.stages.see ? t.where : t.received}</p>
           )}
         </div>
+
+        {/* the friend's two questions, answered first */}
+        <FirstAnswer s={s} />
 
         {/* the discovery: the broken thread */}
         <AnimatePresence>

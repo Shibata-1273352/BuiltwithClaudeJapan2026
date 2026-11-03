@@ -82,3 +82,21 @@ export async function requestScene(imagePath: string, sceneId: string, artifact:
     return { ok: false, reason: name === "TimeoutError" || name === "AbortError" ? "timeout" : "unavailable" };
   }
 }
+
+/** Align a scene built before the place was known to the place's artifact (cheap: saved anchors). */
+export async function requestAlign(sceneId: string, artifact: string, timeoutMs: number): Promise<SceneResponse["alignment"] | null> {
+  const url = process.env.INFERENCE_URL ?? "http://127.0.0.1:8100";
+  const token = process.env.INFERENCE_TOKEN;
+  if (!token) return null;
+  const form = new FormData();
+  form.append("scene_id", sceneId);
+  form.append("artifact", artifact);
+  try {
+    const r = await fetch(`${url}/align`, { method: "POST", body: form, headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(timeoutMs) });
+    if (!r.ok) return null;
+    const j = (await r.json()) as { alignment?: SceneResponse["alignment"] };
+    return j.alignment ?? null;
+  } catch {
+    return null;
+  }
+}

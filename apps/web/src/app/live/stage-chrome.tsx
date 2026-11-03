@@ -134,7 +134,7 @@ function toastsOf(s: LiveState, t: (typeof T)["ja"], lang: "ja" | "en"): Toast[]
   if (s.see && s.at.see !== undefined) out.push({ key: "see", at: s.at.see, who: "Claude", text: `${t.read(s.see.elements.length)}${see ? ` · ${(see.elapsedMs / 1000).toFixed(1)} s` : ""}` });
   if (s.place && s.at.place !== undefined) out.push({ key: "place", at: s.at.place, who: t.code, text: `${t.place}${[...s.place.path].reverse().map((p) => p.name[lang]).join(" › ")}` });
   if (s.space?.ok && s.at.space !== undefined) out.push({ key: "space", at: s.at.space, who: "SAM 3", text: `${t.layers(s.space.elements?.length ?? 0)} · ${((s.space.ms ?? 0) / 1000).toFixed(1)} s${s.space.aligned ? t.aligned : ""}` });
-  if (s.visual?.hits.length && s.at.visual !== undefined) out.push({ key: "visual", at: s.at.visual, who: "SigLIP", text: `${t.similar}${s.visual.hits[0].title}（${s.visual.hits[0].score.toFixed(2)}）` });
+  if (s.visual?.hits.length && s.at.visual !== undefined) out.push({ key: "visual", at: s.at.visual, who: "SigLIP", text: `${t.similar}${s.visual.hits[0].title}` });
   if (s.graph && s.at.graph !== undefined) out.push({ key: "graph", at: s.at.graph, who: "Neo4j", text: `${t.graph} · ${((s.graph.ms ?? 0) / 1000).toFixed(1)} s` });
   return out;
 }

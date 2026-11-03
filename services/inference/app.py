@@ -27,7 +27,7 @@ from scripts.bench import LOCK, data_dir, pick_device
 
 MAX_BYTES = 12 * 2**20
 MAX_PIXELS = 4096 * 4096
-IDLE_RELEASE_S = int(os.environ.get("INFERENCE_IDLE_RELEASE_S", "300"))
+IDLE_RELEASE_S = int(os.environ.get("INFERENCE_IDLE_RELEASE_S", "1800"))
 TOKEN = os.environ.get("INFERENCE_TOKEN", "")
 
 Image.MAX_IMAGE_PIXELS = MAX_PIXELS
@@ -239,6 +239,21 @@ async def scene(
         timings_ms=s["timings_ms"],
         elapsed_ms=round((time.perf_counter() - t0) * 1000),
     )
+
+
+@app.post("/align", dependencies=[Depends(require_token)])
+async def align_scene(
+    scene_id: Annotated[str, Form(pattern=SCENE_ID_RE)] = ...,
+    artifact: Annotated[str, Form(pattern=ARTIFACT_ID_RE)] = ...,
+) -> dict:
+    """Align a scene built earlier (by /scene, before the place was known) to an artifact."""
+    from scripts.build_scene import align_saved
+
+    if not (data_dir() / "cache" / "scenes" / scene_id / "scene.json").exists():
+        raise HTTPException(404, "no such scene")
+    t0 = time.perf_counter()
+    a = align_saved(scene_id, artifact)
+    return {"alignment": a, "elapsed_ms": round((time.perf_counter() - t0) * 1000)}
 
 
 class VisualHit(BaseModel):
