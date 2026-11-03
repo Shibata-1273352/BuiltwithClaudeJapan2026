@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE_MAX_AGE_S, COOKIE_NAME, SESSION_COOKIE, decideAccess, requestHosts } from "@/lib/auth";
+import { COOKIE_MAX_AGE_S, COOKIE_NAME, SESSION_COOKIE, decideAccess, isDirectLocal, requestHosts } from "@/lib/auth";
 
 export function proxy(request: NextRequest) {
   const d = decideAccess({
@@ -10,6 +10,7 @@ export function proxy(request: NextRequest) {
     expectedToken: process.env.ACCESS_TOKEN,
     secFetchSite: request.headers.get("sec-fetch-site"),
     allowedHosts: requestHosts(request.headers),
+    localBypass: isDirectLocal(process.env.LOCAL_NO_AUTH, request.headers),
   });
 
   if (d.kind === "allow") {

@@ -1,5 +1,33 @@
 import { describe, expect, it } from "vitest";
-import { decideAccess, requestHosts, safeEqual } from "./auth";
+import { decideAccess, isDirectLocal, requestHosts, safeEqual } from "./auth";
+
+describe("LOCAL_NO_AUTH: direct local requests skip the token, tunnels never do", () => {
+  const h = (o: Record<string, string>) => new Headers(o);
+  it("only when opted in, on a loopback host, without forwarding headers", () => {
+    expect(isDirectLocal("1", h({ host: "127.0.0.1:3100" }))).toBe(true);
+    expect(isDirectLocal("1", h({ host: "localhost:3000" }))).toBe(true);
+    expect(isDirectLocal(undefined, h({ host: "127.0.0.1:3100" }))).toBe(false);
+    expect(isDirectLocal("true", h({ host: "127.0.0.1:3100" }))).toBe(false);
+  });
+  it("accepts the loopback X-Forwarded-* that Next itself adds", () => {
+    expect(isDirectLocal("1", h({ host: "127.0.0.1:3100", "x-forwarded-host": "127.0.0.1:3100", "x-forwarded-for": "::ffff:127.0.0.1" }))).toBe(true);
+    expect(isDirectLocal("1", h({ host: "localhost:3100", "x-forwarded-host": "localhost:3100", "x-forwarded-for": "::1" }))).toBe(true);
+  });
+  it("a tunnel (cloudflared) or proxy is not local, even if it says Host: localhost", () => {
+    expect(isDirectLocal("1", h({ host: "abc.trycloudflare.com" }))).toBe(false);
+    expect(isDirectLocal("1", h({ host: "127.0.0.1:3100", "cf-connecting-ip": "203.0.113.5" }))).toBe(false);
+    expect(isDirectLocal("1", h({ host: "localhost", "x-forwarded-for": "203.0.113.5" }))).toBe(false);
+    expect(isDirectLocal("1", h({ host: "localhost", "x-forwarded-host": "abc.trycloudflare.com" }))).toBe(false);
+    expect(isDirectLocal("1", h({ host: "192.168.1.10:3100" }))).toBe(false); // the LAN is not local
+  });
+  it("skips only the token: cross-site state changes are still refused", () => {
+    const d = (over: Partial<Parameters<typeof decideAccess>[0]>) =>
+      decideAccess({ method: "GET", url: new URL("http://127.0.0.1:3100/"), cookieToken: undefined, originHeader: null, expectedToken: "s3cret-token-0123456789", ...over });
+    expect(d({ localBypass: true }).kind).toBe("allow");
+    expect(d({ localBypass: true, method: "POST", originHeader: "https://evil.example" })).toMatchObject({ status: 403 });
+    expect(d({ localBypass: false })).toMatchObject({ status: 401 });
+  });
+});
 
 const TOKEN = "s3cret-token-0123456789";
 const base = (over: Partial<Parameters<typeof decideAccess>[0]> = {}) =>

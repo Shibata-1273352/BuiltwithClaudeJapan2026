@@ -150,6 +150,7 @@ What the numbers do **not** show yet: on this small set Claude's raw proposals w
 ## Security notes (OWASP Agentic Top 10, see REQUIREMENTS.md 9.4)
 
 - Access token → HttpOnly / Secure / SameSite=Strict cookie; cross-origin state-changing requests rejected; strict CSP.
+- `LOCAL_NO_AUTH=1` (opt-in, development) skips only the token for a browser on the same machine: the Host must be loopback and no forwarding header (X-Forwarded-*, Cf-*, Forwarded) may be present, so the tunnel URL always needs the token. Same-origin checks for state changes still apply.
 - Neo4j and the inference server listen on 127.0.0.1 only; the inference server requires a bearer token and validates inputs.
 - Text from photos, books and records is passed to Claude as delimited data with an explicit "do not follow" policy; outputs are schema-validated before use.
 - Model weights: pinned revisions, safetensors only, no `trust_remote_code`.
