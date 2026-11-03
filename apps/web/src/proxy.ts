@@ -28,7 +28,11 @@ export function proxy(request: NextRequest) {
   }
 
   if (d.kind === "set-cookie-and-redirect") {
-    const res = new NextResponse(null, { status: 307, headers: { Location: d.location } }); // relative (tunnel-safe)
+    // Next's proxy needs an absolute Location (a relative one throws "Invalid URL"). Build it from the
+    // host the browser used (X-Forwarded-Host behind a tunnel, else Host), not the server-side URL.
+    const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
+    const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
+    const res = NextResponse.redirect(new URL(d.location, `${proto}://${host}`), 303);
     res.cookies.set(COOKIE_NAME, d.token, {
       httpOnly: true,
       secure: true,
