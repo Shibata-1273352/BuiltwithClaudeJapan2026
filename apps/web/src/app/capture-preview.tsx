@@ -5,10 +5,12 @@
  * with manual extra blur and retake (FR-01..03), optional location (FR-04), then send and follow
  * the exploration live. If preprocessing fails, sending stays disabled (fail closed).
  */
-import { useEffect, useRef, useState } from "react";
+import { Camera, cameraSupported } from "./ui/camera";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { boxAround, type Box } from "@/lib/capture/geometry";
 import { prepare, render, toJpeg, type Prepared } from "@/lib/capture/preprocess";
 import { ExplorationView } from "./exploration-view";
+import { dict, useDict } from "./i18n";
 import { UploadStage } from "./live/sample-stage";
 import { Button, buttonClass } from "./ui/button";
 
@@ -18,13 +20,62 @@ type State =
   | { kind: "ready"; prepared: Prepared; manual: Box[]; debug: boolean }
   | { kind: "error"; message: string };
 
+const noop = () => () => {};
+
+const T = dict({
+  ja: {
+    failed: "処理に失敗しました",
+    retake: "撮り直す",
+    take: "写真を撮る・選ぶ",
+    camera: "カメラで撮る",
+    shutter: "撮影する",
+    close: "閉じる",
+    denied: "カメラを使えませんでした。「写真を撮る・選ぶ」から選んでください。",
+    starting: "カメラを起動しています",
+    working: "端末の中で縮小・顔のぼかしをしています…",
+    error: (m: string) => `前処理に失敗したため送信できません（${m}）。撮り直してください。`,
+    preview: "送信前のプレビュー。ぼかしたい所をタップすると追加でぼかします。",
+    faces: (n: number, manual: number) =>
+      `顔を ${n} 件検出してぼかしました${manual ? `（手動で ${manual} 件追加）` : ""}。 検出漏れはあり得ます。気になる所はタップして追加でぼかしてください。`,
+    send: "この写真で紡ぐ",
+    undo: "手動のぼかしを1つ戻す",
+    sending: (w: number, h: number, kb: number) => `送信するもの：${w}×${h}・${kb} KB・EXIF なし`,
+    location: "位置情報を使う（許可した場合のみ、座標だけを送ります）",
+    jpeg: "送信用JPEG",
+  },
+  en: {
+    failed: "Processing failed",
+    retake: "Retake",
+    take: "Take or choose a photo",
+    camera: "Open the camera",
+    shutter: "Take the photo",
+    close: "Close",
+    denied: "The camera is not available. Use “Take or choose a photo” instead.",
+    starting: "Starting the camera",
+    working: "Resizing and blurring faces on your device…",
+    error: (m: string) => `Preprocessing failed, so nothing can be sent (${m}). Please take the photo again.`,
+    preview: "Preview before sending. Tap anywhere to blur it as well.",
+    faces: (n: number, manual: number) =>
+      `${n} face${n === 1 ? "" : "s"} found and blurred${manual ? ` (${manual} added by hand)` : ""}. Some may be missed — tap anything you want blurred.`,
+    send: "Weave with this photo",
+    undo: "Undo one manual blur",
+    sending: (w: number, h: number, kb: number) => `What is sent: ${w}×${h} · ${kb} KB · no EXIF`,
+    location: "Use my location (only if you allow it; only the coordinates are sent)",
+    jpeg: "JPEG to send",
+  },
+});
+
 export function CapturePreview() {
+  const t = useDict(T);
   const [state, setState] = useState<State>({ kind: "idle" });
   const [jpeg, setJpeg] = useState<{ bytes: number; url: string; blob: Blob } | null>(null);
   const [sent, setSent] = useState<Blob | null>(null);
   const [asList, setAsList] = useState(false); // 6.4 ?view=list: the accessible list instead of the stage
   const [useLocation, setUseLocation] = useState(false);
   const out = useRef<HTMLCanvasElement>(null);
+  const [cam, setCam] = useState(false);
+  const canCam = useSyncExternalStore(noop, cameraSupported, () => false);
+  const closeCam = useCallback(() => setCam(false), []);
 
   useEffect(() => {
     if (state.kind !== "ready" || !out.current) return;
@@ -49,7 +100,7 @@ export function CapturePreview() {
       // ?debug=1 exposes raw detections on the page for threshold tuning (local only; never sent).
       setState({ kind: "ready", prepared, manual: [], debug: new URLSearchParams(location.search).has("debug") });
     } catch (e) {
-      setState({ kind: "error", message: e instanceof Error ? e.message : "処理に失敗しました" });
+      setState({ kind: "error", message: e instanceof Error ? e.message : t.failed });
     }
   }
 
@@ -63,8 +114,24 @@ export function CapturePreview() {
 
   return (
     <section className="flex w-full flex-col items-start gap-4">
+      {cam && (
+        <Camera
+          onShot={(f) => {
+            setCam(false);
+            void onFile(f);
+          }}
+          onClose={closeCam}
+          labels={{ shutter: t.shutter, close: t.close, denied: t.denied, starting: t.starting }}
+        />
+      )}
+      <div className="flex flex-wrap gap-3">
+      {canCam && (
+        <Button onClick={() => setCam(true)} data-testid="camera-open">
+          {t.camera}
+        </Button>
+      )}
       <label className={buttonClass("secondary", "cursor-pointer")}>
-        {state.kind === "ready" ? "撮り直す" : "写真を撮る・選ぶ"}
+        {state.kind === "ready" ? t.retake : t.take}
         <input
           type="file"
           accept="image/*"
@@ -74,11 +141,12 @@ export function CapturePreview() {
           onChange={(e) => onFile(e.target.files?.[0])}
         />
       </label>
+      </div>
 
-      {state.kind === "working" && <p className="text-muted">端末の中で縮小・顔のぼかしをしています…</p>}
+      {state.kind === "working" && <p className="text-muted">{t.working}</p>}
       {state.kind === "error" && (
         <p role="alert" className="text-ba">
-          前処理に失敗したため送信できません（{state.message}）。撮り直してください。
+          {t.error(state.message)}
         </p>
       )}
 
@@ -88,7 +156,7 @@ export function CapturePreview() {
             ref={out}
             onPointerDown={onTap}
             className="max-h-[65vh] w-auto max-w-full cursor-crosshair touch-none rounded-md"
-            aria-label="送信前のプレビュー。ぼかしたい所をタップすると追加でぼかします。"
+            aria-label={t.preview}
             data-testid="preview"
           />
           <p
@@ -96,9 +164,7 @@ export function CapturePreview() {
             data-testid="faces"
             data-raw={state.debug ? JSON.stringify(state.prepared.raw) : undefined}
           >
-            顔を {state.prepared.faces.length} 件検出してぼかしました
-            {state.manual.length ? `（手動で ${state.manual.length} 件追加）` : ""}。
-            検出漏れはあり得ます。気になる所はタップして追加でぼかしてください。
+            {t.faces(state.prepared.faces.length, state.manual.length)}
           </p>
           <div className="flex flex-wrap gap-3">
             <Button
@@ -111,17 +177,17 @@ export function CapturePreview() {
               }}
               data-testid="send"
             >
-              この写真で紡ぐ
+              {t.send}
             </Button>
             {state.manual.length > 0 && (
               <Button variant="quiet" onClick={() => setState({ ...state, manual: state.manual.slice(0, -1) })}>
-                手動のぼかしを1つ戻す
+                {t.undo}
               </Button>
             )}
           </div>
           {jpeg && (
             <p className="text-caption text-muted tabular-nums">
-              送信するもの：{state.prepared.width}×{state.prepared.height}・{Math.round(jpeg.bytes / 1024)} KB・EXIF なし
+              {t.sending(state.prepared.width, state.prepared.height, Math.round(jpeg.bytes / 1024))}
             </p>
           )}
           <label className="flex min-h-11 items-center gap-2 text-small">
@@ -132,9 +198,9 @@ export function CapturePreview() {
               onChange={(e) => setUseLocation(e.target.checked)}
               className="size-5"
             />
-            位置情報を使う（許可した場合のみ、座標だけを送ります）
+            {t.location}
           </label>
-          {jpeg && <a href={jpeg.url} download="tsumugi-upload.jpg" data-testid="jpeg-link" className="sr-only">送信用JPEG</a>}
+          {jpeg && <a href={jpeg.url} download="tsumugi-upload.jpg" data-testid="jpeg-link" className="sr-only">{t.jpeg}</a>}
         </>
       )}
 

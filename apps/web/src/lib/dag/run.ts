@@ -7,12 +7,13 @@
  * Retries happen only within the remaining time; at the deadline we finish with what is verified.
  */
 import { readFile } from "node:fs/promises";
-import type { SeeOutput } from "@tsumugi/core";
+import type { GuideNote, SeeOutput } from "@tsumugi/core";
 import { openDb } from "../corpus/db";
 import type { CaptureRow } from "../captures";
 import { entities } from "../entities-server";
 import { seePhoto } from "../see";
 import { guessViewpoint } from "../viewpoint";
+import { guideNotes } from "../guide-call";
 import { store } from "../store";
 import { emit } from "./events";
 import { buildPlan } from "./plan";
@@ -21,7 +22,8 @@ import { claimThreads, existenceThreads } from "./threads";
 import { chunkForExtraction, extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
-import { saveToGraph } from "../graph-write";
+import { graphSketch } from "../graph-sketch";
+import { buildGraphParams, saveToGraph } from "../graph-write";
 import { findAssociations } from "../associations";
 import { requestScene, requestVisual } from "../inference";
 import { existenceRows } from "../existence-rows";
@@ -159,6 +161,28 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       const met = rel ? E.get(rel.from)?.external_ids?.met : undefined;
       return met ? `met-${met}` : null;
     };
+    // Loom guide notes: what / why / try + kanji + questions per element (Claude's explanations,
+    // labelled as such; never claims, ink threads or graph nodes). Parallel, off the critical path.
+    const guidePromise = (async () => {
+      if (ctx.remaining() < 25_000 || !see.elements.length) return;
+      try {
+        for (let i = 0; i < Math.min(3, see.elements.length); i++) ctx.claude();
+        emit(explorationId, "stage", { stage: "guide", status: "start", remaining_ms: ctx.remaining() });
+        const t = Date.now();
+        const name = E.get(place)?.name ?? { ja: place, en: place };
+        const kept: GuideNote[] = [];
+        // each note reaches the stage as soon as it passes the checks
+        const g = await guideNotes(see, name, (n) => {
+          kept.push(n);
+          emit(explorationId, "guide", { notes: [...kept] });
+        });
+        for (const r of g.records) logCall(ctx, db, explorationId, r);
+        emit(explorationId, "stage", { stage: "guide", status: "done", ms: Date.now() - t });
+        if (g.dropped.length) emit(explorationId, "guide", { notes: g.notes, dropped: g.dropped });
+      } catch (e) {
+        console.error(`[guide ${explorationId}]`, e instanceof Error ? e.message : e); // optional: the run goes on
+      }
+    })();
     // FR-35 視点の見立て (pencil): Claude's guess for the photo; the artwork's is a hand-written note.
     // Shown with its premises; never a claim, a thread or a graph node.
     const viewpointPromise = (async () => {
@@ -455,6 +479,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
 
     const spaceOk = await spacePromise; // bounded by its own timeout
     await viewpointPromise; // started right after the place; long done by now
+    await guidePromise;
 
     // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.
     const graph = await stage(ctx, "graph", async () => {
@@ -469,7 +494,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         corpus.close();
       }
       const lang = capture.ui_lang === "en" ? "en" : "ja";
-      const r = await saveToGraph(E, {
+      const gi: Parameters<typeof saveToGraph>[1] = {
         captureId: capture.id,
         target: place,
         claims: extraction.claims.map((c) => ({
@@ -481,8 +506,10 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         threads,
         narrative: (narrative ?? []).filter((s) => s.ok).map((s) => ({ ...s, lang })),
         sources,
-      });
-      emit(explorationId, "graph", r.ok ? { saved: true, ms: r.ms } : { saved: false, message: "グラフ保存失敗（再試行できます）" });
+      };
+      const r = await saveToGraph(E, gi);
+      // 舞台裏 draws exactly what was written (only when it was)
+      emit(explorationId, "graph", r.ok ? { saved: true, ms: r.ms, sketch: graphSketch(buildGraphParams(E, gi)) } : { saved: false, message: "グラフ保存失敗（再試行できます）" });
       if (!r.ok) console.error(`[graph ${explorationId}]`, r.error);
       return r.ok;
     });

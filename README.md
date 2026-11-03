@@ -145,9 +145,26 @@ local GPU / code / Neo4j), a step rail with timers and an ETA; below: the result
 - If live fails or is refused, the stage offers the one public recording (`DEMO_REPLAY_ID`), always labelled as a recording.
 - FR-35 視点の見立て and FR-59 連想の糸 are shown in pencil (interpretations, never evidence).
 
-After done, 「時をめくる」 (year slider 1856 → 1878 → 1960) and 「言の地層」 open over the stage, and 舞台裏 ends with the evaluation numbers, computed from `evaluation/results/2026-11-03.json`. Rehearsal of the 6.5 script in presenter mode, with timings and a screenshot per scene: `npx tsx --env-file=.env scripts/rehearse.ts <base> [/replay/<id> | /live]` (default: `DEMO_REPLAY_ID`, no Claude call).
+After done, 「時をめくる」 (year slider 1856 → 1878 → 1960) and 「言の地層」 open over the stage, and 舞台裏 ends with the evaluation numbers, computed from `evaluation/results/latest.json` (written by the last evaluation run that called Claude). Rehearsal of the 6.5 script in presenter mode, with timings and a screenshot per scene: `npx tsx --env-file=.env scripts/rehearse.ts <base> [/replay/<id> | /live]` (default: `DEMO_REPLAY_ID`, no Claude call).
 
 Checks: `npx tsx --env-file=.env scripts/e2e-sample.ts <base>` (live, ~$0.24), `scripts/e2e-demo.ts <base> <id>` (the public recording from a fresh session), `scripts/stage-shots.ts <base> /replay/<id> [--phone] [--at 3,15,25,40]`.
+
+## The Loom: touch, pull, weave
+
+Across time and space, Claude weaves the world — and the visitor weaves along.
+
+- **Touch the objects.** SAM 3's cut-outs (lantern, gate) lift off the photo after a light sweeps their outline. Touching one makes it tremble on a spring, plucks its threads (a Karplus–Strong string whose pitch follows the thread's length) and ticks the phone (`navigator.vibrate`, the iOS switch fallback). Drag it and its threads pull taut; let go and they swing back. Every object is also a button (keyboard), sound and vibration toggle in the header, reduced motion turns the physics off. People are never a target.
+- **Threads with physics.** Verlet ropes (`lib/live/rope.ts`): silk to Claude's guide notes on the left, twisted ink cords on the right through the source's year on the axis to its evidence card; the cord of a source written when the place was absent is cut at its year and falls.
+- **Guide notes (Claude, labelled as such).** For each element read in the photo: what you see, why it matters, one thing to try, kanji parts (雷 = 雨 + 田) and three questions — one small parallel call per element, off the critical path. Code drops a kanji that is not in the photo's text and anything too long. Guide notes never become claims, ink threads or graph nodes.
+- **Turn the years (FR-56).** Drag the handle on the year axis: in an absent year the photo falls to night, the gate becomes a ghost and its cord is cut; before the fire Hiroshige's print lays over the photo; every decade plucks a note. Judged by `yearState` (code), never by Claude.
+- **Pull the thread (FR-60).** Ask a suggested question or your own: Claude answers from this run's passages only, with the API's native citations (`search_result` blocks, one text block per sentence). Code keeps a citation only if its quote is in the corpus; uncited sentences are shown muted; with none left the answer is "not in the sources". Each surviving citation spins a new cord to its evidence card. At most 10 an hour per exploration, under the daily cost cap. Bench: `scripts/bench-ask.ts`.
+- **Threads across the sea (FR-25).** `corpus/places.json` records, with its basis, where each source is kept (The Met, New York; the National Diet Library), where its writer was born (Bird, Yorkshire; Scidmore, Iowa) or who publishes it; distances are great circles computed from the coordinates.
+- **Take it away.** A 9:16 postcard rendered on the server (`/api/explorations/<id>/postcard`): the cut-out, a vermilion seal of the kanji read from the photo, one sentence that passed the code checks with its source, the broken thread. Fonts: put `ShipporiMincho-Regular.ttf` and `-Bold.ttf` (OFL, Google Fonts) in `DATA_DIR/fonts`. `/notes` joins the places of a trip by the sources they share.
+- **Backstage** draws the Evidence Graph exactly as written to Neo4j (sent with the graph event only when the save succeeded): sources → evidence → claims → years and the place.
+- **Japanese / English** on every screen (FR-40); the story follows the language (the other one is generated in the background; the public recording only reads what is cached).
+- **Camera (FR-01).** A full-screen viewfinder; the frame goes through the same on-device preprocessing (face blur) as a chosen file.
+
+Checks (no Claude unless noted): `scripts/loom-check.ts <base> <replay id> [--lang en] [--no-ask]` (touch, open, drag, the years, a question ~$0.01, the map, the graph), `scripts/notes-shot.ts <base>`, `scripts/camera-check.ts <base>` (Chromium's fake camera).
 
 ## Performance (2026-11-03)
 

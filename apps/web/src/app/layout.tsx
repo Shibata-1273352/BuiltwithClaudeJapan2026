@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { EB_Garamond, Klee_One, Noto_Sans_JP, Shippori_Mincho } from "next/font/google";
 import "./globals.css";
+import { LangProvider } from "./i18n";
 
 // 6.1: three typefaces — mincho / serif headings, gothic / sans body, handwriting for notes.
 // Self-hosted by next/font at build time (no runtime CDN; CSP unchanged). CJK files are large,
@@ -24,7 +25,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ja" className={`h-full antialiased ${mincho.variable} ${garamond.variable} ${gothic.variable} ${hand.variable}`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <LangProvider>{children}</LangProvider>
+      </body>
     </html>
   );
 }

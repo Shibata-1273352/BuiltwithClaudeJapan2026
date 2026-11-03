@@ -1,9 +1,18 @@
+"use client";
+
+import { dict, useDict } from "./i18n";
 import { ButtonLink } from "./ui/button";
 
 /** FR-58: a gallery print with the region that matched the photo's lantern outlined (similarity, not evidence). */
 export type VisualHit = { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[]; into?: string | null };
 
+const T = dict({
+  ja: { score: "似ている", lanterns: " ・提灯どうし", into: "この絵の中へ" },
+  en: { score: "similar", lanterns: " · lantern to lantern", into: "Step into this print" },
+});
+
 export function VisualHitCard({ h, width = "w-32" }: { h: VisualHit; width?: string }) {
+  const t = useDict(T);
   const [x1, y1, x2, y2] = h.box ?? [0, 0, 1, 1];
   const whole = x2 - x1 > 0.95 && y2 - y1 > 0.95;
   return (
@@ -21,13 +30,13 @@ export function VisualHitCard({ h, width = "w-32" }: { h: VisualHit; width?: str
       </a>
       <span className="mt-1 block leading-snug">{h.title}</span>
       <span className="text-muted tabular-nums">
-        類似度 {h.score.toFixed(2)}
-        {h.crop?.startsWith("sam") ? " ・提灯どうし" : ""}
+        {t.score}
+        {h.crop?.startsWith("sam") ? t.lanterns : ""}
       </span>
       {/* the same print as the one aligned to the photo: open it in 間 and enter the painting */}
       {h.into?.startsWith("/space/") && (
         <ButtonLink href={h.into} className="mt-1" data-testid="visual-into">
-          この絵の中へ
+          {t.into}
         </ButtonLink>
       )}
     </li>

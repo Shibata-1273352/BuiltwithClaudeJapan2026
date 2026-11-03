@@ -16,11 +16,30 @@ export type Source =
 
 export type Phase = "starting" | "running" | "done" | "failed" | "refused";
 
-const REFUSAL: Record<string, string> = {
-  killed: "現在、新しい探索を停止しています（管理者の操作）",
-  hourly_limit: "1時間あたりの探索の上限に達しました。しばらくしてからお試しください",
-  daily_cost: "本日の利用上限に達しました",
+// user-facing errors in the page language (FR-40; the hook reads <html lang>, set by LangProvider)
+const ERR = {
+  ja: {
+    refusal: {
+      killed: "現在、新しい探索を停止しています（管理者の操作）",
+      hourly_limit: "1時間あたりの探索の上限に達しました。しばらくしてからお試しください",
+      daily_cost: "本日の利用上限に達しました",
+    } as Record<string, string>,
+    upload: (why: string) => `送信できませんでした（${why}）`,
+    start: (why: string) => `探索を始められませんでした：${why}`,
+    network: "通信に失敗しました",
+  },
+  en: {
+    refusal: {
+      killed: "New explorations are paused right now (by the operator)",
+      hourly_limit: "The hourly limit of explorations has been reached. Please try again a little later",
+      daily_cost: "Today's usage limit has been reached",
+    } as Record<string, string>,
+    upload: (why: string) => `Could not send the photo (${why})`,
+    start: (why: string) => `Could not start the exploration: ${why}`,
+    network: "Network error",
+  },
 };
+const pageLang = (): "ja" | "en" => (document.documentElement.lang === "en" ? "en" : "ja");
 
 function getPosition(): Promise<{ lat: number; lon: number } | null> {
   if (!("geolocation" in navigator)) return Promise.resolve(null);
@@ -62,6 +81,7 @@ export function useExploration(source: Source) {
     if (started.current) return;
     started.current = true;
     let es: EventSource | null = null;
+    const L = ERR[pageLang()];
     const mark = () => {
       t0.current = performance.now();
       setT0State(t0.current);
@@ -95,12 +115,12 @@ export function useExploration(source: Source) {
       }
       let start: Response;
       if (source.kind === "sample") {
-        start = await fetch("/api/explorations/sample", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: source.name }) });
+        start = await fetch("/api/explorations/sample", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: source.name, lang: pageLang() }) });
       } else {
         setPhoto(URL.createObjectURL(source.jpeg));
         const form = new FormData();
         form.append("image", source.jpeg, "capture.jpg");
-        form.append("lang", document.documentElement.lang === "en" ? "en" : "ja");
+        form.append("lang", pageLang());
         if (source.useLocation) {
           const pos = await getPosition();
           if (pos) {
@@ -111,7 +131,7 @@ export function useExploration(source: Source) {
         const up = await fetch("/api/captures", { method: "POST", body: form });
         if (!up.ok) {
           setPhase("refused");
-          setError(`送信できませんでした（${(await up.json().catch(() => ({}))).error ?? up.status}）`);
+          setError(L.upload(String((await up.json().catch(() => ({}))).error ?? up.status)));
           return;
         }
         const { capture_id } = await up.json();
@@ -120,7 +140,7 @@ export function useExploration(source: Source) {
       if (!start.ok) {
         const reason = String((await start.json().catch(() => ({}))).error ?? start.status);
         setPhase("refused");
-        setError(`探索を始められませんでした：${REFUSAL[reason] ?? reason}`);
+        setError(L.start(L.refusal[reason] ?? reason));
         return;
       }
       const j = (await start.json()) as { exploration_id: string; events: string; photo?: string };
@@ -131,7 +151,7 @@ export function useExploration(source: Source) {
       listen(j.events);
     })().catch(() => {
       setPhase("refused");
-      setError("通信に失敗しました");
+      setError(L.network);
     });
     return () => es?.close();
   }, [source]);

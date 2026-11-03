@@ -27,6 +27,7 @@ export function NamesLayer({ names, lang }: { names: NamesData; lang: "ja" | "en
   const [open, setOpen] = useState<string | null>(null);
   const g = open ? names[open] : undefined;
   const byLang = (l: "en" | "ja") => (g?.usages ?? []).filter((u) => u.lang === l);
+  const paren = (x: string | number) => (lang === "ja" ? `（${x}）` : ` (${x})`);
   return (
     <div data-testid="names">
       <h3 className="label">{lang === "ja" ? "言の地層 ── 誰が、何を、どう呼んだか" : "Names ── who called what, and how"}</h3>
@@ -34,7 +35,7 @@ export function NamesLayer({ names, lang }: { names: NamesData; lang: "ja" | "en
       {Object.entries(names).map(([id, grp]) => (
         <div key={id} className="mb-2">
           <p className="text-small font-bold">
-            {grp.name?.[lang]} <span className="font-normal text-muted">（{grp.type}）</span>
+            {grp.name?.[lang]} <span className="font-normal text-muted">{paren(grp.type ?? "")}</span>
           </p>
           <ul className="flex flex-wrap gap-x-3 text-small">
             {grp.usages.slice(0, 6).map((u, i) => (
@@ -49,11 +50,11 @@ export function NamesLayer({ names, lang }: { names: NamesData; lang: "ja" | "en
                   <span lang={u.lang} className="text-koto">
                     {u.text}
                   </span>
-                  {u.specificity === "ambiguous" ? <span className="text-muted">（{lang === "ja" ? "曖昧" : "ambiguous"}）</span> : null}
+                  {u.specificity === "ambiguous" ? <span className="text-muted">{paren(lang === "ja" ? "曖昧" : "ambiguous")}</span> : null}
                   <span className="text-muted">
                     {" "}
                     — {u.sourceTitle}
-                    {u.time ? `（${u.time.slice(0, 4)}）` : ""}
+                    {u.time ? paren(u.time.slice(0, 4)) : ""}
                   </span>
                 </button>
               </li>
@@ -63,7 +64,7 @@ export function NamesLayer({ names, lang }: { names: NamesData; lang: "ja" | "en
             <div className="mt-3 grid gap-6 border-t border-rule pt-3 md:grid-cols-2" data-testid="name-compare">
               {(["en", "ja"] as const).map((l) => (
                 <section key={l}>
-                  <h4 className="mb-1 text-caption tracking-widest text-muted">{l === "en" ? "English" : "日本語"}（{byLang(l).length}）</h4>
+                  <h4 className="mb-1 text-caption tracking-widest text-muted">{l === "en" ? "English" : "日本語"}{paren(byLang(l).length)}</h4>
                   {byLang(l).length === 0 ? (
                     <p className="text-small text-muted">{lang === "ja" ? "この言語の資料には見つかりませんでした。" : "Not found in sources in this language."}</p>
                   ) : (
@@ -74,7 +75,7 @@ export function NamesLayer({ names, lang }: { names: NamesData; lang: "ja" | "en
                           <li key={i} className="text-small">
                             <p className="text-caption text-muted">
                               {u.sourceTitle}
-                              {u.time ? `（${u.time.slice(0, 4)}）` : ""} · <span className="font-mono">{u.sentenceId}</span>
+                              {u.time ? paren(u.time.slice(0, 4)) : ""} · <span className="font-mono">{u.sentenceId}</span>
                             </p>
                             <blockquote lang={u.lang} className="border-l-2 border-koto pl-2 font-serif">
                               {a}

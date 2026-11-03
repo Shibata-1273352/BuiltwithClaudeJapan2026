@@ -35,11 +35,3 @@ export function Pencil({ children = "鉛筆" }: { children?: ReactNode }) {
 export function Dot({ className = "", style, title }: { className?: string; style?: React.CSSProperties; title?: string }) {
   return <span aria-hidden={!title} title={title} className={`rounded-full ${className}`} style={style} />;
 }
-
-export function PencilLegend() {
-  return (
-    <p className="text-caption text-muted" data-testid="pencil-legend">
-      <Pencil /> は解釈・類似・連想。根拠ではありません。
-    </p>
-  );
-}

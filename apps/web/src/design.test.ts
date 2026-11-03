@@ -28,8 +28,8 @@ describe("design rules (CLAUDE.md)", () => {
     expect(hits(outsideUi, /\brounded-(full|lg|xl|2xl|3xl)\b/)).toEqual([]);
     expect(hits(all, /\brounded(?=["\s`])/)).toEqual([]);
   });
-  it("4. no glow or colored shadow outside the thread layer and the photo anchor; no blur", () => {
-    const glowOk = new Set(["live/thread-layer.tsx", "live/photo-stage.tsx"]);
+  it("4. no glow or colored shadow outside the threads and the lifted cut-outs; no blur", () => {
+    const glowOk = new Set(["live/rope-layer.tsx", "live/objects-layer.tsx", "live/photo-stage.tsx"]); // threads, lifted cut-outs
     expect(hits(all.filter((f) => !glowOk.has(f.p)), /\bglow\b|shadow-\[0_0|drop-shadow/)).toEqual([]);
     expect(hits(all, /backdrop-blur/)).toEqual([]);
   });

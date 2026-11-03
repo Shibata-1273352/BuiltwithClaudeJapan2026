@@ -8,6 +8,7 @@
  */
 import { useMemo, useState } from "react";
 import { labelRows, segments, sourceYear, yearState, type TimelineData } from "@/lib/time-river";
+import { dict, useDict, useLang } from "./i18n";
 
 const FROM = 1750;
 const TO = 2030;
@@ -17,17 +18,47 @@ const XW = 920;
 const RIVER_Y = 132;
 const x = (year: number) => X0 + ((year - FROM) / (TO - FROM)) * XW;
 
-const SHORT: Record<string, string> = {
-  "met-56689": "広重",
-  "bird-unbeaten": "バード",
-  "kafu-hiyorigeta": "荷風",
-  "koun-kaiko": "光雲",
-  "scidmore-jinrikisha": "シドモア",
-  "met-37282": "広重",
-  "met-37387": "安治",
-  "met-45257": "清長",
+const SHORT: Record<string, { ja: string; en: string }> = {
+  "met-56689": { ja: "広重", en: "Hiroshige" },
+  "bird-unbeaten": { ja: "バード", en: "Bird" },
+  "kafu-hiyorigeta": { ja: "荷風", en: "Kafū" },
+  "koun-kaiko": { ja: "光雲", en: "Kōun" },
+  "scidmore-jinrikisha": { ja: "シドモア", en: "Scidmore" },
+  "met-37282": { ja: "広重", en: "Hiroshige" },
+  "met-37387": { ja: "安治", en: "Yasuji" },
+  "met-45257": { ja: "清長", en: "Kiyonaga" },
 };
-const EVENT_LABEL: Record<string, string> = { destroyed: "焼失", rebuilt: "再建", built: "建立", moved_in: "移築", temporary: "仮設" };
+const EVENT_LABEL: Record<string, { ja: string; en: string }> = {
+  destroyed: { ja: "焼失", en: " destroyed" },
+  rebuilt: { ja: "再建", en: " rebuilt" },
+  built: { ja: "建立", en: " built" },
+  moved_in: { ja: "移築", en: " moved here" },
+  temporary: { ja: "仮設", en: " temporary" },
+};
+const T = dict({
+  ja: {
+    river: "時の川",
+    title: "時をめくる",
+    today: (name?: string) => `いまの${name ?? "門"}`,
+    slider: "年を選ぶ",
+    present: "あった",
+    absent: "不在",
+    withheld: "判定保留",
+    unknown: "確認待ち",
+    evidence: (name: string, list: string) => `根拠（${name}の年表との照合）：${list}`,
+  },
+  en: {
+    river: "River of time",
+    title: "Turn the years",
+    today: (name?: string) => `${name ?? "The gate"} today`,
+    slider: "Choose a year",
+    present: "stood",
+    absent: "absent",
+    withheld: "withheld",
+    unknown: "pending",
+    evidence: (name: string, list: string) => `Evidence (checked against the chronology of ${name}): ${list}`,
+  },
+});
 /** The demo years of Kaminarimon (6.1); other sites get the years of their sources and events. */
 const QUICK_KAMINARIMON = [1856, 1866, 1878, 1905, 1914, 1960, 2026];
 function quickYears(d: TimelineData): number[] {
@@ -43,6 +74,8 @@ function quickYears(d: TimelineData): number[] {
 const COLOR = { present: "var(--thread-toki)", absent: "color-mix(in srgb, var(--paper) 55%, transparent)", unknown: "var(--muted)", withheld: "var(--muted)" } as const;
 
 export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; initialYear?: number }) {
+  const t = useDict(T);
+  const lang = useLang();
   const [year, setYear] = useState(initialYear);
   const segs = useMemo(() => segments(data, FROM, TO), [data]);
   const s = yearState(data, year);
@@ -67,15 +100,15 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
   const broken = s.state === "absent";
 
   return (
-    <section className="flex flex-col gap-3" data-testid="time-river" aria-label="時の川">
+    <section className="flex flex-col gap-3" data-testid="time-river" aria-label={t.river}>
       <div className="flex items-baseline justify-between gap-4">
-        <h3 className="label">時をめくる</h3>
+        <h3 className="label">{t.title}</h3>
         <p className="font-serif text-display tabular-nums" aria-live="polite" data-testid="year">
           {year}
         </p>
       </div>
 
-      <svg viewBox={`0 0 ${W} 230`} className="w-full" role="img" aria-label={s.label.ja}>
+      <svg viewBox={`0 0 ${W} 230`} className="w-full" role="img" aria-label={s.label[lang]}>
         {/* river */}
         {segs.map((g, i) => (
           <line
@@ -105,7 +138,7 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
               <line x1={x(ey)} x2={x(ey)} y1={RIVER_Y + 8} y2={RIVER_Y + 22} stroke="var(--paper)" strokeWidth={1.5} />
               <text x={x(ey)} y={RIVER_Y + 36 + eventRows[i] * 14} textAnchor="middle" fontSize="12" fill="var(--paper)">
                 {ey}
-                {EVENT_LABEL[e.event] ?? e.event}
+                {EVENT_LABEL[e.event]?.[lang] ?? e.event}
                 {e.disputed ? "※" : ""}
               </text>
             </g>
@@ -116,13 +149,13 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
           <g key={src.source}>
             <circle cx={x(src.y)} cy={RIVER_Y - 22} r={6} fill={src.y === year ? "var(--lantern)" : "var(--thread-koto)"} />
             <text x={x(src.y)} y={RIVER_Y - 34 - sourceRows[i] * 15} textAnchor="middle" fontSize="13" fill="var(--paper)">
-              {SHORT[src.source] ?? src.title.slice(0, 6)} {src.y}
+              {SHORT[src.source]?.[lang] ?? src.title.slice(0, 6)} {src.y}
             </text>
           </g>
         ))}
         {/* today's gate */}
         <text x={gx} y={gy - 4} textAnchor="end" fontSize="13" fill="var(--paper)">
-          いまの{data.name?.ja ?? "門"}
+          {t.today(data.name?.[lang])}
         </text>
         <circle cx={gx} cy={gy} r={5} fill="var(--thread-toki)" />
         {/* the thread: from today's gate along the top, then down to the chosen year (above every label) */}
@@ -153,7 +186,7 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
         value={year}
         onChange={(e) => setYear(Number(e.target.value))}
         className="min-h-11 w-full accent-[var(--thread-toki)]"
-        aria-label="年を選ぶ"
+        aria-label={t.slider}
         data-testid="year-slider"
       />
       <div className="flex flex-wrap gap-2">
@@ -171,13 +204,13 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
 
       <p className="text-body" data-testid="year-state" data-state={s.state}>
         <span className="mr-2 rounded-sm px-2 py-0.5 text-small" style={{ border: `1px solid ${COLOR[s.state]}`, color: COLOR[s.state] }}>
-          {s.state === "present" ? "あった" : s.state === "absent" ? "不在" : s.state === "withheld" ? "判定保留" : "確認待ち"}
+          {s.state === "present" ? t.present : s.state === "absent" ? t.absent : s.state === "withheld" ? t.withheld : t.unknown}
         </span>
-        {s.label.ja}
+        {s.label[lang]}
       </p>
       {evidenceText.length > 0 && (
         <p className="text-small text-muted">
-          根拠（{data.name?.ja ?? ""}の年表との照合）：{evidenceText.join(" ／ ")}
+          {t.evidence(data.name?.[lang] ?? "", evidenceText.join(" ／ "))}
         </p>
       )}
     </section>

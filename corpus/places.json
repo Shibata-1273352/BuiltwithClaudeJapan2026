@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "note": "FR-25: where each source comes from — where the object is held, or where its writer came from — for the world map. Coordinates are approximate (city level) and each entry says its basis. 'held' = the physical object is kept there; 'origin' = the writer's home (birthplace); 'publisher' = the body that publishes an official page. Online transcriptions (Gutenberg, Aozora) are not 'held' anywhere and are not drawn as such.",
+  "places": {
+    "bird-unbeaten": [{ "role": "origin", "name": { "ja": "英国ヨークシャー（バラブリッジ）", "en": "Boroughbridge, Yorkshire, England" }, "lat": 54.09, "lon": -1.4, "basis": "Isabella Bird's birthplace (1831)" }],
+    "scidmore-jinrikisha": [{ "role": "origin", "name": { "ja": "米国アイオワ州クリントン", "en": "Clinton, Iowa, USA" }, "lat": 41.84, "lon": -90.19, "basis": "Eliza Scidmore's birthplace (1856)" }],
+    "kafu-hiyorigeta": [{ "role": "origin", "name": { "ja": "東京・小石川", "en": "Koishikawa, Tokyo" }, "lat": 35.71, "lon": 139.74, "basis": "Nagai Kafū's birthplace (1879)" }],
+    "koun-kaiko": [{ "role": "origin", "name": { "ja": "江戸・下谷", "en": "Shitaya, Edo (Tokyo)" }, "lat": 35.71, "lon": 139.78, "basis": "Takamura Kōun's birthplace (1852)" }],
+    "sensoji-official": [{ "role": "publisher", "name": { "ja": "浅草寺", "en": "Sensō-ji, Asakusa" }, "lat": 35.7148, "lon": 139.7967, "basis": "the temple publishes its own page" }],
+    "jta-tagengo-kaminarimon": [{ "role": "publisher", "name": { "ja": "東京・霞が関（観光庁）", "en": "Kasumigaseki, Tokyo (Japan Tourism Agency)" }, "lat": 35.67, "lon": 139.75, "basis": "the agency publishes the commentary database" }],
+    "met-56689": [
+      { "role": "held", "name": { "ja": "ニューヨーク（メトロポリタン美術館）", "en": "The Met, New York" }, "lat": 40.779, "lon": -73.963, "basis": "The Met collection, object 56689" },
+      { "role": "origin", "name": { "ja": "江戸", "en": "Edo (Tokyo)" }, "lat": 35.68, "lon": 139.77, "basis": "Hiroshige was born in Edo (1797)" }
+    ],
+    "kaneiji-official-history": [{ "role": "publisher", "name": { "ja": "寛永寺（上野）", "en": "Kan'ei-ji, Ueno" }, "lat": 35.7224, "lon": 139.7752, "basis": "the temple publishes its own page" }],
+    "kaneiji-official-chronology": [{ "role": "publisher", "name": { "ja": "寛永寺（上野）", "en": "Kan'ei-ji, Ueno" }, "lat": 35.7224, "lon": 139.7752, "basis": "the temple publishes its own page" }],
+    "jta-tagengo-kaneiji": [{ "role": "publisher", "name": { "ja": "東京・霞が関（観光庁）", "en": "Kasumigaseki, Tokyo (Japan Tourism Agency)" }, "lat": 35.67, "lon": 139.75, "basis": "the agency publishes the commentary database" }],
+    "jta-tagengo-konponchudo": [{ "role": "publisher", "name": { "ja": "東京・霞が関（観光庁）", "en": "Kasumigaseki, Tokyo (Japan Tourism Agency)" }, "lat": 35.67, "lon": 139.75, "basis": "the agency publishes the commentary database" }],
+    "ndl-azumabashi": [{ "role": "held", "name": { "ja": "東京・永田町（国立国会図書館）", "en": "National Diet Library, Tokyo" }, "lat": 35.678, "lon": 139.744, "basis": "the prints shown are in the NDL collection" }],
+    "gotokyo-azumabashi": [{ "role": "publisher", "name": { "ja": "東京（東京観光財団）", "en": "Tokyo (Tokyo Convention & Visitors Bureau)" }, "lat": 35.68, "lon": 139.76, "basis": "the foundation publishes GO TOKYO" }],
+    "tokyo-kensetsu-sumida-bridges": [{ "role": "publisher", "name": { "ja": "東京都庁（新宿）", "en": "Tokyo Metropolitan Government, Shinjuku" }, "lat": 35.689, "lon": 139.692, "basis": "the Bureau of Construction publishes the map" }],
+    "tokyo-kensetsu-lightup": [{ "role": "publisher", "name": { "ja": "東京都庁（新宿）", "en": "Tokyo Metropolitan Government, Shinjuku" }, "lat": 35.689, "lon": 139.692, "basis": "the Bureau of Construction publishes the page" }],
+    "met-37387": [{ "role": "held", "name": { "ja": "ニューヨーク（メトロポリタン美術館）", "en": "The Met, New York" }, "lat": 40.779, "lon": -73.963, "basis": "The Met collection, object 37387" }],
+    "met-37282": [
+      { "role": "held", "name": { "ja": "ニューヨーク（メトロポリタン美術館）", "en": "The Met, New York" }, "lat": 40.779, "lon": -73.963, "basis": "The Met collection, object 37282" },
+      { "role": "origin", "name": { "ja": "江戸", "en": "Edo (Tokyo)" }, "lat": 35.68, "lon": 139.77, "basis": "Hiroshige was born in Edo (1797)" }
+    ],
+    "met-45257": [{ "role": "held", "name": { "ja": "ニューヨーク（メトロポリタン美術館）", "en": "The Met, New York" }, "lat": 40.779, "lon": -73.963, "basis": "The Met collection, object 45257" }]
+  }
+}

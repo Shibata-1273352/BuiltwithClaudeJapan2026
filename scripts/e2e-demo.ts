@@ -24,7 +24,7 @@ try {
   await page.goto(`${base}/replay/${id}`, { waitUntil: "domcontentloaded" });
   await page.getByTestId("replay-banner").waitFor({ timeout: 15_000 });
   await page.getByTestId("note-link").waitFor({ timeout: 120_000 });
-  for (const tid of ["stage-photo", "step-rail", "result-strip", "evidence-column", "narrative", "thread-layer"]) {
+  for (const tid of ["stage-photo", "step-rail", "result-strip", "evidence-column", "narrative", "rope-layer"]) {
     if ((await page.getByTestId(tid).count()) === 0) fails.push(`missing ${tid}`);
   }
   const hrefs = [await page.getByTestId("note-link").getAttribute("href"), await page.getByTestId("space-link").getAttribute("href").catch(() => null)].filter(Boolean) as string[];

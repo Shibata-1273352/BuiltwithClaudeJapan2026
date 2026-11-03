@@ -33,7 +33,7 @@ try {
   await page.goto(base + "/", { waitUntil: "networkidle" });
   const t0 = Date.now();
   await page.getByTestId("try-sample").click();
-  const beats = ["stage-photo", "step-rail", "see-ask", "place-title", "search-matrix", "evidence-card", "claude-line", "viewpoint", "thread-layer", "broken-callout", "narrative", "associations", "note-link"];
+  const beats = ["stage-photo", "step-rail", "see-ask", "place-title", "search-matrix", "evidence-card", "claude-line", "viewpoint", "rope-layer", "object-lift", "guide-card", "broken-callout", "narrative", "note-link", "postcard-link", "world-card"];
   const shots = [3, 12, 20, 30, 45];
   let shot = 0;
   while (Date.now() - t0 < 110_000) {

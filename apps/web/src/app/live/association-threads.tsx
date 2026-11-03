@@ -1,17 +1,24 @@
 "use client";
 
 /** FR-59 連想の糸 (pencil): passages the graph associates with this place, with the path that links them. */
+import { dict, useDict } from "../i18n";
 import { m } from "motion/react";
 import type { LiveState } from "@/lib/live/state";
 import { Pencil } from "../ui/marks";
 
+const T = dict({
+  ja: { title: "連想の糸", sub: "根拠グラフがつなぐ、今回は読んでいない資料" },
+  en: { title: "Associated threads", sub: "sources the evidence graph links, not read this time" },
+});
+
 export function AssociationThreads({ s }: { s: LiveState }) {
+  const t = useDict(T);
   const a = s.associations;
   if (!a?.ok || a.items.length === 0) return null;
   return (
-    <section className="present-hide border-t border-rule pt-3" aria-label="連想の糸" data-testid="associations">
+    <section className="present-hide border-t border-rule pt-3" aria-label={t.title} data-testid="associations">
       <p className="label">
-        連想の糸 <Pencil /> <span className="ml-1">根拠グラフがつなぐ、今回は読んでいない資料</span>
+        {t.title} <Pencil /> <span className="ml-1">{t.sub}</span>
       </p>
       <ul className="mt-2 flex flex-col gap-2">
         {a.items.slice(0, 3).map((x, i) => (

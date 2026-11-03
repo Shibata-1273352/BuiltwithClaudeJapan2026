@@ -5,11 +5,11 @@
  * Claude reads it, the boxes of what it read, the place title, the SAM 3 layers wiping in, and the
  * aligned Hiroshige print wiping over it.
  */
+import { dict, useDict, useLang } from "../i18n";
 import { AnimatePresence, m } from "motion/react";
-import { useEffect, useState, type Ref } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { LiveState } from "@/lib/live/state";
-import { Dot } from "../ui/marks";
-import { FACING_JA } from "./viewpoint-card";
+import { FACING } from "./viewpoint-card";
 
 type Scene = {
   size: [number, number];
@@ -45,24 +45,51 @@ export function anchorBox(s: LiveState, scene: Scene | null): { x: number; y: nu
   return el ? { x: el.box.x + el.box.w / 2, y: el.box.y + el.box.h / 2 } : null;
 }
 
+const T = dict({
+  ja: {
+    alt: "探索している写真",
+    printAlt: "広重『名所江戸百景 浅草金龍山』に写真を重ねたもの",
+    printCap: "歌川広重《名所江戸百景 浅草金龍山》1856 を重ねて",
+    same: (f: string) => `あなたも広重も${f}を向いている（見立て・鉛筆）`,
+    both: (a: string, b: string) => `あなたは${a}を、広重は${b}を向いている（見立て・鉛筆）`,
+  },
+  en: {
+    alt: "The photo being explored",
+    printAlt: "Hiroshige's Kinryūzan Temple at Asakusa laid over the photo",
+    printCap: "Utagawa Hiroshige, Kinryūzan Temple at Asakusa, 1856 — laid over your photo",
+    same: (f: string) => `You and Hiroshige both face ${f} (a guess, pencil)`,
+    both: (a: string, b: string) => `You face ${a}, Hiroshige faced ${b} (a guess, pencil)`,
+  },
+});
+
 export function PhotoStage({
   s,
   photo,
   elapsed,
   scene,
-  anchorRef,
+  objects,
   overlayOn,
   onAspect,
   aspect,
+  absent = false,
+  absentLine = null,
+  dim = false,
 }: {
   s: LiveState;
   photo: string | null;
   elapsed: number;
   scene: Scene | null;
-  anchorRef: Ref<HTMLSpanElement>;
+  /** the touchable objects (Loom), drawn above the photo and the masks */
+  objects: ReactNode;
   overlayOn: boolean;
   onAspect: (a: number) => void;
   aspect: number;
+  /** the time scrub is in a year when the place's structure did not exist: show it gone */
+  absent?: boolean;
+  /** what that year means, said over the photo */
+  absentLine?: string | null;
+  /** the cut-outs have lifted: the photo steps back */
+  dim?: boolean;
 }) {
   const reading = s.stages.see && !s.see;
   const boxes = (s.see?.elements ?? s.seeProgress?.elements ?? []).slice(0, 6);
@@ -70,16 +97,18 @@ export function PhotoStage({
   const sincePlace = s.at.place !== undefined ? elapsed - s.at.place : -1;
   const sinceSpace = s.at.space !== undefined ? elapsed - s.at.space : -1;
   const sinceVisual = s.at.visual !== undefined ? elapsed - s.at.visual : -1;
-  const anchor = anchorBox(s, scene);
   const masks = s.space?.ok && scene ? Object.entries(scene.elements).filter(([k]) => k !== "people") : [];
   const overlay = s.space?.aligned && scene?.alignment?.ok && scene.alignment.overlay && s.space.scene_id ? `/api/cache/scenes/${s.space.scene_id}/${scene.alignment.overlay}` : null;
   // the print wipes over the photo when the visual match lands, holds, then steps back (toggle brings it back)
   const showOverlay = overlay && sinceVisual >= 0 && (overlayOn || sinceVisual < 5200);
+  const t = useDict(T);
+  const lang = useLang();
   const placeName = s.place?.path[0]?.name; // leaf-first
   // FR-35 in one line, at the moment the print lands: you and Hiroshige, facing (pencil)
   const vf = s.viewpoint?.visitor?.facing;
   const af = s.viewpoint?.artwork?.facing;
-  const facingLine = vf && af && FACING_JA[vf] && FACING_JA[af] ? (vf === af ? `あなたも広重も${FACING_JA[vf]}を向いている（見立て・鉛筆）` : `あなたは${FACING_JA[vf]}を、広重は${FACING_JA[af]}を向いている（見立て・鉛筆）`) : null;
+  const F = FACING[lang];
+  const facingLine = vf && af && F[vf] && F[af] ? (vf === af ? t.same(F[vf]) : t.both(F[vf], F[af])) : null;
 
   return (
     <div className="relative h-full max-w-full overflow-hidden rounded-md bg-ink shadow-2xl ring-1 ring-muted/20" style={{ aspectRatio: aspect }} data-testid="stage-photo">
@@ -87,8 +116,8 @@ export function PhotoStage({
         // eslint-disable-next-line @next/next/no-img-element -- the visitor's own (face-blurred) photo or the CC0 sample
         <img
           src={photo}
-          alt="探索している写真"
-          className="absolute inset-0 size-full object-cover"
+          alt={t.alt}
+          className={`absolute inset-0 size-full object-cover transition-[filter] duration-700 ${absent ? "brightness-[0.5] grayscale" : dim ? "brightness-[0.62] saturate-[0.85]" : ""}`}
           onLoad={(e) => {
             const i = e.currentTarget;
             if (i.naturalWidth && i.naturalHeight) onAspect(i.naturalWidth / i.naturalHeight);
@@ -177,26 +206,29 @@ export function PhotoStage({
             initial={{ clipPath: "inset(0 0 0 100%)" }}
             animate={{ clipPath: "inset(0 0 0 0%)" }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.4, ease: "easeInOut" }}
+            transition={{ duration: 0.7, ease: "easeInOut" }}
             data-testid="stage-overlay"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print aligned to the photo */}
-            <img src={overlay!} alt="広重『名所江戸百景 浅草金龍山』に写真を重ねたもの" className="size-full object-contain" />
+            <img src={overlay!} alt={t.printAlt} className="size-full object-cover" />
             <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night/90 to-transparent px-4 pt-10 pb-3 text-caption text-paper/80">
-              歌川広重《名所江戸百景 浅草金龍山》1856 を重ねて
+              {t.printCap}
               {facingLine && <span className="mt-0.5 block font-hand text-small text-paper" data-testid="facing-line">{facingLine}</span>}
             </span>
           </m.div>
         )}
       </AnimatePresence>
 
-      {/* anchor of the threads */}
-      {anchor && <span ref={anchorRef} aria-hidden className="absolute size-0" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }} />}
-      {anchor && s.at.threads !== undefined && (
-        <span aria-hidden className="absolute -translate-1/2" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }}>
-          <Dot className="block size-3 bg-lantern shadow-[0_0_16px_var(--lantern)]" />
-        </span>
+      {/* turning the years: in an absent year the present fades to a night, and the structure is only a ghost */}
+      <div aria-hidden className={`pointer-events-none absolute inset-0 bg-night transition-opacity duration-700 ${absent ? "opacity-75" : "opacity-0"}`} data-testid="stage-plate" data-absent={absent ? "1" : "0"} />
+      {absent && absentLine && (
+        <m.p key={absentLine} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="pointer-events-none absolute inset-x-6 bottom-6 z-30 text-center font-serif text-title text-paper" data-testid="absent-line">
+          {absentLine}
+        </m.p>
       )}
+
+      {/* the loom: touchable objects, each tying its threads */}
+      {!showOverlay && objects}
 
       {/* the place, big, before it docks into the text column */}
       <AnimatePresence>

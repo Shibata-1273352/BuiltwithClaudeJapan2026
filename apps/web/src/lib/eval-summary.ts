@@ -2,7 +2,7 @@
  * The evaluation numbers for the stage (6.5, 2:40), computed from the stored result file — the same
  * figures as evaluation/results/<date>.md, never typed in by hand.
  */
-import result from "../../../../evaluation/results/2026-11-03.json";
+import result from "../../../../evaluation/results/latest.json";
 
 type Row = { expected: string; got: string; ablation_publication: string };
 type Cit = { n: number; exact: number };
