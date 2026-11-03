@@ -26,7 +26,7 @@ try {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(String(e)));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-  await page.goto(`${base}/space/${scene}?enter=1&3d=1`, { waitUntil: "domcontentloaded", timeout: 120_000 });
+  await page.goto(`${base}/space/${scene}?enter=1${rest.includes("--auto") ? "" : "&3d=1"}`, { waitUntil: "domcontentloaded", timeout: 120_000 });
   await page.locator("canvas").first().waitFor({ timeout: 60_000 });
   await page.waitForTimeout(2500);
   await page.screenshot({ path: path.join(out, `${lang}-1-split.png`) });
@@ -41,6 +41,16 @@ try {
   await page.mouse.move(box.x + box.width * 0.95, box.y + box.height * 0.9, { steps: 10 });
   await page.waitForTimeout(1500);
   await page.screenshot({ path: path.join(out, `${lang}-4-lean-right.png`) });
+  // --auto: no ?3d=1; if the device falls back to 2D, "3Dで見る" must bring 3D back and keep it
+  if (rest.includes("--auto")) {
+    const back = page.getByTestId("space-try-3d");
+    if (await back.count()) {
+      await back.click();
+      await page.waitForTimeout(12_000);
+      await page.screenshot({ path: path.join(out, `${lang}-5-after-try-3d.png`) });
+      if (await page.getByTestId("space-2d").count()) fails.push("fell back to 2D again after choosing 3D");
+    }
+  }
   if (errors.length) fails.push(...errors.slice(0, 3));
   console.log(JSON.stringify({ out, fails }, null, 1));
 } finally {
