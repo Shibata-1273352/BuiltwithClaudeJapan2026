@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { periodsFrom, type ExistenceEvent } from "@tsumugi/core";
 import { describe, expect, it } from "vitest";
-import { labelRows, presentPeriodAround, segments, yearState, type TimelineData } from "./time-river";
+import { labelRows, presentPeriodAround, segments, sinceWhen, yearState, type TimelineData } from "./time-river";
 
 const tl = JSON.parse(readFileSync(path.join(import.meta.dirname, "../../../../corpus/timeline.json"), "utf8"));
 const events = (tl.existence_events as ExistenceEvent[]).filter((e) => e.entity === "ent:kaminarimon");
@@ -64,5 +64,19 @@ describe("the period a print belongs to (時をめくる shows Hiroshige only wh
     expect(p?.to).toBe(1866);
     expect(p!.from).toBeLessThan(1856);
     expect(presentPeriodAround(d, 1878)).toBeNull();
+  });
+});
+
+describe("since when? (the friend's second question, answered by code)", () => {
+  it("Kaminarimon: the present gate dates from its rebuilding; the one before stood until the fire", () => {
+    const w = sinceWhen(d, 2026)!;
+    expect(w.since).toBe(1960);
+    expect(w.how).toBe("rebuilt");
+    expect(w.before).toMatchObject({ to: 1866, end: "destroyed" });
+    expect(w.label.ja).toBe(`いまの雷門は1960年に再建されたもの。その前の雷門は${w.before!.from}年から1866年の焼失まで立っていた。`);
+    expect(w.label.en).toContain("The present Kaminarimon dates from 1960 (rebuilt)");
+  });
+  it("no present period reaching today: no answer", () => {
+    expect(sinceWhen({ ...d, periods: [] }, 2026)).toBeNull();
   });
 });

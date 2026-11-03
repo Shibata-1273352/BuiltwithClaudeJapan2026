@@ -128,3 +128,40 @@ export function presentPeriodAround(d: TimelineData, year: number): { from: numb
   }
   return null;
 }
+
+export type SinceWhen = {
+  /** the year the structure standing now dates from */
+  since: number;
+  /** what happened that year (rebuilt / built / moved_in …) */
+  how: string | null;
+  /** the structure before it: when it stood, and how it ended */
+  before: { from: number; to: number; end: string | null } | null;
+  label: { ja: string; en: string };
+};
+
+const EV_JA: Record<string, string> = { rebuilt: "再建", built: "建立", moved_in: "移築", destroyed: "焼失" };
+const EV_EN: Record<string, string> = { rebuilt: "rebuilt", built: "built", moved_in: "moved here", destroyed: "lost" };
+
+/**
+ * "Since when has it been here?" — answered by code from the reviewed timeline: the present period
+ * that reaches today, the event that opened it, and the period before it with the event that closed it.
+ * Null when the timeline has no present period reaching `now`.
+ */
+export function sinceWhen(d: TimelineData, now: number): SinceWhen | null {
+  const year = (iso: string | null | undefined) => (iso ? Number(iso.slice(0, 4)) : NaN);
+  const present = d.periods.filter((p) => p.state === "present").map((p) => ({ from: year(p.start), to: year(p.end), p }));
+  const cur = present.find((x) => x.from <= now && x.to >= now);
+  if (!cur) return null;
+  const evAt = (y: number, kinds?: string[]) => d.events.find((e) => year(e.time.start) === y && (!kinds || kinds.includes(e.event)));
+  const how = evAt(cur.from)?.event ?? null;
+  const prev = present.filter((x) => x.to < cur.from).sort((a, b) => b.to - a.to)[0];
+  const end = prev ? (evAt(prev.to, ["destroyed"])?.event ?? null) : null;
+  const n = d.name ?? { ja: "これ", en: "it" };
+  const ja =
+    `いまの${n.ja}は${cur.from}年${how ? `に${EV_JA[how] ?? how}` : "から"}されたもの。` +
+    (prev ? `その前の${n.ja}は${prev.from}年から${prev.to}年${end ? `の${EV_JA[end] ?? end}` : ""}まで立っていた。` : "");
+  const en =
+    `The present ${n.en} dates from ${cur.from}${how ? ` (${EV_EN[how] ?? how})` : ""}.` +
+    (prev ? ` The one before stood from ${prev.from} until ${prev.to}${end ? `, when it was ${EV_EN[end] ?? end}` : ""}.` : "");
+  return { since: cur.from, how, before: prev ? { from: prev.from, to: prev.to, end } : null, label: { ja: ja.replace("されたもの", how ? "されたもの" : "のもの"), en } };
+}

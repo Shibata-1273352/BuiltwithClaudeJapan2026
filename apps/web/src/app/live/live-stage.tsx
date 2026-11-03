@@ -275,12 +275,12 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
           {overlayOn ? t.back : t.overlay}
         </Button>
       )}
-      {finished && expId && (
+      {finished && expId && s.place && (
         <ButtonLink href={`/note/${expId}`} variant="primary" data-testid="note-link">
           {t.note}
         </ButtonLink>
       )}
-      {finished && expId && <PostcardButton expId={expId} />}
+      {finished && expId && s.place && <PostcardButton expId={expId} />}
       {finished && s.timeline != null && (
         <Button variant="quiet" onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
           {t.time}
@@ -359,7 +359,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <ExplorationView attach={replay ? undefined : expId} replay={replay ? { explorationId: expId, recordedAt: source.recordedAt } : undefined} />
               </div>
             ) : (
-              <div ref={stageRef} className="relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:grid-cols-[minmax(320px,1fr)_auto_96px_minmax(360px,480px)] lg:gap-8">
+              <div ref={stageRef} className={`relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:gap-8 ${s.place === null ? "lg:grid-cols-[minmax(420px,1.1fr)_auto]" : "lg:grid-cols-[minmax(320px,1fr)_auto_96px_minmax(360px,480px)]"}`}>
                 <div className="order-2 min-h-0 lg:order-none">
                   <TextColumn
                     s={s}
@@ -369,13 +369,13 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     hot={hot}
                     setHot={setHot}
                     actions={actions}
-                    guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} onAsk={finished && expId ? onAsk : undefined} />}
+                    guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} onAsk={finished && expId && s.place ? onAsk : undefined} />}
                     story={storyShown}
                     world={finished && s.place?.entity ? <WorldCard entity={s.place.entity} sourceIds={sourceIds} titles={titles} /> : null}
                     guideFocus={
                       <>
                         {selectedSee !== null && <GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} only={selectedSee} onAsk={expId ? onAsk : undefined} />}
-                        {finished && expId && <AskPanel items={asks} onAsk={onAsk} register={register} />}
+                        {finished && expId && s.place && <AskPanel items={asks} onAsk={onAsk} register={register} />}
                       </>
                     }
                   />
@@ -406,10 +406,10 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     }
                   />
                 </div>
-                <div className="hidden min-h-0 lg:block">
+                <div className={`hidden min-h-0 ${s.place === null ? "" : "lg:block"}`}>
                   <YearAxis s={s} cards={cards} axisRef={axisRef} scrub={scrub} onScrub={finished && s.timeline ? onScrub : undefined} scrubLabel={ys?.label[lang]} />
                 </div>
-                <div className="order-3 min-h-0 lg:order-none">
+                <div className={`order-3 min-h-0 lg:order-none ${s.place === null ? "hidden" : ""}`}>
                   <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} />
                 </div>
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
