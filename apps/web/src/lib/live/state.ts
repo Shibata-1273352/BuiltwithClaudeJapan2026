@@ -47,6 +47,8 @@ export type LiveState = {
   names?: unknown;
   threads?: ThreadRow[];
   narrative?: { lang?: "ja" | "en"; sentences?: { text: string; claim_ids: string[]; assertion_type: string }[]; dropped?: unknown[] };
+  /** checked sentences while the story is still being written (display only) */
+  narrativeProgress?: { lang?: "ja" | "en"; sentences: { text: string; claim_ids: string[]; assertion_type: string }[]; seq: number };
   graph?: { saved: boolean; ms?: number };
   done?: { elapsed_ms?: number; cost_usd?: number; claude_calls?: number; status?: string };
   failed?: { message: string };
@@ -135,6 +137,10 @@ export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
       break;
     case "narrative":
       n.narrative = d as LiveState["narrative"];
+      break;
+    case "narrative_progress":
+      if (!n.narrativeProgress || ev.seq > n.narrativeProgress.seq)
+        n.narrativeProgress = { lang: d.lang as "ja" | "en", sentences: (d.sentences as NonNullable<LiveState["narrativeProgress"]>["sentences"]) ?? [], seq: ev.seq };
       break;
     case "graph":
       n.graph = d as LiveState["graph"];

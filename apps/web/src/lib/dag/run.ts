@@ -343,17 +343,26 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return found;
     };
     const selected1 = selectForExtraction(retrieved);
-    const [c1en, c1ja, found2] = await Promise.all([
-      stage(ctx, "extract:en", () => extractRound(1, selected1.filter((c) => c.lang === "en"))),
-      stage(ctx, "extract:ja", () => extractRound(1, selected1.filter((c) => c.lang === "ja"))),
-      opts.gapRound ? stage(ctx, "gap", runGap) : Promise.resolve([] as Retrieved[]),
-    ]);
+    // Latency (4.13): output length sets a call's time, so each language is split into two smaller
+    // parallel calls (claim ids carry the passage id, so they stay unique), and the gap round's
+    // extraction starts as soon as the gap judgment returns instead of waiting for round 1.
+    const halves = <T,>(xs: T[]): T[][] => {
+      const k = xs.length >= 6 ? 3 : xs.length >= 4 ? 2 : 1;
+      const n = Math.ceil(xs.length / k);
+      return Array.from({ length: k }, (_, i) => xs.slice(i * n, (i + 1) * n)).filter((x) => x.length);
+    };
+    const extractLang = async (lang: "en" | "ja") => (await Promise.all(halves(selected1.filter((c) => c.lang === lang)).map((part) => extractRound(1, part)))).flat();
+    const round2 = opts.gapRound
+      ? stage(ctx, "gap", runGap).then(async (found2) => {
+          for (const f of found2) {
+            all.push(f);
+            byPassage.set(f.passageId, f);
+          }
+          return found2.length ? stage(ctx, "extract2", async () => (await Promise.all(halves(selectForExtraction(found2)).map((part) => extractRound(2, part)))).flat()) : [];
+        })
+      : Promise.resolve([] as CheckedClaim[]);
+    const [c1en, c1ja, claims2] = await Promise.all([stage(ctx, "extract:en", () => extractLang("en")), stage(ctx, "extract:ja", () => extractLang("ja")), round2]);
     const claims1 = [...c1en, ...c1ja];
-    for (const f of found2) {
-      all.push(f);
-      byPassage.set(f.passageId, f);
-    }
-    const claims2 = found2.length ? await stage(ctx, "extract2", () => extractRound(2, selectForExtraction(found2))) : [];
     const extraction = { claims: [...claims1, ...claims2] };
 
     // 7. Time and existence (code only, FR-15/16, RAG-05/06): what each source could have seen
@@ -433,7 +442,10 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       if (!cards.size) return null;
       ctx.claude();
       const lang = capture.ui_lang === "en" ? "en" : "ja";
-      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id), photoUnmatched);
+      // sentences reach the stage as they are written and pass the checks (display only; the final event is authoritative)
+      const r = await narrate(E, cards, lang, E.ancestors(place).map((e) => e.id), photoUnmatched, (ok) =>
+        emit(explorationId, "narrative_progress", { lang, sentences: ok.map(({ text, claim_ids, assertion_type }) => ({ text, claim_ids, assertion_type })) }),
+      );
       logCall(ctx, db, explorationId, r.record);
       const payload = {
         lang,

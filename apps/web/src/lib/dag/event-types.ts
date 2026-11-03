@@ -22,6 +22,7 @@ export const EVENT_TYPES = [
   "visual",
   "viewpoint",
   "associations",
+  "narrative_progress",
   "narrative",
   "graph",
   "ai_call",

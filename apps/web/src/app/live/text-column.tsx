@@ -94,8 +94,8 @@ export function TextColumn({
     const row = s.existence?.rows.find((r) => r.source === src);
     return row?.time?.start?.slice(0, 4) ?? null;
   })();
-  const sentences = s.narrative?.sentences ?? [];
-  const sinceNarr = since("narrative");
+  const sentences = s.narrative?.sentences ?? s.narrativeProgress?.sentences ?? [];
+  const sinceNarr = s.at.narrative_progress !== undefined ? elapsed - s.at.narrative_progress : since("narrative");
   const order = new Map(cards.map((c, i) => [c.sourceId, i + 1]));
   const showStory = sinceNarr >= 0;
 
@@ -191,7 +191,7 @@ export function TextColumn({
 
         {/* the story, sentence by sentence (350 ms each), with source numbers */}
         {showStory && (
-          <article data-testid="narrative" lang={s.narrative?.lang ?? "ja"}>
+          <article data-testid="narrative" lang={s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
             <p className="label">この場所の物語</p>
             <div className="mt-2 flex flex-col gap-3">
               {sentences.map((x, i) => {

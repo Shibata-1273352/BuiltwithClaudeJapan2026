@@ -44,6 +44,27 @@ describe("live state (a real recorded exploration)", () => {
   });
 });
 
+describe("live progress (streamed see / narrative)", () => {
+  const box = { x: 0.1, y: 0.1, w: 0.2, h: 0.2 };
+  const ev = [
+    { seq: 1, type: "see_progress", data: { thinking: "a", elements: [{ label: "lantern", box, text_original: "風雷神門" }] } },
+    { seq: 2, type: "see_progress", data: { thinking: "ab", elements: [{ label: "lantern", box }, { label: "bad", box: { x: 2, y: 0, w: 1, h: 1 } }] } },
+    { seq: 3, type: "narrative_progress", data: { lang: "ja", sentences: [{ text: "一", claim_ids: ["c"], assertion_type: "direct" }] } },
+  ];
+  it("the newest progress wins in any order; malformed boxes are dropped", () => {
+    for (const order of [ev, [...ev].reverse()]) {
+      const s = fold(order);
+      expect(s.seeProgress?.thinking).toBe("ab");
+      expect(s.seeProgress?.elements.map((e) => e.label)).toEqual(["lantern"]);
+      expect(s.narrativeProgress?.sentences[0].text).toBe("一");
+    }
+  });
+  it("progress never holds the stage", () => {
+    const shown = scheduleBeats(ev.map((e) => ({ seq: e.seq, type: e.type, at: 0 })));
+    expect([...shown.values()].every((t) => t <= MIN_SEE_SWEEP)).toBe(true);
+  });
+});
+
 describe("beats (6.3 choreography)", () => {
   const t0 = Date.parse(events[0].ts);
   const arrivals = events.map((e) => ({ seq: e.seq, type: String(e.type), at: Date.parse(e.ts) - t0 }));

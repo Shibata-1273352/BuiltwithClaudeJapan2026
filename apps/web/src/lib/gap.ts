@@ -7,7 +7,7 @@
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { UNTRUSTED_POLICY, type CheckedClaim, type Entities } from "@tsumugi/core";
 import { z } from "zod";
-import { CLAUDE_MODEL, claude, costOf, rateLimitHeaders, type CallRecord } from "./claude";
+import { CLAUDE_LIGHT_MODEL, claude, costOf, rateLimitHeaders, type CallRecord } from "./claude";
 import type { DB } from "./corpus/db";
 import { rrf, searchEntities, searchRelation, type Lang } from "./corpus/search";
 import type { Facet, FacetPlan } from "./dag/plan";
@@ -87,7 +87,7 @@ export async function evaluateGaps(E: Entities, targetId: string, summary: strin
   const { data, response } = await claude()
     .beta.messages.create(
       {
-        model: CLAUDE_MODEL,
+        model: CLAUDE_LIGHT_MODEL,
         max_tokens: req.max_tokens,
         betas: ["server-side-fallback-2026-07-01"],
         fallbacks: "default",
@@ -101,7 +101,7 @@ export async function evaluateGaps(E: Entities, targetId: string, summary: strin
     .withResponse();
   const record: CallRecord = {
     stage: "gap",
-    model: CLAUDE_MODEL,
+    model: CLAUDE_LIGHT_MODEL,
     servedModel: data.model,
     startedAt: startedAt.toISOString(),
     elapsedMs: Date.now() - startedAt.getTime(),
@@ -112,7 +112,7 @@ export async function evaluateGaps(E: Entities, targetId: string, summary: strin
       cacheRead: data.usage.cache_read_input_tokens ?? 0,
       cacheWrite: data.usage.cache_creation_input_tokens ?? 0,
     },
-    costUsd: costOf(data.usage),
+    costUsd: costOf(data.usage, CLAUDE_LIGHT_MODEL),
     rateLimit: rateLimitHeaders(response.headers),
     requestId: response.headers.get("request-id"),
   };

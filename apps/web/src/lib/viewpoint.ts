@@ -4,7 +4,7 @@
  */
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { UNTRUSTED_POLICY, validateViewpoint, ViewpointOutput, type Viewpoint } from "@tsumugi/core";
-import { CLAUDE_MODEL, claude, costOf, rateLimitHeaders, type CallRecord } from "./claude";
+import { CLAUDE_LIGHT_MODEL, claude, costOf, rateLimitHeaders, type CallRecord } from "./claude";
 
 export const VIEWPOINT_SYSTEM = `You are the "viewpoint" step of TSUMUGI. The place in the photo has already been identified (given below).
 
@@ -21,7 +21,7 @@ export async function guessViewpoint(
   const startedAt = new Date();
   const { data, response } = await claude()
     .beta.messages.create({
-      model: CLAUDE_MODEL,
+      model: CLAUDE_LIGHT_MODEL,
       max_tokens: 4000,
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
@@ -40,7 +40,7 @@ export async function guessViewpoint(
     .withResponse();
   const record: CallRecord = {
     stage: "viewpoint",
-    model: CLAUDE_MODEL,
+    model: CLAUDE_LIGHT_MODEL,
     servedModel: data.model,
     startedAt: startedAt.toISOString(),
     elapsedMs: Date.now() - startedAt.getTime(),
@@ -51,7 +51,7 @@ export async function guessViewpoint(
       cacheRead: data.usage.cache_read_input_tokens ?? 0,
       cacheWrite: data.usage.cache_creation_input_tokens ?? 0,
     },
-    costUsd: costOf(data.usage),
+    costUsd: costOf(data.usage, CLAUDE_LIGHT_MODEL),
     rateLimit: rateLimitHeaders(response.headers),
     requestId: response.headers.get("request-id"),
   };
