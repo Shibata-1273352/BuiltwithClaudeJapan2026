@@ -116,6 +116,14 @@ Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compo
 
 45,000 requests/min, 10M input tokens/min, 2M output tokens/min. One "see" call costs about $0.05.
 
+## Beyond P0
+
+| ID | Feature | Status |
+| --- | --- | --- |
+| FR-58 | **Visual search — lantern to lantern**: the lantern SAM 3 cut from the photo is embedded with SigLIP so400m (fp16) and compared with 118 public-domain Hiroshige prints (full image, overlapping tiles, and the lanterns SAM 3 finds in each print). Hiroshige's *Kinryūzan Temple in Asakusa* comes first. Shown as "similar images, not evidence", with the matching region outlined. | Done ([verification](docs/verification/visual-search.md); one gold print, one photo — an acceptance check, not an accuracy estimate) |
+| FR-43 | Travel note list (`/notes`) | Done |
+| FR-44 | あなたの確認: confirm a pencil / pending thread in the note (double line; evidence unchanged) | Done |
+
 ## Evaluation (`npm run eval`, REQUIREMENTS.md 10)
 
 A limited, hand-made evaluation set (3 sites; gold annotated by Claude Code, **human review pending**). It checks citation agreement and mis-bindings of entity and era; it does not prove a zero hallucination rate. Full tables: [`evaluation/results/2026-11-03.md`](evaluation/results/2026-11-03.md). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
