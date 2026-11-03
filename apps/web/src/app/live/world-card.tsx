@@ -11,7 +11,11 @@ import { project, type WorldPoint } from "@/lib/world";
 import { dict, useDict, useLang } from "../i18n";
 
 const W = 560;
-const H = 220;
+const H = 170;
+// the band of the world where the threads run (Japan, Europe, North America)
+const LAT_TOP = 70;
+const LAT_BOT = -10;
+const at = (p: { lat: number; lon: number }) => ({ x: project(p, W, H).x, y: ((LAT_TOP - p.lat) / (LAT_TOP - LAT_BOT)) * H });
 
 const L = dict({
   ja: { title: "海を越える糸", sub: "資料が今ある場所、書き手の生まれた場所", held: "所蔵", origin: "生まれ", publisher: "発信", here: "ここ", km: (n: number) => `${n.toLocaleString("ja-JP")} km` },
@@ -38,7 +42,7 @@ export function WorldCard({ entity, sourceIds, titles }: { entity: string; sourc
   if (!data || data.key !== key) return null;
   const far = data.points.filter((p) => p.km >= 500);
   if (!far.length) return null;
-  const s = project(data.site, W, H);
+  const s = at(data.site);
   // one mark per place (several sources can share The Met)
   const byPlace = new Map<string, WorldPoint[]>();
   for (const p of far) byPlace.set(`${p.lat},${p.lon}`, [...(byPlace.get(`${p.lat},${p.lon}`) ?? []), p]);
@@ -48,27 +52,29 @@ export function WorldCard({ entity, sourceIds, titles }: { entity: string; sourc
         <p className="label">{l.title}</p>
         <p className="mt-0.5 text-caption text-muted">{l.sub}</p>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={l.title}>
+      <svg viewBox={`0 -24 ${W} ${H + 24}`} className="w-full" role="img" aria-label={l.title}>
         {/* graticule */}
-        {[-60, -30, 0, 30, 60].map((lat) => (
-          <line key={lat} x1={0} x2={W} y1={((90 - lat) / 180) * H} y2={((90 - lat) / 180) * H} stroke="var(--muted)" strokeOpacity={lat === 0 ? 0.25 : 0.12} strokeWidth={0.6} />
+        {[0, 30, 60].map((lat) => (
+          <line key={lat} x1={0} x2={W} y1={at({ lat, lon: 0 }).y} y2={at({ lat, lon: 0 }).y} stroke="var(--muted)" strokeOpacity={lat === 0 ? 0.25 : 0.12} strokeWidth={0.6} />
         ))}
         {Array.from({ length: 12 }, (_, i) => (
           <line key={i} y1={0} y2={H} x1={(i * W) / 12} x2={(i * W) / 12} stroke="var(--muted)" strokeOpacity={0.12} strokeWidth={0.6} />
         ))}
-        {[...byPlace.values()].map((ps, i) => {
-          const p = project(ps[0], W, H);
+        {[...byPlace.values()].map((ps, i, all) => {
+          const p = at(ps[0]);
+          // a label near an earlier one goes above its dot instead of below
+          const up = all.slice(0, i).some((q) => Math.abs(at(q[0]).x - p.x) < 120 && Math.abs(at(q[0]).y - p.y) < 30);
           const lift = Math.min(90, Math.abs(p.x - s.x) * 0.35);
-          const d = `M ${s.x} ${s.y} Q ${(s.x + p.x) / 2} ${Math.min(s.y, p.y) - lift} ${p.x} ${p.y}`;
+          const d = `M ${s.x} ${s.y} Q ${(s.x + p.x) / 2} ${Math.max(-40, Math.min(s.y, p.y) - lift)} ${p.x} ${p.y}`;
           const right = p.x > W * 0.6;
           return (
             <g key={i}>
               <m.path d={d} fill="none" stroke="var(--thread-ba)" strokeWidth={1.2} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.7, delay: 0.2 + i * 0.25 }} />
               <circle cx={p.x} cy={p.y} r={2.6} fill="var(--paper)" />
-              <text x={p.x + (right ? -6 : 6)} y={p.y + 14} textAnchor={right ? "end" : "start"} fontSize={10} fill="var(--paper)">
+              <text x={p.x + (right ? -6 : 6)} y={up ? p.y - 22 : p.y + 14} textAnchor={right ? "end" : "start"} fontSize={10} fill="var(--paper)">
                 {ps[0].name[lang]}
               </text>
-              <text x={p.x + (right ? -6 : 6)} y={p.y + 26} textAnchor={right ? "end" : "start"} fontSize={9} fill="var(--muted)">
+              <text x={p.x + (right ? -6 : 6)} y={up ? p.y - 10 : p.y + 26} textAnchor={right ? "end" : "start"} fontSize={9} fill="var(--muted)">
                 {l.km(ps[0].km)}
               </text>
             </g>

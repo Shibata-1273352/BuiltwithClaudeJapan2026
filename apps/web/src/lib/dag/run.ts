@@ -22,7 +22,8 @@ import { claimThreads, existenceThreads } from "./threads";
 import { chunkForExtraction, extractClaims, selectForExtraction } from "../extract";
 import { evaluateGaps, searchGaps, summarizeForGap, validateGaps } from "../gap";
 import { buildClaimCards, narrate } from "../narrate";
-import { saveToGraph } from "../graph-write";
+import { graphSketch } from "../graph-sketch";
+import { buildGraphParams, saveToGraph } from "../graph-write";
 import { findAssociations } from "../associations";
 import { requestScene, requestVisual } from "../inference";
 import { existenceRows } from "../existence-rows";
@@ -493,7 +494,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         corpus.close();
       }
       const lang = capture.ui_lang === "en" ? "en" : "ja";
-      const r = await saveToGraph(E, {
+      const gi: Parameters<typeof saveToGraph>[1] = {
         captureId: capture.id,
         target: place,
         claims: extraction.claims.map((c) => ({
@@ -505,8 +506,10 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         threads,
         narrative: (narrative ?? []).filter((s) => s.ok).map((s) => ({ ...s, lang })),
         sources,
-      });
-      emit(explorationId, "graph", r.ok ? { saved: true, ms: r.ms } : { saved: false, message: "グラフ保存失敗（再試行できます）" });
+      };
+      const r = await saveToGraph(E, gi);
+      // 舞台裏 draws exactly what was written (only when it was)
+      emit(explorationId, "graph", r.ok ? { saved: true, ms: r.ms, sketch: graphSketch(buildGraphParams(E, gi)) } : { saved: false, message: "グラフ保存失敗（再試行できます）" });
       if (!r.ok) console.error(`[graph ${explorationId}]`, r.error);
       return r.ok;
     });

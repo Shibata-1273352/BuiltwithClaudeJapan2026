@@ -3,6 +3,7 @@
  * and presenter use the same function, so they always show the same thing. Order-independent
  * (events are keyed by type; lists are kept in seq order) and idempotent (a seq is applied once).
  */
+import type { Sketch } from "../graph-sketch";
 import type { GuideNote } from "@tsumugi/core";
 import type { EventType } from "../dag/event-types";
 
@@ -52,7 +53,7 @@ export type LiveState = {
   narrative?: { lang?: "ja" | "en"; sentences?: { text: string; claim_ids: string[]; assertion_type: string }[]; dropped?: unknown[] };
   /** checked sentences while the story is still being written (display only) */
   narrativeProgress?: { lang?: "ja" | "en"; sentences: { text: string; claim_ids: string[]; assertion_type: string }[]; seq: number };
-  graph?: { saved: boolean; ms?: number };
+  graph?: { saved: boolean; ms?: number; sketch?: Sketch };
   done?: { elapsed_ms?: number; cost_usd?: number; claude_calls?: number; status?: string };
   failed?: { message: string };
 };

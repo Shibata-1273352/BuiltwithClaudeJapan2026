@@ -4,6 +4,7 @@
  * 「この探索の舞台裏」: what Claude did and what code decided in this run — each Claude call on a
  * timeline (parallel calls overlap), the checks code ran on Claude's output and what they rejected.
  */
+import { GraphDiagram } from "./graph-diagram";
 import { m } from "motion/react";
 import { evalSummary } from "@/lib/eval-summary";
 import type { LiveState } from "@/lib/live/state";
@@ -188,6 +189,7 @@ export function Backstage({
         </div>
         <EvalNumbers />
       </div>
+      {s.graph?.sketch && <GraphDiagram sketch={s.graph.sketch} />}
     </StagePanel>
   );
 }

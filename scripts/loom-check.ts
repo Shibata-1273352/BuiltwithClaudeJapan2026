@@ -27,7 +27,9 @@ try {
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(`${base}/replay/${id}`, { waitUntil: "domcontentloaded" });
   await page.getByTestId("note-link").waitFor({ timeout: 120_000 });
-  await page.waitForTimeout(2500);
+  // the print may still be over the photo (it holds ~5 s after the visual match): let it step back
+  await page.getByTestId("stage-overlay").waitFor({ state: "detached", timeout: 12_000 }).catch(() => {});
+  await page.waitForTimeout(1500);
   const shot = (n: string) => page.screenshot({ path: path.join(out, `${lang}-${n}.png`) });
   await shot("1-done");
   const obj = page.locator('[data-object="lantern"]').or(page.locator('[data-testid="object-lift"]').last()).first();
@@ -84,6 +86,17 @@ try {
       await shot("8-ask");
       if (!(await page.locator('[data-testid="ask-answer"] sup').count())) fails.push("the answer cites nothing");
     }
+  }
+  // the world map, then 舞台裏 with the Evidence Graph as written
+  const world = page.getByTestId("world-card");
+  if (await world.count()) await world.screenshot({ path: path.join(out, `${lang}-9-world.png`) });
+  else fails.push("no world card");
+  await page.getByTestId("backstage-toggle").click();
+  const graph = page.getByTestId("graph-diagram");
+  await graph.waitFor({ timeout: 10_000 }).catch(() => fails.push("no graph diagram in backstage"));
+  if (await graph.count()) {
+    await graph.scrollIntoViewIfNeeded();
+    await graph.screenshot({ path: path.join(out, `${lang}-10-graph.png`) });
   }
   if (errors.length) fails.push(...errors.slice(0, 3));
   console.log(JSON.stringify({ out, fails }, null, 1));
