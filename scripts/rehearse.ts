@@ -27,7 +27,7 @@ try {
   page.on("pageerror", (e) => errors.push(String(e)));
   const t0 = Date.now();
   await page.goto(`${base}${route}${route.includes("?") ? "&" : "?"}present=1`, { waitUntil: "domcontentloaded" });
-  const beats = ["place-title", "stage-overlay", "viewpoint", "thread-layer", "broken-callout", "narrative", "associations", "note-link"];
+  const beats = ["place-title", "stage-overlay", "viewpoint", "rope-layer", "broken-callout", "narrative", "associations", "note-link"];
   while (Date.now() - t0 < 120_000 && !("note-link" in at)) {
     for (const b of beats) if (!(b in at) && (await page.getByTestId(b).count()) > 0) at[b] = Math.round((Date.now() - t0) / 100) / 10;
     if (at["stage-overlay"] && !at.overlayShot) {

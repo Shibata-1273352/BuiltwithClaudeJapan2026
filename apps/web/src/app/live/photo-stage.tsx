@@ -53,6 +53,9 @@ export function PhotoStage({
   overlayOn,
   onAspect,
   aspect,
+  absent = false,
+  absentLine = null,
+  dim = false,
 }: {
   s: LiveState;
   photo: string | null;
@@ -63,6 +66,12 @@ export function PhotoStage({
   overlayOn: boolean;
   onAspect: (a: number) => void;
   aspect: number;
+  /** the time scrub is in a year when the place's structure did not exist: show it gone */
+  absent?: boolean;
+  /** what that year means, said over the photo */
+  absentLine?: string | null;
+  /** the cut-outs have lifted: the photo steps back */
+  dim?: boolean;
 }) {
   const reading = s.stages.see && !s.see;
   const boxes = (s.see?.elements ?? s.seeProgress?.elements ?? []).slice(0, 6);
@@ -87,7 +96,7 @@ export function PhotoStage({
         <img
           src={photo}
           alt="探索している写真"
-          className="absolute inset-0 size-full object-cover"
+          className={`absolute inset-0 size-full object-cover transition-[filter] duration-700 ${absent ? "brightness-[0.5] grayscale" : dim ? "brightness-[0.62] saturate-[0.85]" : ""}`}
           onLoad={(e) => {
             const i = e.currentTarget;
             if (i.naturalWidth && i.naturalHeight) onAspect(i.naturalWidth / i.naturalHeight);
@@ -188,6 +197,14 @@ export function PhotoStage({
           </m.div>
         )}
       </AnimatePresence>
+
+      {/* turning the years: in an absent year the present fades to a night, and the structure is only a ghost */}
+      <div aria-hidden className={`pointer-events-none absolute inset-0 bg-night transition-opacity duration-700 ${absent ? "opacity-75" : "opacity-0"}`} data-testid="stage-plate" data-absent={absent ? "1" : "0"} />
+      {absent && absentLine && (
+        <m.p key={absentLine} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="pointer-events-none absolute inset-x-6 bottom-6 z-30 text-center font-serif text-title text-paper" data-testid="absent-line">
+          {absentLine}
+        </m.p>
+      )}
 
       {/* the loom: touchable objects, each tying its threads */}
       {!showOverlay && objects}

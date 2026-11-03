@@ -13,8 +13,8 @@ import type { LoomObject } from "@/lib/live/objects";
 import { dict, useDict } from "../i18n";
 
 const L = dict({
-  ja: { open: (l: string) => `${l}：触れる・開く` },
-  en: { open: (l: string) => `${l}: touch to open` },
+  ja: { open: (l: string) => `${l}：触れる・開く`, hint: "触れて、引いてみる" },
+  en: { open: (l: string) => `${l}: touch to open`, hint: "Touch it, pull it" },
 });
 
 export function ObjectsLayer({
@@ -42,7 +42,7 @@ export function ObjectsLayer({
   return (
     <>
       {objects.map((o, i) => (
-        <TouchObject key={o.key} o={o} i={i} sceneId={sceneId} lifted={lifted} faded={faded} selected={selected === o.key} register={register} onTouch={onTouch} onSelect={onSelect} label={l.open(o.label)} />
+        <TouchObject key={o.key} o={o} i={i} sceneId={sceneId} lifted={lifted} faded={faded} selected={selected === o.key} register={register} onTouch={onTouch} onSelect={onSelect} label={l.open(o.label)} hint={l.hint} />
       ))}
     </>
   );
@@ -59,6 +59,7 @@ function TouchObject({
   onTouch,
   onSelect,
   label,
+  hint,
 }: {
   o: LoomObject;
   i: number;
@@ -70,6 +71,7 @@ function TouchObject({
   onTouch: (key: string) => void;
   onSelect: (key: string) => void;
   label: string;
+  hint: string;
 }) {
   const [scope, animate] = useAnimate();
   const lastTouch = useRef(0);
@@ -112,7 +114,7 @@ function TouchObject({
         onSelect(o.key);
       }}
       initial={false}
-      animate={{ opacity: faded ? 0 : 1, y: cut ? -6 : 0 }}
+      animate={{ opacity: faded ? 0.14 : 1, y: cut && !faded ? -12 : 0, scale: cut && !faded ? 1.03 : 1, filter: faded ? "grayscale(1)" : "grayscale(0)" }}
       transition={{ opacity: { duration: 0.6 }, y: { type: "spring", stiffness: 260, damping: 18, delay: 0.3 + i * 0.15 } }}
     >
       {cut && (
@@ -137,6 +139,11 @@ function TouchObject({
         </>
       )}
       {!cut && <span aria-hidden className="pointer-events-none absolute inset-0 rounded-md border border-paper/0 transition-colors group-hover:border-paper/50" />}
+      {cut && i === 0 && !selected && (
+        <span aria-hidden className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 animate-pulse rounded-sm bg-night/80 px-2 py-0.5 text-caption whitespace-nowrap text-paper" data-testid="touch-hint">
+          {hint}
+        </span>
+      )}
       {/* where its threads are tied */}
       <span ref={register(`obj:${o.key}`)} aria-hidden className="absolute top-1/2 left-1/2 size-0" />
     </m.button>

@@ -13,13 +13,14 @@ describe("loom objects (SAM 3 cut-outs ↔ what Claude read)", () => {
     { label: "lantern date inscription", box: { x: 0.3, y: 0.31, w: 0.08, h: 0.32 }, text_original: "平成二十五年" },
   ];
   const objs = loomObjects(scene, see);
-  it("matches by overlap, never offers people, keeps the rest as box objects", () => {
+  it("matches by overlap, never offers people, keeps the rest as box objects, small ones on top", () => {
+    expect(objs.at(-1)?.seeIndex).toBe(1);
     expect(objs.find((o) => o.key === "lantern")?.seeIndex).toBe(0);
     expect(objs.some((o) => o.key === "people")).toBe(false);
     expect(objs.filter((o) => o.seeIndex === 1)).toHaveLength(1);
   });
   it("works before the cut-outs arrive", () => {
-    expect(loomObjects(null, see).map((o) => o.key)).toEqual(["see:0", "see:1"]);
+    expect(loomObjects(null, see).map((o) => o.key)).toEqual(["see:0", "see:1"]); // larger first (drawn behind)
   });
   it("iou", () => {
     expect(iou({ x: 0, y: 0, w: 1, h: 1 }, { x: 0, y: 0, w: 1, h: 1 })).toBe(1);

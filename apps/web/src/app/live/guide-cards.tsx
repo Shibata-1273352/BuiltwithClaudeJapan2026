@@ -22,6 +22,7 @@ export function GuideCards({
   selectedSee,
   onSelectSee,
   onAsk,
+  only,
 }: {
   s: LiveState;
   register: (key: string) => (el: HTMLElement | null) => void;
@@ -29,6 +30,8 @@ export function GuideCards({
   selectedSee: number | null;
   onSelectSee: (i: number) => void;
   onAsk?: (q: string, see: number) => void;
+  /** show only this element's card (after the story has started) */
+  only?: number | null;
 }) {
   const l = useDict(L);
   const lang = useLang();
@@ -38,6 +41,7 @@ export function GuideCards({
   const order = elements
     .map((e, i) => ({ e, i }))
     .filter(({ e, i }) => e.text_original || notes.has(i))
+    .filter(({ i }) => only === undefined || only === i)
     .slice(0, 3);
   if (!order.length) return null;
   const writing = s.stages.guide && s.stages.guide.done === undefined;

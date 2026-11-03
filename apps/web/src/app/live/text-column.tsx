@@ -75,6 +75,7 @@ export function TextColumn({
   setHot,
   actions,
   guide,
+  guideFocus,
 }: {
   s: LiveState;
   cards: SourceCard[];
@@ -85,6 +86,8 @@ export function TextColumn({
   actions: React.ReactNode;
   /** the guide cards (Loom), in place of the plain readings once Claude has read the photo */
   guide: React.ReactNode;
+  /** after the story has started: the guide card of the object being touched */
+  guideFocus?: React.ReactNode;
 }) {
   const since = (k: string) => (s.at[k] !== undefined ? elapsed - s.at[k] : -1);
   const placeName = s.place?.path[0]?.name; // the path is leaf-first
@@ -151,7 +154,7 @@ export function TextColumn({
         {docked && !showStory && <ViewpointCard s={s} />}
 
         {/* the words on the photo */}
-        {!showStory && guide}
+        {!showStory ? guide : guideFocus}
         {false && readings.length > 0 && !showStory && (
           <div>
             <p className="label">写真の中の文字</p>

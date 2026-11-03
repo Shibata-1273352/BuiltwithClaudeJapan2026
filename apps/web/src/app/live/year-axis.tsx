@@ -8,7 +8,7 @@ import { m } from "motion/react";
 import type { Ref } from "react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
 import { Dot } from "../ui/marks";
-import { yearFrac, yearOf } from "./labels";
+import { YEAR_MAX, YEAR_MIN, yearFrac, yearOf } from "./labels";
 
 type Period = { state: string; start: string; end: string };
 const TICKS = [1800, 1850, 1900, 1950, 2000];
@@ -16,14 +16,73 @@ const PAD = 16; // px above/below the band, matched in thread-layer
 
 export const AXIS_PAD = PAD;
 
-export function YearAxis({ s, cards, axisRef }: { s: LiveState; cards: SourceCard[]; axisRef: Ref<HTMLDivElement> }) {
+/** The year under a pointer on the axis. */
+function yearAt(el: HTMLElement, clientY: number): number {
+  const r = el.getBoundingClientRect();
+  const f = Math.min(1, Math.max(0, (clientY - r.top - PAD) / (r.height - 2 * PAD)));
+  return Math.round(YEAR_MIN + f * (YEAR_MAX - YEAR_MIN));
+}
+
+export function YearAxis({
+  s,
+  cards,
+  axisRef,
+  scrub,
+  onScrub,
+  scrubLabel,
+}: {
+  s: LiveState;
+  cards: SourceCard[];
+  axisRef: Ref<HTMLDivElement>;
+  /** the year the visitor dragged to (null: today, no handle shown yet) */
+  scrub?: number | null;
+  onScrub?: (y: number) => void;
+  scrubLabel?: string;
+}) {
   const tl = s.timeline as { periods?: Period[]; name?: { ja: string } } | undefined;
   const periods = tl?.periods ?? [];
   const pos = (y: number) => `calc(${PAD}px + (100% - ${2 * PAD}px) * ${yearFrac(y)})`;
   return (
-    <div ref={axisRef} className={`relative h-full w-full transition-opacity duration-700 ${cards.length ? "opacity-100" : "opacity-0"}`} data-testid="year-axis" aria-label="年の軸">
+    <div
+      ref={axisRef}
+      className={`relative h-full w-full touch-none transition-opacity duration-700 ${cards.length ? "opacity-100" : "opacity-0"} ${onScrub ? "cursor-ns-resize" : ""}`}
+      data-testid="year-axis"
+      aria-label="年の軸"
+      onPointerDown={(e) => {
+        if (!onScrub) return;
+        e.currentTarget.setPointerCapture(e.pointerId);
+        onScrub(yearAt(e.currentTarget, e.clientY));
+      }}
+      onPointerMove={(e) => {
+        if (onScrub && e.buttons) onScrub(yearAt(e.currentTarget, e.clientY));
+      }}
+    >
       {/* spine */}
       <div className="absolute top-4 bottom-4 left-1/2 w-px -translate-x-1/2 bg-muted/30" />
+      {onScrub && (
+        <div
+          role="slider"
+          tabIndex={0}
+          aria-label="年をめくる / Turn the years"
+          aria-valuemin={YEAR_MIN}
+          aria-valuemax={YEAR_MAX}
+          aria-valuenow={scrub ?? 2026}
+          aria-valuetext={scrubLabel}
+          onKeyDown={(e) => {
+            const step = e.shiftKey ? 10 : 1;
+            if (e.key === "ArrowUp") onScrub(Math.max(YEAR_MIN, (scrub ?? 2026) - step));
+            else if (e.key === "ArrowDown") onScrub(Math.min(YEAR_MAX - 4, (scrub ?? 2026) + step));
+            else return;
+            e.preventDefault();
+          }}
+          className="absolute left-0 z-20 flex w-full -translate-y-1/2 items-center outline-none focus-visible:[&>span]:ring-2 focus-visible:[&>span]:ring-lantern"
+          style={{ top: pos(scrub ?? 2026) }}
+          data-testid="time-handle"
+        >
+          <span className="h-[3px] w-full rounded-sm bg-lantern" />
+          <span className="absolute -top-7 left-1/2 -translate-x-1/2 font-serif text-lead whitespace-nowrap text-lantern tabular-nums">{scrub ?? 2026}</span>
+        </div>
+      )}
       {TICKS.map((y) => (
         <div key={y} className="absolute right-0 left-0 flex items-center" style={{ top: pos(y) }}>
           <span className="w-full -translate-y-1/2 pr-[calc(50%+10px)] text-right text-caption text-muted/50 tabular-nums">{y}</span>

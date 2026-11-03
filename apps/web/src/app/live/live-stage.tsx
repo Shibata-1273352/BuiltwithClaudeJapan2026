@@ -28,6 +28,8 @@ import { GuideCards } from "./guide-cards";
 import { LAYER_COLOR } from "./labels";
 import { loomObjects } from "@/lib/live/objects";
 import { pluck } from "@/lib/live/feel";
+import { yearState, type TimelineData as RiverData } from "@/lib/time-river";
+import { useLang } from "../i18n";
 import { useExploration, type Source } from "./use-exploration";
 import { YearAxis } from "./year-axis";
 
@@ -73,6 +75,9 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const registerCard = useCallback((id: string) => register(`card:${id}`), [register]);
   const pluckRef = useRef<(objKey: string) => number>(() => 0);
   const [selectedObj, setSelectedObj] = useState<string | null>(null);
+  const [scrub, setScrub] = useState<number | null>(null);
+  const lang = useLang();
+  const lastDecade = useRef<number | null>(null);
   usePresent();
   const scene = useScene(s.space?.ok ? s.space.scene_id : undefined);
   const cards = useMemo(() => sourceCards(s), [s]);
@@ -84,6 +89,17 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const onTouch = useCallback((key: string) => {
     const len = pluckRef.current(key);
     pluck(len || 300);
+  }, []);
+  // turning the years (FR-56 on the stage): the structure vanishes in an absent year, the print returns before the fire
+  const ys = scrub !== null && s.timeline ? yearState(s.timeline as RiverData, scrub) : null;
+  const absentNow = ys?.state === "absent";
+  const onScrub = useCallback((y: number) => {
+    setScrub(y);
+    const d = Math.floor(y / 10);
+    if (lastDecade.current !== d) {
+      lastDecade.current = d;
+      pluck(260 + (y - 1750));
+    }
   }, []);
   const onSelectSee = useCallback((i: number) => setSelectedObj(objects.find((o) => o.seeIndex === i)?.key ?? null), [objects]);
   const specs = useMemo<RopeSpec[]>(() => {
@@ -243,6 +259,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     setHot={setHot}
                     actions={actions}
                     guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} />}
+                    guideFocus={selectedSee !== null ? <GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} only={selectedSee} /> : null}
                   />
                 </div>
                 <div className="order-1 flex h-[45vh] min-h-0 justify-center lg:order-none lg:h-full">
@@ -251,15 +268,18 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     photo={photoUrl}
                     elapsed={elapsed}
                     scene={scene}
-                    overlayOn={overlayOn}
+                    overlayOn={overlayOn || (ys?.state === "present" && scrub !== null && scrub < 1866)}
                     onAspect={setAspect}
                     aspect={aspect}
+                    absent={absentNow}
+                    absentLine={absentNow ? (ys?.label[lang] ?? null) : null}
+                    dim={Boolean(scene) && s.at.space !== undefined && elapsed - s.at.space > 1200}
                     objects={
                       <ObjectsLayer
                         objects={objects}
                         sceneId={s.space?.ok ? (s.space.scene_id ?? null) : null}
                         lifted={Boolean(scene) && s.at.space !== undefined && elapsed - s.at.space > 1200}
-                        faded={false}
+                        faded={absentNow}
                         selected={selectedObj}
                         register={register}
                         onTouch={onTouch}
@@ -269,7 +289,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                   />
                 </div>
                 <div className="hidden min-h-0 lg:block">
-                  <YearAxis s={s} cards={cards} axisRef={axisRef} />
+                  <YearAxis s={s} cards={cards} axisRef={axisRef} scrub={scrub} onScrub={finished && s.timeline ? onScrub : undefined} scrubLabel={ys?.label[lang]} />
                 </div>
                 <div className="order-3 min-h-0 lg:order-none">
                   <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} />
