@@ -39,6 +39,9 @@ try {
   };
   await go(1856);
   await shot("1-1856");
+  await go(1866);
+  await shot("1b-1866-conflict");
+  if ((await panel.getByTestId("time-conflict").count()) === 0) fails.push("1866: the disagreeing sources are not shown");
   await go(1878, 320);
   await shot("2-1878-burning");
   await page.waitForTimeout(700);
