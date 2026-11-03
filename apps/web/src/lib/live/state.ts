@@ -8,7 +8,12 @@ import type { EventType } from "../dag/event-types";
 export type LiveEvent = { seq: number; type: EventType | string; data: unknown };
 
 export type SeeElement = { label: string; box: { x: number; y: number; w: number; h: number }; text_original: string | null; reading: string | null; meaning: { ja: string; en: string } | null; confidence: number };
-export type Viewpoint = { state: "pencil"; visitor: { position: string; facing: string; toward: string; premises: string[] } | null; artwork: { text: string; premise: string } | null };
+type Bi = { ja: string; en: string };
+export type Viewpoint = {
+  state: "pencil";
+  visitor: { position: Bi; facing: string; toward: Bi; premises: Bi[] } | null;
+  artwork: { entity: string; name: Bi; ja: string; en: string; facing: string; premises: Bi[]; annotated_by: string } | null;
+};
 export type Candidate = { passageId: string; sourceId: string; sourceTitle: string; lang: "en" | "ja"; text: string; facet: string; relation?: string; year?: number | null };
 export type ClaimRow = { id: string; passage_id: string; source_id?: string; source?: string; lang?: "en" | "ja"; subject: string; predicate: string; value: string | null; status: string; excerpt: string; sentence_ids: string[]; failed_checks?: string[] };
 export type ThreadRow = { id: string; claimId: string; layer: "toki" | "ba" | "koto" | "ma"; state: string; label: { ja: string; en: string }; evidence: string[] };
@@ -21,7 +26,7 @@ export type LiveState = {
   /** when each event type was first shown (client ms), for animations relative to their beat */
   at: Record<string, number>;
   stages: Record<string, { started: number; done?: number; ms?: number }>;
-  calls: { stage: string; model: string; served: string; elapsedMs: number; costUsd: number; seq: number }[];
+  calls: { stage: string; model: string; served: string; startedAt: string; elapsedMs: number; costUsd: number; seq: number }[];
   see?: { elements: SeeElement[] };
   place?: { entity: string; path: { id: string; name: { ja: string; en: string } }[]; names?: string[] } | null;
   placeTried?: string[];
@@ -60,7 +65,7 @@ export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
       break;
     }
     case "ai_call":
-      n.calls = [...n.calls, { stage: String(d.stage), model: String(d.model), served: String(d.servedModel ?? d.model), elapsedMs: Number(d.elapsedMs ?? 0), costUsd: Number(d.costUsd ?? 0), seq: ev.seq }].sort((a, b) => a.seq - b.seq);
+      n.calls = [...n.calls, { stage: String(d.stage), model: String(d.model), served: String(d.servedModel ?? d.model), startedAt: String(d.startedAt ?? ""), elapsedMs: Number(d.elapsedMs ?? 0), costUsd: Number(d.costUsd ?? 0), seq: ev.seq }].sort((a, b) => a.seq - b.seq);
       break;
     case "see":
       n.see = { elements: (d.elements as SeeElement[]) ?? [] };

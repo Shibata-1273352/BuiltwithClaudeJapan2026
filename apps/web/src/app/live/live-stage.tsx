@@ -10,6 +10,7 @@ import { domMax, LazyMotion, LayoutGroup, MotionConfig } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sourceCards } from "@/lib/live/state";
 import { ExplorationView } from "../exploration-view";
+import { Backstage } from "./backstage";
 import { EvidenceColumn } from "./evidence-column";
 import { PhotoStage, useScene } from "./photo-stage";
 import { LiveChips, ResultStrip, StepRail, Toasts } from "./stage-chrome";
@@ -44,6 +45,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const [view, setView] = useState<"stage" | "list">("stage");
   const [hot, setHot] = useState<string | null>(null);
   const [overlayOn, setOverlayOn] = useState(false);
+  const [backstage, setBackstage] = useState(false);
   const [aspect, setAspect] = useState(3 / 4);
   const stageRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLSpanElement>(null);
@@ -130,6 +132,9 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <StepRail s={s} elapsed={elapsed} finished={finished} />
               </div>
               <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setBackstage((v) => !v)} className="min-h-9 rounded-full border border-lantern/50 px-3 text-xs" aria-expanded={backstage} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
+                  舞台裏
+                </button>
                 <button type="button" onClick={() => setView((v) => (v === "stage" ? "list" : "stage"))} className="present-hide min-h-9 rounded-full border border-muted/40 px-3 text-xs" data-testid="view-toggle" disabled={!expId}>
                   {view === "stage" ? "リスト表示" : "舞台表示"}
                 </button>
@@ -172,6 +177,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <div className="order-3 min-h-0 lg:order-none">
                   <EvidenceColumn s={s} cards={cards} register={register} hot={hot} setHot={setHot} />
                 </div>
+                {backstage && <Backstage s={s} onClose={() => setBackstage(false)} />}
                 <ThreadLayer stageRef={stageRef} anchorRef={anchorRef} axisRef={axisRef} cardEls={cardEls} cards={cards} since={s.at.threads !== undefined ? elapsed - s.at.threads : -1} hot={hot} />
               </div>
             )}

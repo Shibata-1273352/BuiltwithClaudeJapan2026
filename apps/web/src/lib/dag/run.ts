@@ -156,6 +156,19 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       const met = rel ? E.get(rel.from)?.external_ids?.met : undefined;
       return met ? `met-${met}` : null;
     };
+    // FR-35 視点の見立て (pencil): Claude's guess for the photo; the artwork's is a hand-written note.
+    // Shown with its premises; never a claim, a thread or a graph node.
+    {
+      const rel = E.dict.relations.find((r) => r.type === "DEPICTS" && r.to === place);
+      const art = rel ? E.get(rel.from) : undefined;
+      if (see.viewpoint || art?.viewpoint_note) {
+        emit(explorationId, "viewpoint", {
+          state: "pencil",
+          visitor: see.viewpoint,
+          artwork: art?.viewpoint_note ? { entity: art.id, name: art.name, ...art.viewpoint_note } : null,
+        });
+      }
+    }
     const spaceStarted = Date.now();
     emit(explorationId, "stage", { stage: "space", status: "start", remaining_ms: ctx.remaining() });
     const spacePromise = requestScene(capture.image_path, capture.id, artifactFor(place), Math.max(5_000, Math.min(30_000, ctx.remaining() - 5_000))).then((r) => {

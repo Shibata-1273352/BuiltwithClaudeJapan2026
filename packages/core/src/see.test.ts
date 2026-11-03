@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateSee, wrapUntrusted } from "./index";
+import { checkViewpoint, type Viewpoint } from "./see";
 
 const good = {
   elements: [
@@ -67,5 +68,28 @@ describe("wrapUntrusted", () => {
 
   it("sanitizes the source attribute", () => {
     expect(wrapUntrusted('x" onload="y', "t")).toContain('source="x__onload__y"');
+  });
+});
+
+describe("viewpoint (FR-35, pencil)", () => {
+  const vp: Viewpoint = {
+    position: { ja: "雷門の下、南側", en: "under the gate, south side" },
+    facing: "north",
+    toward: { ja: "大提灯", en: "the great lantern" },
+    premises: [{ ja: "提灯は門の南の開口に下がる", en: "the lantern hangs in the south opening" }],
+  };
+  it("keeps a guess with premises", () => expect(checkViewpoint(vp)).toEqual(vp));
+  it("drops a guess without premises, or with overlong or empty text", () => {
+    expect(checkViewpoint({ ...vp, premises: [] })).toBeNull();
+    expect(checkViewpoint({ ...vp, toward: { ja: "x".repeat(201), en: "y" } })).toBeNull();
+    expect(checkViewpoint({ ...vp, position: { ja: " ", en: "y" } })).toBeNull();
+    expect(checkViewpoint(null)).toBeNull();
+  });
+  it("an output without the key (older recordings) still validates, with viewpoint null", () => {
+    const r = validateSee({ elements: [], places: [], notes: "" });
+    expect(r.ok && r.value.viewpoint).toBeNull();
+  });
+  it("an invalid facing is a schema error", () => {
+    expect(validateSee({ elements: [], places: [], notes: "", viewpoint: { ...vp, facing: "behind" } }).ok).toBe(false);
   });
 });

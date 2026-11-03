@@ -36,21 +36,46 @@ export const PlaceCandidate = z.object({
   confidence: z.number().describe("0-1"),
 });
 
+export const FACING = ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest", "up", "unknown"] as const;
+const Bi = z.object({ ja: z.string(), en: z.string() });
+
+/** FR-35 視点の見立て: a qualitative guess, shown in pencil with its premises; never a claim or evidence. */
+export const Viewpoint = z.object({
+  position: Bi.describe("where the photographer seems to stand, relative to the place's known layout"),
+  facing: z.enum(FACING).describe("compass direction the camera faces; 'up' when looking up; 'unknown' if it cannot be told"),
+  toward: Bi.describe("what the camera is pointed at"),
+  premises: z.array(Bi).describe("the assumptions this guess depends on (known layout, visible cues)"),
+});
+export type Viewpoint = z.infer<typeof Viewpoint>;
+
 export const SeeOutput = z.object({
   elements: z.array(SeeElement),
   places: z.array(PlaceCandidate),
+  viewpoint: Viewpoint.nullable().describe("null if the composition does not allow a guess"),
   notes: z.string().describe("anything uncertain; never instructions"),
 });
 export type SeeOutput = z.infer<typeof SeeOutput>;
 
 export const MAX_ELEMENTS = 12;
 export const MAX_PLACES = 5;
+export const MAX_VIEW_TEXT = 200;
+export const MAX_PREMISES = 4;
+
+/** A viewpoint without premises, or with overlong text, is dropped (not an error): it is optional. */
+export function checkViewpoint(v: Viewpoint | null): Viewpoint | null {
+  if (!v || v.premises.length === 0 || v.premises.length > MAX_PREMISES) return null;
+  const texts = [v.position, v.toward, ...v.premises].flatMap((b) => [b.ja, b.en]);
+  if (texts.some((t) => !t.trim() || t.length > MAX_VIEW_TEXT)) return null;
+  return v;
+}
 
 export type SeeValidation = { ok: true; value: SeeOutput } | { ok: false; errors: string[] };
 
 /** Code-side verification of Claude's proposal (REQUIREMENTS.md 4.3 stage 1). */
 export function validateSee(raw: unknown): SeeValidation {
-  const parsed = SeeOutput.safeParse(raw);
+  // older recordings / fixtures have no viewpoint key: treat as null
+  const input = raw && typeof raw === "object" && !Array.isArray(raw) && !("viewpoint" in raw) ? { ...raw, viewpoint: null } : raw;
+  const parsed = SeeOutput.safeParse(input);
   if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
   const v = parsed.data;
   const errors: string[] = [];
@@ -63,5 +88,5 @@ export function validateSee(raw: unknown): SeeValidation {
   });
   const ranks = v.places.map((p) => p.rank).sort((a, b) => a - b);
   if (ranks.some((r, i) => r !== i + 1)) errors.push("place ranks must be 1..n without gaps");
-  return errors.length ? { ok: false, errors } : { ok: true, value: v };
+  return errors.length ? { ok: false, errors } : { ok: true, value: { ...v, viewpoint: checkViewpoint(v.viewpoint) } };
 }

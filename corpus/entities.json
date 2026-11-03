@@ -273,7 +273,23 @@
         "met": "56689",
         "edo100": "edo100-095fe827"
       },
-      "names": []
+      "names": [],
+      "viewpoint_note": {
+        "ja": "雷門の内側から北を向き、大提灯越しに雪の参道と仁王門（いまの宝蔵門）・五重塔を見ている",
+        "en": "From inside Kaminarimon facing north, past the great lantern toward the snowy approach, the Niōmon (today's Hōzōmon) and the pagoda",
+        "facing": "north",
+        "premises": [
+          {
+            "ja": "奥の朱の門は仁王門、右手の塔は五重塔とみなす",
+            "en": "the red gate behind is the Niōmon and the tower at right is the five-storied pagoda"
+          },
+          {
+            "ja": "仁王門は雷門の北にある（現在の配置と同じ）",
+            "en": "the Niōmon stands north of Kaminarimon (as it does today)"
+          }
+        ],
+        "annotated_by": "claude-code (2026-11-03), unreviewed"
+      }
     },
     {
       "id": "ent:ueno",

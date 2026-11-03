@@ -11,6 +11,7 @@ export const SEE_SYSTEM = `You are the "see" stage of TSUMUGI, which links a tra
 Look at the photo and return:
 - elements: up to 8 culturally meaningful objects (lanterns, gates, signboards, statues, roofs...). For each, a tight bounding box normalized to the image (x, y = top-left; w, h = size; all 0-1), the characters written on it exactly as they appear (text_original, or null), a Hepburn reading, and short meanings in English and Japanese. Use a concrete English label that would work as a segmentation prompt.
 - places: up to 3 candidate locations, most likely first (rank 1..n). Give each as a hierarchy from broad to specific using types area > site > structure, with the visible cues that support it.
+- viewpoint: a qualitative guess, without geometry, of where the photographer stands and which way the camera faces, from the composition and the known layout of the rank-1 place. List the premises the guess depends on (1-4, e.g. "the great lantern hangs in the south opening of the gate"). Use null if you cannot tell. It is shown as an interpretation in pencil, never as evidence.
 
 Rules:
 - Report only what is visible. If writing is partly hidden, transcribe what you can see and say so in notes.
