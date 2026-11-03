@@ -92,6 +92,12 @@ html[data-present] .answer-col {
   padding-bottom: 0;
   mask-image: none;
 }
+.present-only {
+  display: none;
+}
+html[data-present] .present-only {
+  display: block;
+}
 html[data-present] .present-hide {
   display: none !important;
 }

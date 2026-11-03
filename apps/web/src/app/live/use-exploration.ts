@@ -39,7 +39,9 @@ const ERR = {
     network: "Network error",
   },
 };
-const pageLang = (): "ja" | "en" => (document.documentElement.lang === "en" ? "en" : "ja");
+const pageLang = (): "ja" | "en" => (/(?:^|; )tsumugi_lang=en(?:;|$)/.test(document.cookie) || document.documentElement.lang === "en" ? "en" : "ja");
+/** no event for this long while running: the server is gone; say so and offer the recording */
+const STALL_MS = 30_000;
 
 function getPosition(): Promise<{ lat: number; lon: number } | null> {
   if (!("geolocation" in navigator)) return Promise.resolve(null);
@@ -87,9 +89,26 @@ export function useExploration(source: Source) {
       setT0State(t0.current);
       setNow(t0.current);
     };
+    let lastAt = performance.now();
+    let watchdog: ReturnType<typeof setInterval> | null = null;
+    const stalled = () => {
+      if (watchdog) clearInterval(watchdog);
+      es?.close();
+      setEvents((p) => (p.some((x) => x.type === "done" || x.type === "failed") ? p : [...p, { seq: Number.MAX_SAFE_INTEGER, type: "failed", data: { reason: "stalled" } }]));
+      setPhase("failed");
+    };
     const listen = (url: string) => {
       es = new EventSource(url);
+      lastAt = performance.now();
+      watchdog = setInterval(() => {
+        if (performance.now() - lastAt > STALL_MS) stalled();
+      }, 2000);
+      // a closed stream (the server went away and the browser gave up reconnecting)
+      es.onerror = () => {
+        if (es?.readyState === EventSource.CLOSED) stalled();
+      };
       const on = (e: MessageEvent) => {
+        lastAt = performance.now();
         const ev: LiveEvent = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
         const at = performance.now() - t0.current;
         setEvents((p) => (p.some((x) => x.seq === ev.seq) ? p : [...p, ev]));
@@ -97,10 +116,12 @@ export function useExploration(source: Source) {
         if (e.type === "done") {
           setPhase("done");
           es?.close();
+          if (watchdog) clearInterval(watchdog);
         }
         if (e.type === "failed") {
           setPhase("failed");
           es?.close();
+          if (watchdog) clearInterval(watchdog);
         }
       };
       for (const t of EVENT_TYPES) es.addEventListener(t, on);
@@ -153,7 +174,10 @@ export function useExploration(source: Source) {
       setPhase("refused");
       setError(L.network);
     });
-    return () => es?.close();
+    return () => {
+      es?.close();
+      if (watchdog) clearInterval(watchdog);
+    };
   }, [source]);
 
   // a clock for timers and beats (10 Hz is enough; stops when everything has been shown)

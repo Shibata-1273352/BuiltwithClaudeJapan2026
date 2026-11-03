@@ -41,17 +41,18 @@ const T = dict({
     trustTitle: "安心して使える理由",
     trust: "読むのは Claude、確かめるのはコード。資料にないことは「書かれていません」。",
     numbers: (f: LandingFacts) => [
-      { v: `${f.citationExactPct}%`, l: `引用が原文と一致（${f.citationN} 件）` },
+      { v: `${f.citationExactPct}%`, l: `引用は原文からコードが切り出す（評価 ${f.citationN} 件）` },
       { v: `${f.rejected}/${f.fabricated}`, l: "作られた引用を拒否" },
       { v: `${f.unsupportedShown}`, l: "根拠のない文の表示" },
     ],
     evalNote: (run: string) => `評価：Batch API による一括評価（${run}）`,
     howLink: "しくみを見る",
     whereTitle: "いま使える場所",
-    full: (f: LandingFacts) => `${f.places.map((p) => p.ja).join("、")}（日英の資料 ${f.sources} 点）`,
+    full: (f: LandingFacts) =>
+      `${f.places.filter((p) => p.reviewed).map((p) => p.ja).join("、")}（年表は人が確認済み）。${f.places.filter((p) => !p.reviewed).map((p) => p.ja).join("、")}（年表は人の確認待ち）。日英の資料 ${f.sources} 点`,
     elsewhere: "ほかの場所では、文字の読みとガイドだけ。",
     captureTitle: "目の前の景色を、一枚",
-    captureNote: "位置情報は消し、顔はぼかしてから送ります。",
+    captureNote: "位置情報は消し、検出した顔はぼかしてから送ります。",
   },
   en: {
     nav: "Pages",
@@ -80,17 +81,18 @@ const T = dict({
     trustTitle: "Why you can rely on it",
     trust: "Claude reads; code checks. What the sources do not say, it says so.",
     numbers: (f: LandingFacts) => [
-      { v: `${f.citationExactPct}%`, l: `quotes match the original (${f.citationN})` },
+      { v: `${f.citationExactPct}%`, l: `of quotes are cut from the original by code (${f.citationN} in the evaluation)` },
       { v: `${f.rejected}/${f.fabricated}`, l: "fabricated quotes rejected" },
       { v: `${f.unsupportedShown}`, l: "unsupported sentences shown" },
     ],
     evalNote: (run: string) => `Evaluation: one batch run with the Batch API (${run})`,
     howLink: "See how it works",
     whereTitle: "Where it works today",
-    full: (f: LandingFacts) => `${f.places.map((p) => p.en).join(", ")} (${f.sources} Japanese and English sources)`,
+    full: (f: LandingFacts) =>
+      `${f.places.filter((p) => p.reviewed).map((p) => p.en).join(", ")} (timeline checked by a person); ${f.places.filter((p) => !p.reviewed).map((p) => p.en).join(", ")} (timeline awaiting a person's check). ${f.sources} Japanese and English sources`,
     elsewhere: "Elsewhere: the reading and the guide only.",
     captureTitle: "The view in front of you, in one photo",
-    captureNote: "Location removed and faces blurred before sending.",
+    captureNote: "Location removed and detected faces blurred before sending.",
   },
 });
 
