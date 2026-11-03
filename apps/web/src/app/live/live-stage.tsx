@@ -10,7 +10,11 @@ import { domMax, LazyMotion, LayoutGroup, MotionConfig } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sourceCards } from "@/lib/live/state";
 import { ExplorationView } from "../exploration-view";
+import { NamesLayer, type NamesData } from "../names-layer";
+import type { TimelineData } from "@/lib/time-river";
+import { TimeRiver } from "../time-river";
 import { Backstage } from "./backstage";
+import { StagePanel } from "./stage-panel";
 import { EvidenceColumn } from "./evidence-column";
 import { PhotoStage, useScene } from "./photo-stage";
 import { LiveChips, ResultStrip, StepRail, Toasts } from "./stage-chrome";
@@ -45,7 +49,8 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const [view, setView] = useState<"stage" | "list">("stage");
   const [hot, setHot] = useState<string | null>(null);
   const [overlayOn, setOverlayOn] = useState(false);
-  const [backstage, setBackstage] = useState(false);
+  const [panel, setPanel] = useState<"backstage" | "time" | "names" | null>(null);
+  const toggle = (p: NonNullable<typeof panel>) => setPanel((v) => (v === p ? null : p));
   const [aspect, setAspect] = useState(3 / 4);
   const stageRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLSpanElement>(null);
@@ -111,6 +116,16 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
           この絵の中へ
         </a>
       )}
+      {finished && s.timeline != null && (
+        <button type="button" onClick={() => toggle("time")} className={`${btn} border border-toki/60`} aria-expanded={panel === "time"} data-testid="time-toggle">
+          時をめくる
+        </button>
+      )}
+      {finished && s.names != null && (
+        <button type="button" onClick={() => toggle("names")} className={`${btn} border border-koto/60`} aria-expanded={panel === "names"} data-testid="names-toggle">
+          言の地層
+        </button>
+      )}
       {s.space?.aligned && s.at.visual !== undefined && (
         <button type="button" onClick={() => setOverlayOn((v) => !v)} className={`${btn} border border-toki/60`} aria-pressed={overlayOn} data-testid="overlay-toggle">
           {overlayOn ? "写真に戻す" : "広重の絵と重ねる"}
@@ -132,7 +147,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <StepRail s={s} elapsed={elapsed} finished={finished} />
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => setBackstage((v) => !v)} className="min-h-9 rounded-full border border-lantern/50 px-3 text-xs" aria-expanded={backstage} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
+                <button type="button" onClick={() => toggle("backstage")} className="min-h-9 rounded-full border border-lantern/50 px-3 text-xs" aria-expanded={panel === "backstage"} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
                   舞台裏
                 </button>
                 <button type="button" onClick={() => setView((v) => (v === "stage" ? "list" : "stage"))} className="present-hide min-h-9 rounded-full border border-muted/40 px-3 text-xs" data-testid="view-toggle" disabled={!expId}>
@@ -177,7 +192,17 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <div className="order-3 min-h-0 lg:order-none">
                   <EvidenceColumn s={s} cards={cards} register={register} hot={hot} setHot={setHot} />
                 </div>
-                {backstage && <Backstage s={s} onClose={() => setBackstage(false)} />}
+                {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
+                {panel === "time" && s.timeline != null && (
+                  <StagePanel title={`時をめくる：${s.place?.path[0]?.name.ja ?? ""}はいつ、そこにあったか`} onClose={() => setPanel(null)} testid="time-panel" wide>
+                    <TimeRiver data={s.timeline as TimelineData} initialYear={1856} />
+                  </StagePanel>
+                )}
+                {panel === "names" && s.names != null && (
+                  <StagePanel title="言の地層：資料ごとの呼び名" onClose={() => setPanel(null)} testid="names-panel" wide>
+                    <NamesLayer names={s.names as NamesData} lang="ja" />
+                  </StagePanel>
+                )}
                 <ThreadLayer stageRef={stageRef} anchorRef={anchorRef} axisRef={axisRef} cardEls={cardEls} cards={cards} since={s.at.threads !== undefined ? elapsed - s.at.threads : -1} hot={hot} />
               </div>
             )}

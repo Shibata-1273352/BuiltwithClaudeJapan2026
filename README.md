@@ -145,6 +145,8 @@ local GPU / code / Neo4j), a step rail with timers and an ETA; below: the result
 - If live fails or is refused, the stage offers the one public recording (`DEMO_REPLAY_ID`), always labelled as a recording.
 - FR-35 視点の見立て and FR-59 連想の糸 are shown in pencil (interpretations, never evidence).
 
+After done, 「時をめくる」 (year slider 1856 → 1878 → 1960) and 「言の地層」 open over the stage, and 舞台裏 ends with the evaluation numbers, computed from `evaluation/results/2026-11-03.json`. Rehearsal of the 6.5 script in presenter mode, with timings and a screenshot per scene: `npx tsx --env-file=.env scripts/rehearse.ts <base> [/replay/<id> | /live]` (default: `DEMO_REPLAY_ID`, no Claude call).
+
 Checks: `npx tsx --env-file=.env scripts/e2e-sample.ts <base>` (live, ~$0.24), `scripts/e2e-demo.ts <base> <id>` (the public recording from a fresh session), `scripts/stage-shots.ts <base> /replay/<id> [--phone] [--at 3,15,25,40]`.
 
 ## Beyond P0
