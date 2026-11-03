@@ -138,9 +138,9 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
     <LazyMotion features={domMax} strict>
       <MotionConfig reducedMotion="user">
         <LayoutGroup>
-          <main className="flex min-h-dvh flex-col gap-3 px-4 py-3 lg:h-dvh lg:px-8 lg:py-4">
+          <main className="flex min-h-dvh w-full max-w-full flex-col gap-3 overflow-x-clip px-4 py-3 lg:h-dvh lg:px-8 lg:py-4">
             <header className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex w-full min-w-0 flex-wrap items-center gap-4 lg:w-auto">
                 <Link href="/" onClick={onExit} className="font-serif text-xl tracking-[0.3em]" aria-label="TSUMUGI はじめに戻る">
                   TSUMUGI
                 </Link>

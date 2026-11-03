@@ -13,7 +13,7 @@ export default function Home() {
       <section className="mx-auto grid w-full max-w-6xl gap-10 px-5 pt-12 pb-10 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:pt-20">
         <div>
           <p className="text-sm tracking-[0.35em] text-lantern">一枚の写真から、170年前の目へ</p>
-          <h1 className="mt-5 font-serif text-4xl leading-[1.35] font-bold sm:text-5xl lg:text-[3.4rem]">
+          <h1 className="mt-5 font-serif text-[1.85rem] leading-[1.4] font-bold sm:text-5xl lg:text-[3.4rem]">
             雷門の大提灯の下で、
             <br />
             バードや広重が

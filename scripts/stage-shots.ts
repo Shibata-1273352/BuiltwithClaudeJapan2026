@@ -38,7 +38,7 @@ try {
     const wait = t * 1000 - (Date.now() - t0);
     if (wait > 0) await page.waitForTimeout(wait);
     const file = path.join(outDir, `stage-${slug}-${vp.width}-${t}s.png`);
-    await page.screenshot({ path: file });
+    await page.screenshot({ path: file, fullPage: rest.includes("--full") });
     console.log(file);
   }
   console.log(JSON.stringify({ errors: errors.slice(0, 8) }));
