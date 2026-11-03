@@ -12,6 +12,7 @@ import type { ExistenceRow, Thread } from "@/lib/dag/threads";
 import type { TimelineData } from "@/lib/time-river";
 import { guideLine } from "@/lib/guide";
 import { Guide } from "./guide";
+import { NamesLayer } from "./names-layer";
 import { VisualHitCard, type VisualHit } from "./visual-hit";
 import { TimeRiver } from "./time-river";
 
@@ -277,32 +278,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay }: { jpeg?: 
           {langBusy && <span className="self-center text-sm text-muted">…</span>}
         </div>
       )}
-      {names && (
-        <div data-testid="names">
-          <h3 className="font-serif text-lg">言：誰が、何を、どう呼んだか</h3>
-          {Object.entries(names).map(([id, g]) => (
-            <div key={id} className="mb-2">
-              <p className="text-sm font-bold">
-                {g.name?.ja} <span className="font-normal text-muted">（{g.type}）</span>
-              </p>
-              <ul className="text-sm">
-                {g.usages.slice(0, 5).map((u, i) => (
-                  <li key={i}>
-                    <span lang={u.lang} className="text-koto">
-                      {u.text}
-                    </span>
-                    {u.specificity === "ambiguous" ? <span className="text-muted">（曖昧）</span> : null}{" "}
-                    <span className="text-muted">
-                      — {u.sourceTitle}
-                      {u.time ? `（${u.time.slice(0, 4)}）` : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
+      {names && <NamesLayer names={names} lang={lang} />}
       {narrative?.sentences && (
         <div data-testid="narrative">
           <h3 className="font-serif text-lg">紡ぐ</h3>

@@ -35,7 +35,8 @@
     "graph:inspect": "tsx --env-file=.env scripts/graph-inspect.ts",
     "test:security": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.security.config.ts && cd services/inference && uv run pytest -q",
     "kill": "tsx --env-file=.env scripts/kill-switch.ts",
-    "eval": "tsx --env-file=.env scripts/evaluation/run.ts"
+    "eval": "tsx --env-file=.env scripts/evaluation/run.ts",
+    "setup:samples": "tsx --env-file=.env scripts/fetch-samples.ts"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",

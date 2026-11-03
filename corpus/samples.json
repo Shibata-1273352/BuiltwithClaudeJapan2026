@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "note": "Test photos and prints used in the verification and the demo rehearsal (public domain / CC0 only). Downloaded into $DATA_DIR/samples by scripts/fetch-samples.ts; not committed.",
+  "items": [
+    {
+      "file": "kaminarimon_cc0.jpg",
+      "url": "https://commons.wikimedia.org/w/thumb.php?f=Lantern_of_Kaminarimon_Gate.JPG&w=1600",
+      "page": "https://commons.wikimedia.org/wiki/File:Lantern_of_Kaminarimon_Gate.JPG",
+      "license": "CC0",
+      "use": "demo: Kaminarimon (faces already masked in the upload)"
+    },
+    {
+      "file": "commons_lantern_of_kaminarimon_gate_3.jpg",
+      "url": "https://commons.wikimedia.org/w/thumb.php?f=Lantern_of_Kaminarimon_Gate_(3).JPG&w=1600",
+      "page": "https://commons.wikimedia.org/wiki/File:Lantern_of_Kaminarimon_Gate_(3).JPG",
+      "license": "CC0",
+      "use": "lantern base close-up"
+    },
+    {
+      "file": "met_56689.jpg",
+      "url": "https://images.metmuseum.org/CRDImages/as/original/DP121552.jpg",
+      "page": "https://www.metmuseum.org/art/collection/search/56689",
+      "license": "Public domain (The Met Open Access)",
+      "use": "Hiroshige, Kinryūsan Temple at Asakusa (1856): artifact preprocessing and alignment"
+    },
+    {
+      "file": "kaneiji_konponchudo_cc0.jpg",
+      "url": "https://commons.wikimedia.org/w/thumb.php?f=T%C5%8Deizan_Kan%27ei-ji_Temple_20211126_14.jpg&w=1600",
+      "page": "https://commons.wikimedia.org/wiki/File:T%C5%8Deizan_Kan%27ei-ji_Temple_20211126_14.jpg",
+      "license": "CC0",
+      "use": "site 2: Ueno, the present Konpon Chūdō"
+    },
+    {
+      "file": "met_37387.jpg",
+      "url": "https://images.metmuseum.org/CRDImages/as/original/DP147643.jpg",
+      "page": "https://www.metmuseum.org/art/collection/search/37387",
+      "license": "Public domain (The Met Open Access)",
+      "use": "site 3: Azuma Bridge (Inoue Yasuji, 1887)"
+    },
+    {
+      "file": "offtarget_kinkakuji_cc0.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Golden_Pavilion_Japan_2018.tif/lossy-page1-1920px-Golden_Pavilion_Japan_2018.tif.jpg",
+      "page": "https://commons.wikimedia.org/wiki/File:Golden_Pavilion_Japan_2018.tif",
+      "license": "CC0",
+      "use": "FR-19 off-target photo"
+    },
+    {
+      "file": "offtarget_met_36461.jpg",
+      "url": "https://images.metmuseum.org/CRDImages/as/original/DP121525.jpg",
+      "page": "https://www.metmuseum.org/art/collection/search/36461",
+      "license": "Public domain (The Met Open Access)",
+      "use": "FR-19 near miss: Shin-Ōhashi, not Azuma Bridge"
+    }
+  ]
+}
