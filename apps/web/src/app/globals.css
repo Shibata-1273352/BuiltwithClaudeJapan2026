@@ -26,15 +26,35 @@
   --font-hand: var(--nf-hand), "Klee One", "Hiragino Maru Gothic ProN", cursive;
   --color-night-2: #151c33;
   --color-ink: #0a0f1d;
+  /* hairlines carry the structure (CLAUDE.md design 2) */
+  --color-rule: color-mix(in srgb, var(--paper) 14%, transparent);
+  --color-rule-strong: color-mix(in srgb, var(--paper) 28%, transparent);
+
+  /* type scale (CLAUDE.md design 1): rem, so presenter mode (root 22px) scales everything */
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.5;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.6;
+  --text-body: 1rem;
+  --text-body--line-height: 1.75;
+  --text-lead: 1.25rem;
+  --text-lead--line-height: 1.6;
+  --text-title: 1.75rem;
+  --text-title--line-height: 1.35;
+  --text-display: 3rem;
+  --text-display--line-height: 1.2;
+  --text-hero: 4.5rem;
+  --text-hero--line-height: 1.1;
+
+  /* two radii (CLAUDE.md design 3) */
+  --radius-sm: 2px;
+  --radius-md: 6px;
 }
 
-/* 6.1: light floats like lanterns on the night (desktop only: glow is costly on phones) */
+/* 6.1: light floats like lanterns on the night — threads and the photo anchor only (desktop: glow is costly on phones) */
 @media (min-width: 1024px) {
   .glow {
     filter: drop-shadow(0 0 6px color-mix(in srgb, currentColor 55%, transparent));
-  }
-  .lantern-halo {
-    box-shadow: 0 0 60px -10px color-mix(in srgb, var(--lantern) 45%, transparent);
   }
 }
 /* presenter (FR-46, P key / ?present=1): larger type for 1920x1080 */
@@ -109,5 +129,28 @@ body {
   }
   to {
     background-position: -50% 0;
+  }
+}
+
+/* a caption label above a hairline (Section) */
+.label {
+  font-size: var(--text-caption);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* Japanese: break between phrases, never inside a word (Chrome 119+; others fall back) */
+:lang(ja) {
+  word-break: auto-phrase;
+  line-break: strict;
+}
+/* a scroll area that would cut a line in half fades out instead */
+.fade-end {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+}
+/* the step rail scrolls on phones: show that it continues */
+@media (max-width: 1023px) {
+  .fade-right {
+    mask-image: linear-gradient(to right, #000 88%, transparent);
   }
 }

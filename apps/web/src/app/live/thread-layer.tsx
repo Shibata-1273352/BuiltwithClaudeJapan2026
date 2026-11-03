@@ -105,8 +105,8 @@ export function ThreadLayer({
             {c.state === "combined" && grown && <circle cx={mid.x} cy={mid.y} r={4.5} fill={color} />}
             {snapped && (
               <m.g initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.3 }} style={{ transformOrigin: `${mid.x}px ${mid.y}px` }}>
-                <circle cx={mid.x} cy={mid.y} r={7} fill="var(--ai-night)" stroke="var(--thread-ba)" strokeWidth={1.5} />
-                <path d={`M ${mid.x - 3.5} ${mid.y - 3.5} L ${mid.x + 3.5} ${mid.y + 3.5} M ${mid.x + 3.5} ${mid.y - 3.5} L ${mid.x - 3.5} ${mid.y + 3.5}`} stroke="var(--thread-ba)" strokeWidth={1.6} />
+                <circle cx={mid.x} cy={mid.y} r={7} fill="var(--ai-night)" stroke={color} strokeWidth={1.5} />
+                <path d={`M ${mid.x - 3.5} ${mid.y - 3.5} L ${mid.x + 3.5} ${mid.y + 3.5} M ${mid.x + 3.5} ${mid.y - 3.5} L ${mid.x - 3.5} ${mid.y + 3.5}`} stroke={color} strokeWidth={1.6} />
               </m.g>
             )}
           </g>

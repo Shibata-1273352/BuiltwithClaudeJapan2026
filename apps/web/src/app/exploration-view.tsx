@@ -1,4 +1,6 @@
 "use client";
+import { buttonClass } from "./ui/button";
+import { Pencil, PencilLegend } from "./ui/marks";
 import { EVENT_TYPES } from "@/lib/dag/event-types";
 
 /**
@@ -210,9 +212,9 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
     lang,
   );
   return (
-    <section className="flex w-full flex-col gap-4 rounded-lg border border-muted/30 p-4" data-testid="exploration">
+    <section className="flex w-full flex-col gap-6" data-testid="exploration">
       {replay && (
-        <p role="status" className="sticky top-0 z-10 -mx-4 -mt-4 rounded-t-lg bg-ba px-4 py-2 text-sm font-bold text-paper" data-testid="replay-banner">
+        <p role="status" className="sticky top-0 z-10 -mx-4 -mt-4 rounded-t-lg bg-ba px-4 py-2 text-small font-bold text-paper" data-testid="replay-banner">
           記録の再生：live ではありません（{new Date(replay.recordedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} の探索）
         </p>
       )}
@@ -220,17 +222,17 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
       <p className="font-bold" data-testid="exploration-status">
         {status}
       </p>
-      <p className="text-sm text-muted">{locStatus}</p>
+      <p className="text-small text-muted">{locStatus}</p>
       {stages.length > 0 && (
-        <p className="text-sm text-muted">
+        <p className="text-small text-muted">
           {stages.map((s) => `${STAGE_LABEL[s.stage] ?? s.stage} ${(s.ms / 1000).toFixed(1)}s`).join(" → ")}
           {call ? ` · Claude ${call.usage.input + call.usage.output} tokens · $${call.costUsd.toFixed(3)}` : ""}
         </p>
       )}
       {see && (
         <div>
-          <h3 className="font-serif text-lg">視る</h3>
-          <ul className="text-sm">
+          <h3 className="font-serif text-lead">視る</h3>
+          <ul className="text-small">
             {see.elements.slice(0, 4).map((el, i) => (
               <li key={i}>
                 {el.text_original ? <span lang="ja">「{el.text_original}」</span> : null} {el.reading ? <span lang="ja-Latn">{el.reading}</span> : null} —{" "}
@@ -249,8 +251,8 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
       {timelineData && <TimeRiver data={timelineData} />}
       {existence && existence.rows.length > 0 && (
         <div data-testid="existence">
-          <h3 className="font-serif text-lg">時：その時、{timelineData?.name?.ja ?? "それ"}はあったか</h3>
-          <ul className="text-sm">
+          <h3 className="font-serif text-lead">時：その時、{timelineData?.name?.ja ?? "それ"}はあったか</h3>
+          <ul className="text-small">
             {existence.rows.map((r) => (
               <li key={r.source}>
                 <span className={r.value === "absent" ? "text-ba" : r.value === "present" ? "text-toki" : "text-muted"}>
@@ -260,7 +262,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
                 {r.time?.end ? `–${r.time.end}` : ""}）
                 {/* the reason in the site's own terms (not yet rebuilt / not yet moved here …) */}
                 {threads?.find((t) => t.id === `th:exist:${r.source}`) && (
-                  <span className="block pl-4 text-xs text-muted">{threads.find((t) => t.id === `th:exist:${r.source}`)!.label[lang]}</span>
+                  <span className="block pl-4 text-caption text-muted">{threads.find((t) => t.id === `th:exist:${r.source}`)!.label[lang]}</span>
                 )}
               </li>
             ))}
@@ -276,18 +278,18 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
               data-testid={`lang-${l}`}
               aria-pressed={lang === l}
               onClick={() => switchLang(l)}
-              className={`min-h-11 rounded-full border px-4 ${lang === l ? "border-toki text-toki" : "border-muted text-muted"}`}
+              className={`min-h-11 border-b-2 px-2 text-small ${lang === l ? "border-paper text-paper" : "border-transparent text-muted"}`}
             >
               {l === "ja" ? "日本語" : "English"}
             </button>
           ))}
-          {langBusy && <span className="self-center text-sm text-muted">…</span>}
+          {langBusy && <span className="self-center text-small text-muted">…</span>}
         </div>
       )}
       {names && <NamesLayer names={names} lang={lang} />}
       {narrative?.sentences && (
         <div data-testid="narrative">
-          <h3 className="font-serif text-lg">紡ぐ</h3>
+          <h3 className="font-serif text-lead">紡ぐ</h3>
           <p className="font-serif leading-relaxed" lang={lang}>
             {narrative.sentences.map((s, i) => (
               <span key={i} title={s.claim_ids.join(", ")} className={s.assertion_type === "interpretive" ? "italic text-muted" : undefined}>
@@ -296,7 +298,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
               </span>
             ))}
           </p>
-          <p className="text-xs text-muted">
+          <p className="text-caption text-muted">
             各文は根拠の主張に紐づいています（文にカーソルを合わせると主張IDを表示）。
             {narrative.dropped?.length ? ` 根拠を確かめられなかった ${narrative.dropped.length} 文は除きました。` : ""}
           </p>
@@ -304,32 +306,33 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
       )}
       {gap && (
         <div data-testid="gap">
-          <h3 className="font-serif text-lg">Claudeの判断：何が足りないか</h3>
-          {gap.assessment && <p className="text-sm">{gap.assessment}</p>}
-          <ul className="text-sm text-muted">
+          <h3 className="font-serif text-lead">Claudeの判断：何が足りないか</h3>
+          {gap.assessment && <p className="text-small">{gap.assessment}</p>}
+          <ul className="text-small text-muted">
             {(gap.gaps ?? []).map((g, i) => (
               <li key={i}>
                 {FACET_LABEL[g.facet] ?? g.facet}・{g.lang === "ja" ? "日本語" : "英語"}：{g.reason}（追加検索：{g.terms.join("、")}）
               </li>
             ))}
           </ul>
-          {gap.found !== undefined && <p className="text-sm text-muted">追加で {gap.found} 節が見つかりました。</p>}
+          {gap.found !== undefined && <p className="text-small text-muted">追加で {gap.found} 節が見つかりました。</p>}
         </div>
       )}
       {claims && (
-        <p className="text-sm text-muted" data-testid="claims">
+        <p className="text-small text-muted" data-testid="claims">
           主張：採用 {claims.accepted} ・格下げ {claims.downgraded} ・却下 {claims.rejected}（{claims.passages} 節から）
         </p>
       )}
       {status === "完了" && expId && firstNarrative && (
-        <a href={`/note/${expId}?lang=${lang}`} className="inline-flex min-h-11 w-fit items-center rounded-full bg-lantern px-6 font-medium text-night" data-testid="note-link">
+        <a href={`/note/${expId}?lang=${lang}`} className={buttonClass("primary", "w-fit")} data-testid="note-link">
           {lang === "ja" ? "旅ノートを開く" : "Open the travel note"}
         </a>
       )}
       {visual && visual.hits.length > 0 && (
         <section data-testid="visual" aria-label="提灯から提灯へ">
-          <h3 className="font-serif text-lg">提灯から提灯へ</h3>
-          <p className="text-xs text-muted">切り抜いた大提灯に似た図像（画像の類似度。根拠ではありません）</p>
+          <h3 className="font-serif text-lead">提灯から提灯へ</h3>
+          <p className="text-caption text-muted">切り抜いた大提灯に似た図像（画像の類似度） <Pencil /></p>
+          <PencilLegend />
           <ul className="mt-2 flex gap-3 overflow-x-auto pb-2">
             {visual.hits.map((h) => (
               <VisualHitCard key={h.id} h={h} />
@@ -338,7 +341,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
         </section>
       )}
       {space && (
-        <p className="text-sm" data-testid="space-link">
+        <p className="text-small" data-testid="space-link">
           {space.ok && space.url ? (
             <a className="underline decoration-lantern underline-offset-4" href={space.url}>
               間（ま）で見る{space.aligned ? "：広重の絵と位置合わせ済み" : ""}
@@ -350,8 +353,8 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
       )}
       {threads && (
         <div data-testid="threads">
-          <h3 className="font-serif text-lg">糸</h3>
-          <ul className="text-sm">
+          <h3 className="font-serif text-lead">糸</h3>
+          <ul className="text-small">
             {threads.map((t) => (
               <li key={t.id}>
                 <span className="text-muted">[{STATE_LABEL[t.state] ?? t.state}]</span> {t.label.ja}
@@ -362,14 +365,14 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
       )}
       {cands.map((c, i) => (
         <div key={i}>
-          <h4 className="text-sm font-bold">
+          <h4 className="text-small font-bold">
             {FACET_LABEL[c.facet] ?? c.facet}・{c.lang === "ja" ? "日本語" : "英語"}：{c.found} 件
             {c.widened.length ? <span className="font-normal text-muted">（対象で足りず上位の場所まで広げました）</span> : null}
           </h4>
           {c.notFound ? (
-            <p className="text-sm text-muted">{c.lang === "ja" ? "日本語" : "英語"}の関連資料は見つかりませんでした。</p>
+            <p className="text-small text-muted">{c.lang === "ja" ? "日本語" : "英語"}の関連資料は見つかりませんでした。</p>
           ) : (
-            <ul className="text-sm">
+            <ul className="text-small">
               {c.candidates.slice(0, 3).map((x) => (
                 <li key={x.passageId} className="mb-1">
                   <span className="text-muted">

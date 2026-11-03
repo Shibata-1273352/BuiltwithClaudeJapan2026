@@ -10,7 +10,13 @@ import { domMax, LazyMotion, LayoutGroup, MotionConfig } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sourceCards } from "@/lib/live/state";
 import { ExplorationView } from "../exploration-view";
+import { NamesLayer, type NamesData } from "../names-layer";
+import type { TimelineData } from "@/lib/time-river";
+import { TimeRiver } from "../time-river";
 import { Backstage } from "./backstage";
+import { StagePanel } from "./stage-panel";
+import { Button, ButtonLink } from "../ui/button";
+import { Pencil, PencilLegend } from "../ui/marks";
 import { EvidenceColumn } from "./evidence-column";
 import { PhotoStage, useScene } from "./photo-stage";
 import { LiveChips, ResultStrip, StepRail, Toasts } from "./stage-chrome";
@@ -38,14 +44,14 @@ function usePresent() {
   }, []);
 }
 
-const btn = "inline-flex min-h-11 items-center rounded-full px-4 text-sm font-medium";
 
 export function LiveStage({ source, demoReplay, onExit }: { source: Source; demoReplay?: string | null; onExit?: () => void }) {
   const { state: s, phase, error, expId, photo, elapsed, reduced } = useExploration(source);
   const [view, setView] = useState<"stage" | "list">("stage");
   const [hot, setHot] = useState<string | null>(null);
   const [overlayOn, setOverlayOn] = useState(false);
-  const [backstage, setBackstage] = useState(false);
+  const [panel, setPanel] = useState<"backstage" | "time" | "names" | null>(null);
+  const toggle = (p: NonNullable<typeof panel>) => setPanel((v) => (v === p ? null : p));
   const [aspect, setAspect] = useState(3 / 4);
   const stageRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLSpanElement>(null);
@@ -69,15 +75,15 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   if (phase === "refused") {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="text-lg" role="alert">
+        <p className="text-lead" role="alert">
           {error}
         </p>
         {demoReplay && (
-          <a href={`/replay/${demoReplay}`} className={`${btn} bg-koto text-night`} data-testid="fallback-replay">
+          <ButtonLink href={`/replay/${demoReplay}`} variant="primary" data-testid="fallback-replay">
             記録を再生する（録画であることを表示します）
-          </a>
+          </ButtonLink>
         )}
-        <Link href="/" className="text-sm text-muted underline">
+        <Link href="/" className="text-small text-muted underline">
           はじめに戻る
         </Link>
       </main>
@@ -87,35 +93,43 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const actions = (
     <>
       {s.visual?.hits[0] && s.at.visual !== undefined && (
-        <a href={s.visual.hits[0].commons} target="_blank" rel="noreferrer noopener" className="flex w-full items-center gap-3 rounded-lg bg-night-2/80 p-2 ring-1 ring-muted/15" data-testid="visual">
+        <a href={s.visual.hits[0].commons} target="_blank" rel="noreferrer noopener" className="col-span-2 mb-2 flex w-full items-center gap-3" data-testid="visual">
           {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
-          <img src={`/api/cache/visual/images/${s.visual.hits[0].file}`} alt="" className="h-14 w-10 rounded object-cover" />
-          <span className="min-w-0 text-xs leading-snug">
-            <span className="block text-muted">提灯から提灯へ：似た図像（類似度 {s.visual.hits[0].score.toFixed(2)}。根拠ではありません）</span>
-            <span className="block truncate font-serif text-sm">{s.visual.hits[0].title}</span>
+          <img src={`/api/cache/visual/images/${s.visual.hits[0].file}`} alt="" className="h-12 w-9 rounded-sm object-cover" />
+          <span className="min-w-0">
+            <span className="block text-caption text-muted">
+              提灯から提灯へ・似た図像 {s.visual.hits[0].score.toFixed(2)} <Pencil />
+            </span>
+            <span className="block truncate font-serif text-small">{s.visual.hits[0].title}</span>
           </span>
         </a>
       )}
+      {s.space?.aligned && s.at.visual !== undefined && (
+        <Button variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} className="col-span-2 -mt-2 mb-2 w-full justify-start px-0" data-testid="overlay-toggle">
+          {overlayOn ? "写真に戻す" : "広重の絵と重ねる"}
+        </Button>
+      )}
       {finished && expId && (
-        <a href={`/note/${expId}`} className={`${btn} bg-lantern text-night`} data-testid="note-link">
+        <ButtonLink href={`/note/${expId}`} variant="primary" data-testid="note-link">
           旅ノートを開く
-        </a>
+        </ButtonLink>
+      )}
+      {finished && s.timeline != null && (
+        <Button onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
+          時をめくる
+        </Button>
+      )}
+      {finished && s.names != null && (
+        <Button onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
+          言の地層
+        </Button>
       )}
       {finished && s.space?.ok && s.space.url && (
-        <a href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} className={`${btn} border border-ma text-paper`} data-testid="space-link">
-          間（ま）で見る{s.space.aligned ? "・絵の中へ" : ""}
-        </a>
+        <ButtonLink href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} data-testid="space-link">
+          {s.space.aligned ? "絵の中へ" : "間（ま）で見る"}
+        </ButtonLink>
       )}
-      {into && !s.space?.aligned && finished && (
-        <a href={into} className={`${btn} bg-toki text-night`}>
-          この絵の中へ
-        </a>
-      )}
-      {s.space?.aligned && s.at.visual !== undefined && (
-        <button type="button" onClick={() => setOverlayOn((v) => !v)} className={`${btn} border border-toki/60`} aria-pressed={overlayOn} data-testid="overlay-toggle">
-          {overlayOn ? "写真に戻す" : "広重の絵と重ねる"}
-        </button>
-      )}
+      {into && !s.space?.aligned && finished && <ButtonLink href={into}>この絵の中へ</ButtonLink>}
     </>
   );
 
@@ -123,33 +137,36 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
     <LazyMotion features={domMax} strict>
       <MotionConfig reducedMotion="user">
         <LayoutGroup>
-          <main className="flex min-h-dvh flex-col gap-3 px-4 py-3 lg:h-dvh lg:px-8 lg:py-4">
-            <header className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-4">
-                <Link href="/" onClick={onExit} className="font-serif text-xl tracking-[0.3em]" aria-label="TSUMUGI はじめに戻る">
+          <main className="flex min-h-dvh w-full max-w-full flex-col gap-4 overflow-x-clip px-4 py-4 lg:h-dvh lg:px-10 lg:py-5">
+            <header className="flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3 border-b border-rule pb-3">
+              <div className="flex w-full min-w-0 flex-wrap items-baseline gap-x-10 gap-y-2 lg:w-auto">
+                <Link href="/" onClick={onExit} className="font-serif text-lead tracking-[0.3em]" aria-label="TSUMUGI はじめに戻る">
                   TSUMUGI
                 </Link>
                 <StepRail s={s} elapsed={elapsed} finished={finished} />
               </div>
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={() => setBackstage((v) => !v)} className="min-h-9 rounded-full border border-lantern/50 px-3 text-xs" aria-expanded={backstage} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
+              <div className="flex items-baseline gap-1">
+                <Button variant="quiet" onClick={() => toggle("backstage")} aria-expanded={panel === "backstage"} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
                   舞台裏
-                </button>
-                <button type="button" onClick={() => setView((v) => (v === "stage" ? "list" : "stage"))} className="present-hide min-h-9 rounded-full border border-muted/40 px-3 text-xs" data-testid="view-toggle" disabled={!expId}>
+                </Button>
+                <Button variant="quiet" onClick={() => setView((v) => (v === "stage" ? "list" : "stage"))} className="present-hide" data-testid="view-toggle" disabled={!expId}>
                   {view === "stage" ? "リスト表示" : "舞台表示"}
-                </button>
+                </Button>
               </div>
             </header>
-            <div className="flex min-h-8 flex-wrap items-center gap-3">
+            <div className="flex min-h-7 flex-wrap items-center gap-x-6 gap-y-1">
               <LiveChips s={s} finished={finished} replay={replay} />
               {replay && (
-                <p className="text-xs text-koto" data-testid="replay-banner">
-                  これは記録の再生です（{source.recordedAt.slice(0, 16).replace("T", " ")} に実行した探索）。新しい探索は行っていません。
+                <p className="text-caption text-muted" data-testid="replay-banner">
+                  {source.recordedAt.slice(5, 16).replace("-", "/").replace("T", " ")} に実行した探索の録画
                 </p>
               )}
+              <span className="ml-auto hidden max-w-[40%] lg:block">
+                <Toasts s={s} elapsed={elapsed} />
+              </span>
             </div>
             {s.failed && (
-              <p className="text-sm text-ba" role="alert">
+              <p className="text-small text-ba" role="alert">
                 探索を最後まで進められませんでした：{s.failed.message}
                 {demoReplay && (
                   <a href={`/replay/${demoReplay}`} className="ml-3 underline" data-testid="fallback-replay">
@@ -164,7 +181,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <ExplorationView attach={replay ? undefined : expId} replay={replay ? { explorationId: expId, recordedAt: source.recordedAt } : undefined} />
               </div>
             ) : (
-              <div ref={stageRef} className="relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:grid-cols-[minmax(320px,1fr)_auto_104px_minmax(360px,500px)] lg:gap-5">
+              <div ref={stageRef} className="relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:grid-cols-[minmax(320px,1fr)_auto_96px_minmax(360px,480px)] lg:gap-8">
                 <div className="order-2 min-h-0 lg:order-none">
                   <TextColumn s={s} cards={cards} elapsed={elapsed} reduced={reduced} hot={hot} setHot={setHot} actions={actions} />
                 </div>
@@ -177,15 +194,25 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <div className="order-3 min-h-0 lg:order-none">
                   <EvidenceColumn s={s} cards={cards} register={register} hot={hot} setHot={setHot} />
                 </div>
-                {backstage && <Backstage s={s} onClose={() => setBackstage(false)} />}
+                {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
+                {panel === "time" && s.timeline != null && (
+                  <StagePanel title={`時をめくる：${s.place?.path[0]?.name.ja ?? ""}はいつ、そこにあったか`} onClose={() => setPanel(null)} testid="time-panel" wide>
+                    <TimeRiver data={s.timeline as TimelineData} initialYear={1856} />
+                  </StagePanel>
+                )}
+                {panel === "names" && s.names != null && (
+                  <StagePanel title="言の地層：資料ごとの呼び名" onClose={() => setPanel(null)} testid="names-panel" wide>
+                    <NamesLayer names={s.names as NamesData} lang="ja" />
+                  </StagePanel>
+                )}
                 <ThreadLayer stageRef={stageRef} anchorRef={anchorRef} axisRef={axisRef} cardEls={cardEls} cards={cards} since={s.at.threads !== undefined ? elapsed - s.at.threads : -1} hot={hot} />
               </div>
             )}
 
-            <footer className="border-t border-muted/20 pt-3">
+            <footer className="flex flex-wrap items-end justify-between gap-4 border-t border-rule pt-4">
               <ResultStrip s={s} elapsed={elapsed} />
+              <PencilLegend />
             </footer>
-            <Toasts s={s} elapsed={elapsed} />
           </main>
         </LayoutGroup>
       </MotionConfig>

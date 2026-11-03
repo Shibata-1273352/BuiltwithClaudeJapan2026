@@ -7,6 +7,8 @@
 import { useEffect, useState } from "react";
 import type { Cite, Lang, Note, NarrativeLike } from "@/lib/note";
 import { VisualHitCard } from "../../visual-hit";
+import { Button, ButtonLink } from "../../ui/button";
+import { Pencil, PencilLegend, Section } from "../../ui/marks";
 
 const T = {
   ja: {
@@ -25,7 +27,7 @@ const T = {
     seen: "写真の中で読めたもの",
     confirm: "確認しました",
     unconfirm: "確認を取り消す",
-    visual: "提灯から提灯へ（似た図像。根拠ではありません）",
+    visual: "提灯から提灯へ・似た図像",
     noNarrative: "この言語の物語はまだありません。",
     make: "作る",
     derived: "推論（年表との照合）",
@@ -49,7 +51,7 @@ const T = {
     seen: "Read in the photo",
     confirm: "I checked this",
     unconfirm: "Undo my check",
-    visual: "Lantern to lantern (similar images, not evidence)",
+    visual: "Lantern to lantern · similar images",
     noNarrative: "No story in this language yet.",
     make: "Write it",
     derived: "derived (checked against the chronology)",
@@ -69,6 +71,9 @@ const STATE: Record<string, { ja: string; en: string; cls: string }> = {
   user_confirmed: { ja: "あなたの確認", en: "confirmed by you", cls: "border-double" },
 };
 const LAYER: Record<string, string> = { toki: "border-toki", ba: "border-ba", koto: "border-koto", ma: "border-ma" };
+/** graph predicates in labels read as words, not ids (CLAUDE.md design 9) */
+const PRED: Record<string, string> = { destroyed_in: "焼失", rebuilt_in: "再建", built_in: "建立", describes: "記述", mentions: "言及", observed: "観察", named_as: "呼び名", dedicated_to: "祀る", depicts: "描く" };
+const plain = (s: string) => s.replace(/（([a-z_]+)(「[^」]*」)?）/g, (m, p: string, q?: string) => (PRED[p] ? `（${PRED[p]}${q ?? ""}）` : m));
 
 export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang }) {
   const [lang, setLang] = useState<Lang>(initialLang);
@@ -120,14 +125,18 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
   const photo = note.space && note.captureId ? `/api/cache/scenes/${note.captureId}/photo.jpg` : null;
   const cutouts = note.space && note.captureId ? note.space.elements.filter((e) => e !== "people").map((e) => ({ e, src: `/api/cache/scenes/${note.captureId}/${e}.png` })) : [];
 
+  const path = note.place?.path ?? [];
   return (
-    <article className="flex flex-col gap-10" data-testid="travel-note" lang={lang}>
-      <header className="flex flex-wrap items-end justify-between gap-4">
+    <article className="flex flex-col gap-14" data-testid="travel-note" lang={lang}>
+      <header className="flex flex-wrap items-end justify-between gap-6 border-b border-rule pb-6">
         <div>
-          <p className="text-sm tracking-widest text-muted">{t.title}</p>
-          <h1 className="font-serif text-4xl md:text-5xl">{note.place?.path.join(" › ") ?? "—"}</h1>
+          <p className="label">
+            {t.title}
+            {path.length > 1 ? ` ／ ${path.slice(0, -1).join(" ／ ")}` : ""}
+          </p>
+          <h1 className="mt-2 font-serif text-display font-bold">{path.at(-1) ?? "—"}</h1>
         </div>
-        <div className="flex gap-2" role="group" aria-label="language">
+        <div className="flex rounded-sm border border-rule-strong" role="group" aria-label="language">
           {(["ja", "en"] as const).map((l) => (
             <button
               key={l}
@@ -137,7 +146,7 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
                 setSelected(0);
               }}
               aria-pressed={lang === l}
-              className={`min-h-11 min-w-11 rounded-full border px-4 ${lang === l ? "border-lantern text-lantern" : "border-muted/40"}`}
+              className={`min-h-11 min-w-11 px-4 text-small ${lang === l ? "bg-paper text-night" : "text-muted hover:text-paper"}`}
               data-testid={`note-lang-${l}`}
             >
               {l === "ja" ? "日本語" : "English"}
@@ -146,74 +155,80 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
         </div>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <section className="grid gap-10 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element -- private, session-scoped cache file
-          <img src={photo} alt="" className="max-h-[70vh] w-full rounded-lg object-contain" />
+          <img src={photo} alt="" className="max-h-[78vh] w-full rounded-md object-contain object-left" />
         ) : (
-          <div className="flex min-h-64 items-center justify-center rounded-lg border border-muted/30 text-muted">空間解析：簡易表示</div>
+          <div className="flex min-h-64 items-center justify-center border-y border-rule text-muted">空間解析：簡易表示</div>
         )}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
+          <div>
+            <p className="label">{t.seen}</p>
+            <dl className="mt-3 flex flex-col gap-3">
+              {note.see
+                .filter((x) => x.text_original)
+                .slice(0, 4)
+                .map((x, i) => (
+                  <div key={i}>
+                    <dt className="font-serif text-title leading-tight" lang="ja">
+                      {x.text_original}
+                    </dt>
+                    <dd className="text-small text-paper/75">
+                      {x.reading && <span className="mr-2 font-serif text-muted italic">{x.reading}</span>}
+                      {x.meaning?.[lang]}
+                    </dd>
+                  </div>
+                ))}
+            </dl>
+          </div>
           {cutouts.length > 0 && (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-end gap-4">
               {cutouts.map((c) => (
                 // eslint-disable-next-line @next/next/no-img-element -- cut-out PNG with alpha
-                <img key={c.e} src={c.src} alt={c.e} className="h-24 w-auto rounded bg-night/60 object-contain p-1" />
+                <img key={c.e} src={c.src} alt={c.e} className="h-20 w-auto object-contain" />
               ))}
             </div>
           )}
-          <h2 className="font-serif text-xl">{t.seen}</h2>
-          <ul className="flex flex-col gap-2">
-            {note.see
-              .filter((s) => s.text_original)
-              .slice(0, 4)
-              .map((s, i) => (
-                <li key={i}>
-                  <span className="font-serif text-2xl" lang="ja">
-                    {s.text_original}
-                  </span>{" "}
-                  <span className="text-sm text-muted">
-                    {s.reading} — {s.meaning?.[lang]}
-                  </span>
-                </li>
-              ))}
-          </ul>
           {note.space && (
-            <a href={note.space.url} className="underline decoration-ma underline-offset-4">
-              {t.space}
-              {note.space.aligned ? `（${t.aligned}）` : ""}
-            </a>
+            <div>
+              <ButtonLink href={note.space.url}>
+                {t.space}
+                {note.space.aligned ? ` ── ${t.aligned}` : ""}
+              </ButtonLink>
+            </div>
           )}
         </div>
       </section>
 
       {note.visual.length > 0 && (
-        <section data-testid="note-visual">
-          <h2 className="mb-3 font-serif text-xl">{t.visual}</h2>
-          <ul className="flex gap-3 overflow-x-auto pb-2">
+        <Section label={<>{t.visual} <Pencil /></>} data-testid="note-visual">
+          <ul className="flex gap-4 overflow-x-auto pb-2">
             {note.visual.map((h) => (
               <VisualHitCard key={h.id} h={h} width="w-28" />
             ))}
           </ul>
-        </section>
+        </Section>
       )}
 
-      <section className="grid gap-8 md:grid-cols-2">
-        <div>
-          <h2 className="mb-1 font-serif text-2xl">{t.story}</h2>
-          <p className="mb-4 text-sm text-muted">{t.pick}</p>
+      <section className="grid gap-12 md:grid-cols-2">
+        <div className="border-t border-rule pt-3">
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 className="label">{t.story}</h2>
+            <span className="text-caption text-muted">{t.pick}</span>
+          </div>
           {narrative?.sentences.length ? (
-            <ol className="flex flex-col gap-3 text-lg leading-relaxed" data-testid="note-sentences">
-              {narrative.sentences.map((s, i) => (
+            <ol className="flex flex-col font-serif text-body" data-testid="note-sentences">
+              {narrative.sentences.map((x, i) => (
                 <li key={i}>
                   <button
                     type="button"
                     onClick={() => setSelected(i)}
                     aria-pressed={selected === i}
-                    className={`w-full rounded-md border-l-4 px-3 py-2 text-left ${selected === i ? "border-lantern bg-paper/5" : "border-transparent hover:bg-paper/5"}`}
+                    className={`w-full border-l-2 py-2 pr-2 pl-4 text-left transition-colors ${selected === i ? "border-paper bg-paper/5" : "border-transparent text-paper/80 hover:text-paper"}`}
                   >
-                    {s.text}
-                    <span className="ml-2 align-middle text-xs text-muted">{t[s.assertion_type as "direct" | "derived" | "interpretive"] ?? s.assertion_type}</span>
+                    {x.text}
+                    <span className="ml-2 inline-block font-sans text-caption whitespace-nowrap text-muted">{t[x.assertion_type as "direct" | "derived" | "interpretive"] ?? x.assertion_type}</span>
                   </button>
                 </li>
               ))}
@@ -221,38 +236,35 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
           ) : (
             <p className="text-muted">
               {t.noNarrative}{" "}
-              <button type="button" onClick={makeNarrative} disabled={busy} className="min-h-11 rounded-full border border-lantern px-4 text-lantern">
+              <Button onClick={makeNarrative} disabled={busy}>
                 {busy ? "…" : t.make}
-              </button>
+              </Button>
             </p>
           )}
         </div>
 
-        <aside aria-live="polite" data-testid="note-evidence">
-          <h2 className="mb-4 font-serif text-2xl">{t.evidence}</h2>
-          <ul className="flex flex-col gap-4">
+        <aside aria-live="polite" data-testid="note-evidence" className="self-start border-t border-rule pt-3 md:sticky md:top-8">
+          <h2 className="label mb-4">{t.evidence}</h2>
+          <ul className="flex flex-col">
             {cites.map((c) => (
-              <li key={c.claimId} className="rounded-lg border border-muted/30 p-4">
-                <p className="text-sm text-muted">
-                  {c.sourceTitle} <span className="font-mono text-xs">· {c.claimId}</span>
-                </p>
+              <li key={c.claimId} className="border-b border-rule pb-4 not-first:pt-4">
+                <p className="text-small text-muted">{c.sourceTitle}</p>
                 {c.kind === "evidence" ? (
                   <>
-                    <blockquote className="mt-2 border-l-2 border-koto pl-3 font-serif" lang={c.lang}>
+                    <blockquote className="mt-2 border-l-2 border-koto pl-4 font-serif text-body" lang={c.lang}>
                       <span className="sr-only">{t.original}: </span>
                       {c.excerpt}
                     </blockquote>
-                    <p className="mt-1 font-mono text-xs text-muted">{c.sentenceIds.join(", ")}</p>
                     {c.lang !== lang && (
-                      <p className="mt-2 text-sm">
-                        <span className="text-xs text-muted">{t.ref}：</span>
+                      <p className="mt-2 pl-4 text-small text-paper/80">
+                        <span className="block text-caption text-muted">{t.ref}</span>
                         {refs[lang] ? (refs[lang]?.[c.sentenceIds.join("|")] ?? "—") : t.refLoading}
                       </p>
                     )}
                   </>
                 ) : (
-                  <p className={`mt-2 border-l-4 pl-3 ${LAYER.toki} ${STATE[c.state]?.cls ?? ""}`}>
-                    <span className="text-sm text-muted">[{STATE[c.state]?.[lang] ?? c.state}] </span>
+                  <p className={`mt-2 border-l-2 pl-4 ${LAYER.toki} ${STATE[c.state]?.cls ?? ""}`}>
+                    <span className="block text-caption text-muted">{STATE[c.state]?.[lang] ?? c.state}</span>
                     {c.label[lang]}
                   </p>
                 )}
@@ -262,9 +274,8 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
         </aside>
       </section>
 
-      <section>
-        <h2 className="mb-4 font-serif text-2xl">{t.threads}</h2>
-        <ul className="grid gap-2 text-sm md:grid-cols-2">
+      <Section label={t.threads}>
+        <ul className="grid gap-x-10 gap-y-3 text-small md:grid-cols-2">
           {note.threads
             .filter((th) => th.state !== "ink" || th.layer !== "koto")
             .sort((a, b) => Number(b.state === "pending" || b.state === "pencil") - Number(a.state === "pending" || a.state === "pencil"))
@@ -272,57 +283,56 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
             .map((th) => (
               <li
                 key={th.id}
-                className={`border-l-4 pl-3 ${LAYER[th.layer] ?? ""} ${confirmed[th.id] ? STATE.user_confirmed.cls : (STATE[th.state]?.cls ?? "")}`}
+                className={`border-l-2 pl-4 ${LAYER[th.layer] ?? ""} ${confirmed[th.id] ? STATE.user_confirmed.cls : (STATE[th.state]?.cls ?? "")}`}
                 data-testid={`thread-${th.state}`}
               >
-                <span className="text-muted">
-                  [{confirmed[th.id] ? `${STATE.user_confirmed[lang]}（${STATE[th.state]?.[lang] ?? th.state}）` : (STATE[th.state]?.[lang] ?? th.state)}]
-                </span>{" "}
-                {th.label[lang]}
+                <span className="block text-caption text-muted">
+                  {confirmed[th.id] ? `${STATE.user_confirmed[lang]}（${STATE[th.state]?.[lang] ?? th.state}）` : (STATE[th.state]?.[lang] ?? th.state)}
+                </span>
+                {plain(th.label[lang])}
                 {(th.state === "pending" || th.state === "pencil") && (
-                  <button
-                    type="button"
-                    onClick={() => toggleConfirm(th.id)}
-                    aria-pressed={Boolean(confirmed[th.id])}
-                    className="ml-2 inline-flex min-h-11 items-center rounded-full border border-muted/50 px-3 text-xs"
-                    data-testid="confirm-thread"
-                  >
+                  <Button variant="quiet" onClick={() => toggleConfirm(th.id)} aria-pressed={Boolean(confirmed[th.id])} className="ml-1 text-caption" data-testid="confirm-thread">
                     {confirmed[th.id] ? t.unconfirm : t.confirm}
-                  </button>
+                  </Button>
                 )}
               </li>
             ))}
         </ul>
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-4 font-serif text-2xl">{t.tickets}</h2>
+      <Section label={t.tickets}>
         <ul className="grid gap-4 md:grid-cols-3" data-testid="note-tickets">
           {note.tickets.map((k) => (
-            <li key={k.id} className="relative rounded-md border border-dashed border-lantern/60 bg-paper/5 p-4">
-              <p className="font-serif text-lg" lang={k.lang}>
-                {k.title}
-              </p>
-              <p className="text-sm">
-                {k.author ?? ""}
-                {k.first_published ? ` · ${k.first_published}` : ""}
-              </p>
-              <p className="mt-2 text-xs text-muted">{[k.provider, k.edition, k.license].filter(Boolean).join(" · ")}</p>
-              {k.url && (
-                <a href={k.url} className="mt-2 block truncate text-xs underline" rel="noreferrer noopener" target="_blank">
-                  {k.url}
-                </a>
-              )}
-              <p className="absolute top-3 right-3 text-xs text-muted">
-                {t.cited} {k.cited}
+            <li key={k.id} className="grid grid-cols-[1fr_auto] rounded-sm border border-rule-strong">
+              <div className="min-w-0 p-4">
+                <p className="font-serif text-lead leading-snug" lang={k.lang}>
+                  {k.title}
+                </p>
+                <p className="mt-1 text-small">
+                  {k.author ?? ""}
+                  {k.first_published ? ` · ${k.first_published}` : ""}
+                </p>
+                <p className="mt-2 text-caption text-muted">{[k.provider, k.edition, k.license].filter(Boolean).join(" · ")}</p>
+                {k.url && (
+                  <a href={k.url} className="mt-2 block truncate text-caption text-muted underline decoration-rule-strong underline-offset-4 hover:text-paper" rel="noreferrer noopener" target="_blank">
+                    {k.url}
+                  </a>
+                )}
+              </div>
+              <p className="flex w-14 flex-col items-center justify-center border-l border-dashed border-rule-strong text-caption text-muted">
+                <span>{t.cited}</span>
+                <span className="font-serif text-title text-paper tabular-nums">{k.cited}</span>
               </p>
             </li>
           ))}
         </ul>
-      </section>
+      </Section>
 
-      <footer className="text-xs text-muted tabular-nums">
-        {note.id} · {t.stats(note.stats)}
+      <footer className="flex flex-wrap justify-between gap-4 border-t border-rule pt-4 text-caption text-muted tabular-nums">
+        <span>
+          {note.id} · {t.stats(note.stats)}
+        </span>
+        <PencilLegend />
       </footer>
     </article>
   );

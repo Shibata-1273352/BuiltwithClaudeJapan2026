@@ -66,8 +66,8 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
   return (
     <section className="flex flex-col gap-3" data-testid="time-river" aria-label="時の川">
       <div className="flex items-baseline justify-between gap-4">
-        <h3 className="font-serif text-lg">時をめくる</h3>
-        <p className="font-serif text-5xl tabular-nums" aria-live="polite" data-testid="year">
+        <h3 className="label">時をめくる</h3>
+        <p className="font-serif text-display tabular-nums" aria-live="polite" data-testid="year">
           {year}
         </p>
       </div>
@@ -159,21 +159,21 @@ export function TimeRiver({ data, initialYear = 1856 }: { data: TimelineData; in
             key={q}
             type="button"
             onClick={() => setYear(q)}
-            className={`min-h-11 rounded-full border px-3 text-sm tabular-nums ${q === year ? "border-lantern text-lantern" : "border-muted/50 text-muted"}`}
+            className={`min-h-11 min-w-11 border-b-2 px-1 text-small tabular-nums ${q === year ? "border-paper text-paper" : "border-transparent text-muted hover:text-paper"}`}
           >
             {q}
           </button>
         ))}
       </div>
 
-      <p className="text-base" data-testid="year-state" data-state={s.state}>
-        <span className="mr-2 rounded px-2 py-0.5 text-sm" style={{ border: `1px solid ${COLOR[s.state]}`, color: COLOR[s.state] }}>
+      <p className="text-body" data-testid="year-state" data-state={s.state}>
+        <span className="mr-2 rounded-sm px-2 py-0.5 text-small" style={{ border: `1px solid ${COLOR[s.state]}`, color: COLOR[s.state] }}>
           {s.state === "present" ? "あった" : s.state === "absent" ? "不在" : s.state === "withheld" ? "判定保留" : "確認待ち"}
         </span>
         {s.label.ja}
       </p>
       {evidenceText.length > 0 && (
-        <p className="text-sm text-muted">
+        <p className="text-small text-muted">
           根拠（{data.name?.ja ?? ""}の年表との照合）：{evidenceText.join(" ／ ")}
         </p>
       )}

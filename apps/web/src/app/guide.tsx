@@ -18,7 +18,7 @@ export function Guide({ line }: { line: string }) {
         <ellipse cx="22" cy="38" rx="2.4" ry="1.4" fill="#f0c4be" opacity="0.8" />
         <ellipse cx="42" cy="38" rx="2.4" ry="1.4" fill="#f0c4be" opacity="0.8" />
       </svg>
-      <p className="relative max-w-md rounded-2xl rounded-bl-sm bg-paper/10 px-4 py-2 text-sm leading-relaxed">{line}</p>
+      <p className="relative max-w-md rounded-md rounded-bl-sm bg-paper/10 px-4 py-2 text-small leading-relaxed">{line}</p>
     </aside>
   );
 }

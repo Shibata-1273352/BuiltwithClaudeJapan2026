@@ -4,12 +4,13 @@
 import { AnimatePresence, m } from "motion/react";
 import { etaSeconds, STEPS, stepElapsed, stepStatus } from "@/lib/live/eta";
 import { stripNumbers, type LiveState } from "@/lib/live/state";
+import { StatusDot, Tag } from "../ui/marks";
 import { STAGE_WORK, WHO_LABEL } from "./labels";
 
 export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: number; finished: boolean }) {
   const eta = etaSeconds(s.stages, elapsed);
   return (
-    <ol className="flex max-w-full items-center gap-x-1 overflow-x-auto text-sm whitespace-nowrap lg:flex-wrap lg:gap-y-2" data-testid="step-rail" aria-label="探索の段階">
+    <ol className="fade-right flex max-w-full items-baseline gap-x-6 overflow-x-auto text-small whitespace-nowrap lg:flex-wrap" data-testid="step-rail" aria-label="探索の段階">
       {/* screen readers hear step changes and completion, not the ticking timers */}
       <li className="sr-only" aria-live="polite">
         {finished ? "探索が完了しました" : (STEPS.find((st) => stepStatus(st, s.stages) === "running")?.ja ?? "")}
@@ -18,22 +19,18 @@ export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: numb
         const status = stepStatus(st, s.stages);
         const sec = stepElapsed(st, s.stages, elapsed) / 1000;
         return (
-          <li key={st.key} className="flex items-center gap-1">
-            {i > 0 && <span aria-hidden className={`mx-1 h-px w-5 ${st.parallel ? "border-t border-dashed border-muted/60" : "bg-muted/40"}`} />}
-            <span
-              className={`inline-flex min-h-9 items-center gap-2 rounded-full px-3 transition-colors ${
-                status === "running" ? "bg-lantern/20 text-paper ring-1 ring-lantern" : status === "done" ? "text-paper" : "text-muted/70"
-              }`}
-              aria-current={status === "running" ? "step" : undefined}
-            >
-              <span aria-hidden className={`size-2 rounded-full ${status === "running" ? "animate-pulse bg-lantern" : status === "done" ? "bg-toki" : "bg-muted/40"}`} />
-              <span className="font-serif">{st.ja}</span>
-              {status !== "waiting" && <span className="tabular-nums text-xs text-muted">{sec.toFixed(1)}s</span>}
-            </span>
+          <li
+            key={st.key}
+            className={`flex items-baseline gap-1.5 border-b-2 pb-1 transition-colors ${status === "running" ? "border-lantern text-paper" : status === "done" ? "border-transparent text-paper/60" : "border-transparent text-muted/70"}`}
+            aria-current={status === "running" ? "step" : undefined}
+          >
+            <span className="text-caption text-muted tabular-nums">{st.parallel ? "∥" : String(i + 1).padStart(2, "0")}</span>
+            <span className="font-serif text-body">{st.ja}</span>
+            {status !== "waiting" && <span className="text-caption text-muted tabular-nums">{sec.toFixed(1)}</span>}
           </li>
         );
       })}
-      <li className="ml-3 text-xs text-muted tabular-nums">
+      <li className="text-caption text-muted tabular-nums">
         {finished ? `完了 ${((s.done?.elapsed_ms ?? elapsed) / 1000).toFixed(1)} 秒` : eta > 0 ? `残り 約${eta}秒` : "まもなく"}
       </li>
     </ol>
@@ -51,11 +48,13 @@ export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boo
   const running = Object.entries(s.stages).filter(([, v]) => v.done === undefined).map(([k]) => k);
   const claude = servedLabel(s);
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="live-chip">
-      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-bold tracking-wider ${replay ? "bg-koto/20 text-koto" : finished ? "bg-toki/20 text-toki" : "bg-ba/20 text-ba"}`}>
-        <span aria-hidden className={`size-1.5 rounded-full ${replay ? "bg-koto" : finished ? "bg-toki" : "animate-pulse bg-ba"}`} />
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-small" data-testid="live-chip">
+      <Tag tone={replay ? "koto" : finished ? "toki" : "ba"}>
+        <span className="mr-1.5 inline-flex">
+          <StatusDot tone={replay ? "koto" : finished ? "toki" : "ba"} pulse={!replay && !finished} />
+        </span>
         {replay ? "記録の再生" : finished ? "完了" : "LIVE"}
-      </span>
+      </Tag>
       <AnimatePresence initial={false}>
         {running.map((k) => {
           const w = STAGE_WORK[k];
@@ -67,9 +66,9 @@ export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boo
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 ${w.who === "claude" ? "border-lantern/60 text-paper" : "border-muted/40 text-muted"}`}
+              className={`inline-flex items-baseline gap-2 ${w.who === "claude" ? "text-paper" : "text-muted"}`}
             >
-              <span className={w.who === "claude" ? "font-bold text-lantern" : "font-bold"}>{w.who === "claude" ? claude : WHO_LABEL[w.who]}</span>
+              <span className={`text-caption font-medium ${w.who === "claude" ? "text-lantern" : "text-muted"}`}>{w.who === "claude" ? claude : WHO_LABEL[w.who]}</span>
               {w.ja}
             </m.span>
           );
@@ -81,13 +80,13 @@ export function LiveChips({ s, finished, replay }: { s: LiveState; finished: boo
 
 function Num({ v, label, accent, digits = 0, unit = "", ticking = false }: { v: number; label: string; accent?: string; digits?: number; unit?: string; ticking?: boolean }) {
   return (
-    <div className="flex min-w-16 flex-col">
-      <m.span key={ticking ? "t" : v.toFixed(digits)} initial={ticking ? false : { opacity: 0.3, y: 4 }} animate={{ opacity: 1, y: 0 }} className={`font-serif text-3xl leading-none tabular-nums ${accent ?? ""}`}>
+    <div className="flex min-w-14 flex-col">
+      <m.span key={ticking ? "t" : v.toFixed(digits)} initial={ticking ? false : { opacity: 0.3, y: 4 }} animate={{ opacity: 1, y: 0 }} className={`font-serif text-title leading-none font-medium tabular-nums ${v === 0 && !ticking ? "text-muted" : (accent ?? "")}`}>
         {unit === "$" ? "$" : ""}
         {v.toFixed(digits)}
-        {unit && unit !== "$" ? <span className="ml-0.5 text-base">{unit}</span> : null}
+        {unit && unit !== "$" ? <span className="ml-0.5 text-small text-muted">{unit}</span> : null}
       </m.span>
-      <span className="mt-1 text-[11px] text-muted">{label}</span>
+      <span className="mt-1 text-caption text-muted">{label}</span>
     </div>
   );
 }
@@ -97,17 +96,27 @@ export function ResultStrip({ s, elapsed }: { s: LiveState; elapsed: number }) {
   const n = stripNumbers(s);
   const sec = s.done?.elapsed_ms ? s.done.elapsed_ms / 1000 : elapsed / 1000;
   return (
-    <div className="flex flex-wrap items-end gap-x-7 gap-y-3" data-testid="result-strip">
-      <Num v={sec} label="経過" digits={1} unit="秒" ticking />
-      <Num v={n.sources} label="資料" />
-      <Num v={n.passages} label="読んだ節" />
-      <Num v={n.languages} label="言語" />
-      <Num v={n.accepted} label="採用した主張" accent="text-toki" />
-      <Num v={n.downgraded + n.rejected} label="格下げ・却下" accent="text-muted" />
-      <Num v={n.threads} label="糸" />
-      <Num v={n.broken} label="切れた糸" accent="text-ba" />
-      <Num v={n.claudeCalls} label="Claude 呼び出し" accent="text-lantern" />
-      <Num v={n.costUsd} label="費用" digits={2} unit="$" />
+    <div className="grid grid-cols-4 gap-x-4 gap-y-4 lg:flex lg:items-end [&>div]:contents lg:[&>div]:flex lg:[&>div]:gap-6 lg:[&>div+div]:ml-6 lg:[&>div+div]:border-l lg:[&>div+div]:border-rule lg:[&>div+div]:pl-6" data-testid="result-strip">
+      <div>
+        <Num v={sec} label="経過" digits={1} unit="秒" ticking />
+      </div>
+      <div>
+        <Num v={n.sources} label="資料" />
+        <Num v={n.passages} label="読んだ節" />
+        <Num v={n.languages} label="言語" />
+      </div>
+      <div>
+        <Num v={n.accepted} label="採用した主張" />
+        <Num v={n.downgraded + n.rejected} label="格下げ・却下" accent="text-muted" />
+      </div>
+      <div>
+        <Num v={n.threads} label="糸" />
+        <Num v={n.broken} label="切れた糸" />
+      </div>
+      <div>
+        <Num v={n.claudeCalls} label="Claude 呼び出し" />
+        <Num v={n.costUsd} label="費用" digits={2} unit="$" />
+      </div>
     </div>
   );
 }
@@ -125,24 +134,21 @@ function toastsOf(s: LiveState): Toast[] {
   return out;
 }
 
+/** The latest event, docked in the status line (never over the content). */
 export function Toasts({ s, elapsed }: { s: LiveState; elapsed: number }) {
-  const live = toastsOf(s).filter((t) => elapsed - t.at < 4500);
+  const t = toastsOf(s)
+    .filter((x) => elapsed - x.at < 5000)
+    .sort((a, b) => b.at - a.at)[0];
   return (
-    <div className="pointer-events-none fixed right-4 bottom-4 z-40 flex w-80 flex-col gap-2" aria-live="polite">
-      <AnimatePresence>
-        {live.map((t) => (
-          <m.div
-            key={t.key}
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 40 }}
-            className="rounded-lg border border-muted/30 bg-night-2/95 px-3 py-2 text-sm shadow-lg backdrop-blur"
-          >
-            <span className="mr-2 text-xs font-bold text-lantern">{t.who}</span>
+    <span className="min-w-0 truncate text-caption text-muted" aria-live="polite" data-testid="event-line">
+      <AnimatePresence mode="wait">
+        {t && (
+          <m.span key={t.key} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <span className="mr-2 text-paper/80">{t.who}</span>
             {t.text}
-          </m.div>
-        ))}
+          </m.span>
+        )}
       </AnimatePresence>
-    </div>
+    </span>
   );
 }

@@ -8,6 +8,7 @@
 import { AnimatePresence, m } from "motion/react";
 import { useEffect, useState, type Ref } from "react";
 import type { LiveState } from "@/lib/live/state";
+import { Dot } from "../ui/marks";
 import { FACING_JA } from "./viewpoint-card";
 
 type Scene = {
@@ -81,7 +82,7 @@ export function PhotoStage({
   const facingLine = vf && af && FACING_JA[vf] && FACING_JA[af] ? (vf === af ? `あなたも広重も${FACING_JA[vf]}を向いている（見立て・鉛筆）` : `あなたは${FACING_JA[vf]}を、広重は${FACING_JA[af]}を向いている（見立て・鉛筆）`) : null;
 
   return (
-    <div className="relative h-full max-w-full overflow-hidden rounded-xl bg-ink shadow-2xl ring-1 ring-muted/20" style={{ aspectRatio: aspect }} data-testid="stage-photo">
+    <div className="relative h-full max-w-full overflow-hidden rounded-md bg-ink shadow-2xl ring-1 ring-muted/20" style={{ aspectRatio: aspect }} data-testid="stage-photo">
       {photo && (
         // eslint-disable-next-line @next/next/no-img-element -- the visitor's own (face-blurred) photo or the CC0 sample
         <img
@@ -113,8 +114,8 @@ export function PhotoStage({
             height={e.box.h * 100}
             rx={0.6}
             fill="none"
-            stroke="var(--lantern)"
-            strokeWidth={1.5}
+            stroke="var(--paper)"
+            strokeWidth={1}
             vectorEffect="non-scaling-stroke"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: sincePlace > 2600 ? 0.25 : 0.95 }}
@@ -129,13 +130,13 @@ export function PhotoStage({
           .map((e, i) => (
             <m.span
               key={i}
-              className="absolute max-w-[45%] rounded bg-night/85 px-2 py-0.5 text-xs shadow"
+              className="absolute max-w-[45%] rounded-sm bg-night/85 px-2 py-0.5 text-caption shadow"
               style={{ left: `${e.box.x * 100}%`, top: `calc(${e.box.y * 100}% - 1.6rem)` }}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: sincePlace > 2600 ? 0 : 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.15 }}
             >
-              <span className="font-serif text-sm text-lantern">{e.text_original}</span>
+              <span className="font-serif text-small text-lantern">{e.text_original}</span>
               {e.meaning?.ja && <span className="ml-1 text-muted">{e.meaning.ja.slice(0, 18)}</span>}
             </m.span>
           ))}
@@ -181,9 +182,9 @@ export function PhotoStage({
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print aligned to the photo */}
             <img src={overlay!} alt="広重『名所江戸百景 浅草金龍山』に写真を重ねたもの" className="size-full object-contain" />
-            <span className="absolute bottom-3 left-3 rounded bg-night/80 px-2 py-1 text-xs">
-              広重 1856 と重ねる（位置合わせ：Claudeが付けた目印＋コード）
-              {facingLine && <span className="mt-0.5 block font-hand text-sm text-paper" data-testid="facing-line">{facingLine}</span>}
+            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night/90 to-transparent px-4 pt-10 pb-3 text-caption text-paper/80">
+              歌川広重《名所江戸百景 浅草金龍山》1856 を重ねて
+              {facingLine && <span className="mt-0.5 block font-hand text-small text-paper" data-testid="facing-line">{facingLine}</span>}
             </span>
           </m.div>
         )}
@@ -192,7 +193,9 @@ export function PhotoStage({
       {/* anchor of the threads */}
       {anchor && <span ref={anchorRef} aria-hidden className="absolute size-0" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }} />}
       {anchor && s.at.threads !== undefined && (
-        <span aria-hidden className="absolute size-3 -translate-1/2 rounded-full bg-lantern shadow-[0_0_16px_var(--lantern)]" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }} />
+        <span aria-hidden className="absolute -translate-1/2" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }}>
+          <Dot className="block size-3 bg-lantern shadow-[0_0_16px_var(--lantern)]" />
+        </span>
       )}
 
       {/* the place, big, before it docks into the text column */}
@@ -200,16 +203,16 @@ export function PhotoStage({
         {placeName && sincePlace >= 0 && sincePlace < 1900 && (
           <m.div
             key="place-hero"
-            className="absolute inset-0 flex flex-col items-center justify-center bg-night/55 text-center backdrop-blur-[2px]"
+            className="absolute inset-0 flex flex-col items-center justify-center bg-night/70 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <m.span layoutId="place-ja" className="font-serif text-7xl font-bold tracking-[0.2em] text-paper drop-shadow-lg">
+            <m.span layoutId="place-ja" className="font-serif text-hero font-bold tracking-[0.2em] text-paper drop-shadow-lg">
               {placeName.ja}
             </m.span>
-            <m.span layoutId="place-en" className="mt-3 font-serif text-2xl text-lantern">
+            <m.span layoutId="place-en" className="mt-3 font-serif text-title text-lantern">
               {placeName.en}
             </m.span>
           </m.div>

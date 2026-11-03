@@ -29,14 +29,14 @@ export function NamesLayer({ names, lang }: { names: NamesData; lang: "ja" | "en
   const byLang = (l: "en" | "ja") => (g?.usages ?? []).filter((u) => u.lang === l);
   return (
     <div data-testid="names">
-      <h3 className="font-serif text-lg">{lang === "ja" ? "言：誰が、何を、どう呼んだか" : "Names: who called what, and how"}</h3>
-      <p className="text-xs text-muted">{lang === "ja" ? "呼び名を押すと、資料ごとの書き方を比べられます。" : "Tap a name to compare how each source writes it."}</p>
+      <h3 className="label">{lang === "ja" ? "言の地層 ── 誰が、何を、どう呼んだか" : "Names ── who called what, and how"}</h3>
+      <p className="text-caption text-muted">{lang === "ja" ? "呼び名を押すと、資料ごとの書き方を比べられます。" : "Tap a name to compare how each source writes it."}</p>
       {Object.entries(names).map(([id, grp]) => (
         <div key={id} className="mb-2">
-          <p className="text-sm font-bold">
+          <p className="text-small font-bold">
             {grp.name?.[lang]} <span className="font-normal text-muted">（{grp.type}）</span>
           </p>
-          <ul className="flex flex-wrap gap-x-3 text-sm">
+          <ul className="flex flex-wrap gap-x-3 text-small">
             {grp.usages.slice(0, 6).map((u, i) => (
               <li key={i}>
                 <button
@@ -60,19 +60,19 @@ export function NamesLayer({ names, lang }: { names: NamesData; lang: "ja" | "en
             ))}
           </ul>
           {open === id && g && (
-            <div className="mt-2 grid gap-3 rounded-lg border border-koto/40 p-3 md:grid-cols-2" data-testid="name-compare">
+            <div className="mt-3 grid gap-6 border-t border-rule pt-3 md:grid-cols-2" data-testid="name-compare">
               {(["en", "ja"] as const).map((l) => (
                 <section key={l}>
-                  <h4 className="mb-1 text-xs tracking-widest text-muted">{l === "en" ? "English" : "日本語"}（{byLang(l).length}）</h4>
+                  <h4 className="mb-1 text-caption tracking-widest text-muted">{l === "en" ? "English" : "日本語"}（{byLang(l).length}）</h4>
                   {byLang(l).length === 0 ? (
-                    <p className="text-sm text-muted">{lang === "ja" ? "この言語の資料には見つかりませんでした。" : "Not found in sources in this language."}</p>
+                    <p className="text-small text-muted">{lang === "ja" ? "この言語の資料には見つかりませんでした。" : "Not found in sources in this language."}</p>
                   ) : (
                     <ul className="flex flex-col gap-2">
                       {byLang(l).map((u, i) => {
                         const [a, b, c] = splitAtName(u.sentence, u.text, u.start);
                         return (
-                          <li key={i} className="text-sm">
-                            <p className="text-xs text-muted">
+                          <li key={i} className="text-small">
+                            <p className="text-caption text-muted">
                               {u.sourceTitle}
                               {u.time ? `（${u.time.slice(0, 4)}）` : ""} · <span className="font-mono">{u.sentenceId}</span>
                             </p>
