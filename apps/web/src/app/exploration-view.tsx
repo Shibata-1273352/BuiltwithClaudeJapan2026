@@ -1,4 +1,5 @@
 "use client";
+import { EVENT_TYPES } from "@/lib/dag/event-types";
 
 /**
  * Upload → start exploration → follow events over SSE (FR-01, FR-04, 4.11). Day-3 view: shows the
@@ -97,7 +98,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay }: { jpeg?: 
         if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
         if (e.type === "done" || e.type === "failed") es?.close();
       };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "space", "visual", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      for (const t of EVENT_TYPES) es.addEventListener(t, on);
     };
     if (replay) {
       listen(`/api/explorations/${replay.explorationId}/events?pace=replay`);

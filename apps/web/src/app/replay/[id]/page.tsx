@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { EXP_ID_RE } from "@/lib/note-server";
+import { isDemoReplay } from "@/lib/demo";
 import { isPresenter } from "@/lib/presenter";
 import { sessionId } from "@/lib/session";
 import { store } from "@/lib/store";
@@ -19,7 +20,7 @@ async function Replay({ params }: { params: Promise<{ id: string }> }) {
   const row = store().prepare("SELECT session_id, capture_id, created_at, status FROM explorations WHERE id = ?").get(id) as
     | { session_id: string; capture_id: string; created_at: string; status: string }
     | undefined;
-  if (!row || row.status !== "done" || (!presenter && row.session_id !== sid)) notFound();
+  if (!row || row.status !== "done" || (!presenter && !isDemoReplay(id) && row.session_id !== sid)) notFound();
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element -- the recorded photo (session-scoped cache) */}
