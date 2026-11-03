@@ -58,7 +58,8 @@ export type Note = {
   visual: { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[] }[];
   narratives: Partial<Record<Lang, NarrativeLike>>;
   cites: Record<string, Cite>;
-  threads: { id: string; layer: string; state: string; label: { ja: string; en: string } }[];
+  /** confirmedAt: FR-44, the viewer's own check of a pencil / pending thread (state itself unchanged) */
+  threads: { id: string; layer: string; state: string; label: { ja: string; en: string }; confirmedAt?: string }[];
   tickets: Ticket[];
   stats: { elapsed_ms?: number; cost_usd?: number; claude_calls?: number };
 };
@@ -85,6 +86,7 @@ export function buildNote(
   ev: StoredEvent[],
   sources: Map<string, SourceMeta>,
   cached: Partial<Record<Lang, NarrativeLike>> = {},
+  confirmations: Map<string, string> = new Map(),
 ): Note {
   const place = first<{ chosen?: { entity: string; path: { name: { ja: string } }[] } }>(ev, "place")?.chosen;
   const see = first<{ elements: Note["see"] }>(ev, "see")?.elements ?? [];
@@ -153,7 +155,7 @@ export function buildNote(
     visual: first<{ hits: Note["visual"] }>(ev, "visual")?.hits ?? [],
     narratives,
     cites,
-    threads: threads.map(({ id: tid, layer, state, label }) => ({ id: tid, layer, state, label })),
+    threads: threads.map(({ id: tid, layer, state, label }) => ({ id: tid, layer, state, label, confirmedAt: confirmations.get(tid) })),
     tickets,
     stats: { elapsed_ms: done.elapsed_ms, cost_usd: done.cost_usd, claude_calls: done.claude_calls },
   };

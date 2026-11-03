@@ -1,6 +1,7 @@
 import { sourceMeta } from "./corpus/titles";
 import { eventsAfter } from "./dag/events";
 import { cachedNarrative } from "./narrative-service";
+import { confirmationsFor } from "./confirmations";
 import { buildNote, type Note } from "./note";
 import { store } from "./store";
 
@@ -14,5 +15,5 @@ export function loadNote(id: string, viewer: { sid: string | null; presenter: bo
     | undefined;
   if (!row || (!viewer.presenter && row.session_id !== viewer.sid)) return null;
   const cached = { ja: cachedNarrative(id, "ja") ?? undefined, en: cachedNarrative(id, "en") ?? undefined };
-  return buildNote(id, row.capture_id, eventsAfter(id, 0), sourceMeta(), cached);
+  return buildNote(id, row.capture_id, eventsAfter(id, 0), sourceMeta(), cached, confirmationsFor(id));
 }
