@@ -5,7 +5,8 @@
  * with manual extra blur and retake (FR-01..03), optional location (FR-04), then send and follow
  * the exploration live. If preprocessing fails, sending stays disabled (fail closed).
  */
-import { useEffect, useRef, useState } from "react";
+import { Camera, cameraSupported } from "./ui/camera";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { boxAround, type Box } from "@/lib/capture/geometry";
 import { prepare, render, toJpeg, type Prepared } from "@/lib/capture/preprocess";
 import { ExplorationView } from "./exploration-view";
@@ -19,11 +20,18 @@ type State =
   | { kind: "ready"; prepared: Prepared; manual: Box[]; debug: boolean }
   | { kind: "error"; message: string };
 
+const noop = () => () => {};
+
 const T = dict({
   ja: {
     failed: "処理に失敗しました",
     retake: "撮り直す",
     take: "写真を撮る・選ぶ",
+    camera: "カメラで撮る",
+    shutter: "撮影する",
+    close: "閉じる",
+    denied: "カメラを使えませんでした。「写真を撮る・選ぶ」から選んでください。",
+    starting: "カメラを起動しています",
     working: "端末の中で縮小・顔のぼかしをしています…",
     error: (m: string) => `前処理に失敗したため送信できません（${m}）。撮り直してください。`,
     preview: "送信前のプレビュー。ぼかしたい所をタップすると追加でぼかします。",
@@ -39,6 +47,11 @@ const T = dict({
     failed: "Processing failed",
     retake: "Retake",
     take: "Take or choose a photo",
+    camera: "Open the camera",
+    shutter: "Take the photo",
+    close: "Close",
+    denied: "The camera is not available. Use “Take or choose a photo” instead.",
+    starting: "Starting the camera",
     working: "Resizing and blurring faces on your device…",
     error: (m: string) => `Preprocessing failed, so nothing can be sent (${m}). Please take the photo again.`,
     preview: "Preview before sending. Tap anywhere to blur it as well.",
@@ -60,6 +73,9 @@ export function CapturePreview() {
   const [asList, setAsList] = useState(false); // 6.4 ?view=list: the accessible list instead of the stage
   const [useLocation, setUseLocation] = useState(false);
   const out = useRef<HTMLCanvasElement>(null);
+  const [cam, setCam] = useState(false);
+  const canCam = useSyncExternalStore(noop, cameraSupported, () => false);
+  const closeCam = useCallback(() => setCam(false), []);
 
   useEffect(() => {
     if (state.kind !== "ready" || !out.current) return;
@@ -98,6 +114,22 @@ export function CapturePreview() {
 
   return (
     <section className="flex w-full flex-col items-start gap-4">
+      {cam && (
+        <Camera
+          onShot={(f) => {
+            setCam(false);
+            void onFile(f);
+          }}
+          onClose={closeCam}
+          labels={{ shutter: t.shutter, close: t.close, denied: t.denied, starting: t.starting }}
+        />
+      )}
+      <div className="flex flex-wrap gap-3">
+      {canCam && (
+        <Button variant="primary" onClick={() => setCam(true)} data-testid="camera-open">
+          {t.camera}
+        </Button>
+      )}
       <label className={buttonClass("secondary", "cursor-pointer")}>
         {state.kind === "ready" ? t.retake : t.take}
         <input
@@ -109,6 +141,7 @@ export function CapturePreview() {
           onChange={(e) => onFile(e.target.files?.[0])}
         />
       </label>
+      </div>
 
       {state.kind === "working" && <p className="text-muted">{t.working}</p>}
       {state.kind === "error" && (
