@@ -163,7 +163,9 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
           events: tl0.t.existence_events
             .filter((e) => e.entity === chosen.entity)
             .map((e) => ({ id: e.id, event: e.event, time: e.time, original: e.original, disputed: Boolean(e.disputed), evidence: e.evidence })),
-          conflicts: [],
+          conflicts: tl0.t.conflicts
+            .filter((c) => tl0.t.existence_events.some((e) => e.id === c.about && e.entity === chosen.entity))
+            .map((c) => ({ id: c.id, about: c.about, explanation: c.explanation, sides: c.sides })),
           sources: [],
           reviewed_by: tl0.t.reviewed_by,
           early: true,
@@ -446,7 +448,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
         events: tl.t.existence_events
           .filter((e) => e.entity === place)
           .map((e) => ({ id: e.id, event: e.event, time: e.time, original: e.original, disputed: Boolean(e.disputed), evidence: e.evidence })),
-        conflicts: conflicts.map((c) => ({ id: c.id, about: c.about, explanation: c.explanation })),
+        conflicts: conflicts.map((c) => ({ id: c.id, about: c.about, explanation: c.explanation, sides: c.sides })),
         sources: rows.map((r) => ({ source: r.source, title: r.sourceTitle, time: r.time, relation: r.relation?.kind ?? null, value: r.value, reason: r.reason })),
         reviewed_by: tl.t.reviewed_by,
       });

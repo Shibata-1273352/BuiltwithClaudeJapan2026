@@ -25,18 +25,19 @@ export function landingFacts(): LandingFacts {
   const tl = timeline();
   // one line per structure, named with its site, the "(present hall)" style qualifiers dropped
   const strip = (s: string) => s.replace(/[（(][^）)]*[）)]\s*$/, "").trim();
-  const seen = new Set<string>();
-  const places: { ja: string; en: string }[] = [];
+  const bySite = new Map<string, { ja: string; en: string; former: boolean }>();
   for (const [id, p] of tl.periods.entries()) {
     const e = p.length ? E.get(id) : undefined;
     if (!e) continue;
     const site = e.parent ? E.get(e.parent) : undefined;
-    const ja = site && site.type === "site" ? `${strip(site.name.ja)}の${strip(e.name.ja)}` : strip(e.name.ja);
-    const en = site && site.type === "site" ? `${strip(e.name.en)}, ${strip(site.name.en)}` : strip(e.name.en);
-    if (seen.has(ja)) continue;
-    seen.add(ja);
-    places.push({ ja, en });
+    const inSite = site && site.type === "site";
+    const name = { ja: strip(e.name.ja).replace(/^旧/, ""), en: strip(e.name.en).replace(/^(Former|Old)\s+/i, "") };
+    const entry = { ja: inSite ? `${strip(site.name.ja)}の${name.ja}` : name.ja, en: inSite ? `${name.en}, ${strip(site.name.en)}` : name.en, former: /^旧/.test(e.name.ja) };
+    const key = inSite ? site.id : e.id;
+    const cur = bySite.get(key);
+    if (!cur || (cur.former && !entry.former)) bySite.set(key, entry);
   }
+  const places = [...bySite.values()].map(({ ja, en }) => ({ ja, en }));
   const list = (sources as { sources: { lang: string }[] }).sources;
   return {
     citationExactPct: Math.round(e.citation.exact * 100),

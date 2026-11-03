@@ -45,6 +45,9 @@ export function GuideCards({
     .slice(0, 3);
   if (!order.length) return null;
   const writing = s.stages.guide && s.stages.guide.done === undefined;
+  // the element the first answer already names (the largest with writing): its card skips the heading
+  const answered = only === undefined ? elements.map((e, i) => ({ i, a: e.text_original && e.box ? e.box.w * e.box.h : -1 })).sort((a, b) => b.a - a.a)[0] : undefined;
+  const answeredIdx = answered && answered.a >= 0 ? answered.i : -1;
   return (
     <section aria-label={l.what} className="flex flex-col gap-3" data-testid="guide-cards">
       {order.map(({ e, i }, pos) => {
@@ -61,16 +64,25 @@ export function GuideCards({
             data-testid="guide-card"
           >
             <button type="button" onClick={() => onSelectSee(i)} className="block w-full text-left" aria-expanded={open}>
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="font-serif text-title leading-tight" lang="ja">
-                  {e.text_original ?? e.label}
-                </p>
-                {n && <GuideMark />}
-              </div>
-              <p className="text-small text-paper/70">
-                {e.reading && <span className="mr-2 font-serif italic">{e.reading}</span>}
-                {e.meaning?.[lang]}
-              </p>
+              {i === answeredIdx && !open ? (
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-caption text-muted">{e.text_original}</p>
+                  {n && <GuideMark />}
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="font-serif text-title leading-tight" lang={e.text_original ? "ja" : lang}>
+                      {e.text_original ?? n?.name?.[lang] ?? e.label}
+                    </p>
+                    {n && <GuideMark />}
+                  </div>
+                  <p className="text-small text-paper/70">
+                    {e.reading && <span className="mr-2 font-serif italic">{e.reading}</span>}
+                    {e.meaning?.[lang]}
+                  </p>
+                </>
+              )}
             </button>
             {n ? <Note n={n} open={open} l={l} lang={lang} onAsk={onAsk ? (q) => onAsk(q, i) : undefined} /> : writing && pos === 0 ? <p className="shimmer mt-2 rounded-sm text-caption text-muted">{l.writing}</p> : null}
           </m.article>

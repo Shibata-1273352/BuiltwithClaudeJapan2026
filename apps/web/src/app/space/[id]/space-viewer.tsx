@@ -1,4 +1,5 @@
 "use client";
+import { BackLink } from "../../ui/back-link";
 import { Button } from "../../ui/button";
 import { PrintDiorama } from "./diorama";
 import { Tag } from "../../ui/marks";
@@ -362,6 +363,7 @@ export function SpaceViewer({
       </div>
 
       <aside className="flex w-full flex-col gap-7 px-6 py-10 lg:w-96 lg:pr-10">
+        <BackLink className="-ml-1 mb-1" />
         <h1 className="font-serif text-title">間（ま）</h1>
         <p className="-mt-4 text-caption text-muted">写真を SAM 3 と深度で層に分け、広重の絵と重ねる</p>
         {/* 3D-only controls are hidden in the 2D view (FR-37) */}

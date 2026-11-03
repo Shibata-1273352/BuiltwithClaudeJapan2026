@@ -36,5 +36,5 @@ export function LoomLegend() {
 /** The guide mark next to a guide note (the legend explains it). */
 export function GuideMark() {
   const l = useDict(L);
-  return <span className="rounded-sm border border-paper/30 px-1 text-caption leading-5 text-paper/80">{l.guide} · Claude</span>;
+  return <span className="shrink-0 rounded-sm border border-paper/30 px-1 text-caption leading-5 whitespace-nowrap text-paper/80">{l.guide} · Claude</span>;
 }

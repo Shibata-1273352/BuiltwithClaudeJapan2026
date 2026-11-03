@@ -1,6 +1,6 @@
 /**
  * Timed screenshots of the live stage during one page load (6.3 beats checked by eye).
- *   npx tsx --env-file=.env scripts/stage-shots.ts http://127.0.0.1:3100 /replay/<id> [--phone] [--at 3,15,25,40] [--presenter]
+ *   npx tsx --env-file=.env scripts/stage-shots.ts http://127.0.0.1:3100 /replay/<id> [--phone | --4k] [--at 3,15,25,40] [--presenter]
  * Output: $DATA_DIR/out/screens/stage-<slug>-<w>-<t>s.png; prints page errors.
  */
 import { mkdirSync } from "node:fs";
@@ -8,7 +8,7 @@ import path from "node:path";
 import { chromium } from "playwright";
 
 const [base, route = "/live", ...rest] = process.argv.slice(2);
-if (!base) throw new Error("usage: stage-shots.ts <baseUrl> <route> [--phone] [--at 3,15,25,40]");
+if (!base) throw new Error("usage: stage-shots.ts <baseUrl> <route> [--phone | --4k] [--at 3,15,25,40]");
 const token = process.env.ACCESS_TOKEN;
 const dataDir = process.env.DATA_DIR;
 if (!token || !dataDir) throw new Error("ACCESS_TOKEN / DATA_DIR not set");
@@ -18,7 +18,8 @@ const times = (ai >= 0 ? rest[ai + 1] : "3,15,25,40").split(",").map(Number);
 const outDir = path.join(dataDir, "out", "screens");
 mkdirSync(outDir, { recursive: true });
 const slug = route.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "").slice(0, 40) || "home";
-const vp = phone ? { width: 390, height: 844 } : { width: 1920, height: 1080 };
+const wide = rest.includes("--4k");
+const vp = phone ? { width: 390, height: 844 } : wide ? { width: 3840, height: 2160 } : { width: 1920, height: 1080 };
 
 const browser = await chromium.launch();
 try {

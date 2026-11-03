@@ -1,14 +1,15 @@
 "use client";
 
 /** The evidence column (6.2): one card per source, appearing as it is found, then judged. */
+import { useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
 import { dict, useDict, useLang } from "../i18n";
 import { EXIST_LABEL, FACET_LABEL, LAYER_COLOR, STATE_LABEL } from "./labels";
 
 const T = dict({
-  ja: { evidence: "根拠", title: "根拠となる資料", n: (n: number) => `${n} 節`, matrix: "観点×言語の検索", ja: "日本語", en: "英語", none: "見つからず", searching: "日英の資料を探しています。", before: "写真を読み終えたら、日英の資料を探します。", pub: "刊行・公開年（この場所の記述の年ではない）", time: "この場所について書かれた年", pubMark: " 刊", jaMark: "日", enMark: "英", kept: "採用", down: "格下げ" },
-  en: { evidence: "Evidence", title: "Sources", n: (n: number) => `${n} passages`, matrix: "Search by topic and language", ja: "Japanese", en: "English", none: "none found", searching: "Searching Japanese and English sources.", before: "Once the photo is read, Japanese and English sources are searched.", pub: "year published (not the year this place was described)", time: "the year this place was written about", pubMark: " pub.", jaMark: "ja", enMark: "en", kept: "kept", down: "downgraded" },
+  ja: { evidence: "根拠", title: "根拠となる資料", n: (n: number) => `${n} 節`, matrix: "観点×言語の検索", ja: "日本語", en: "英語", none: "見つからず", searching: "日英の資料を探しています。", before: "写真を読み終えたら、日英の資料を探します。", pub: "刊行・公開年（この場所の記述の年ではない）", time: "この場所について書かれた年", pubMark: " 刊", jaMark: "日", enMark: "英", kept: "採用", down: "格下げ", more: (n: number) => `すべての資料を見る（${n}）` },
+  en: { evidence: "Evidence", title: "Sources", n: (n: number) => `${n} passages`, matrix: "Search by topic and language", ja: "Japanese", en: "English", none: "none found", searching: "Searching Japanese and English sources.", before: "Once the photo is read, Japanese and English sources are searched.", pub: "year published (not the year this place was described)", time: "the year this place was written about", pubMark: " pub.", jaMark: "ja", enMark: "en", kept: "kept", down: "downgraded", more: (n: number) => `See all sources (${n})` },
 });
 
 
@@ -27,6 +28,7 @@ export function EvidenceColumn({
 }) {
   const searched = s.stages.retrieve !== undefined || s.stages.plan !== undefined;
   const t = useDict(T);
+  const [allOnPhone, setAllOnPhone] = useState(false);
   const ui = useLang();
   return (
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.evidence} data-testid="evidence-column">
@@ -50,7 +52,7 @@ export function EvidenceColumn({
         )}
       </p>
       {cards.length === 0 && <p className="font-serif text-body text-muted">{searched ? t.searching : t.before}</p>}
-      <ul className="fade-end flex min-h-[50%] flex-1 flex-col overflow-y-auto pr-1 pb-10">
+      <ul className={`fade-end flex min-h-[50%] flex-1 flex-col overflow-y-auto pr-1 pb-10 ${allOnPhone ? "" : "max-lg:[&>li:nth-child(n+3)]:hidden"}`}>
         <AnimatePresence initial={false}>
           {cards.map((c) => {
             const color = c.layer ? LAYER_COLOR[c.layer] : "var(--muted)";
@@ -107,6 +109,12 @@ export function EvidenceColumn({
           })}
         </AnimatePresence>
       </ul>
+      {/* on a phone: two sources, the rest on request (no long scroll) */}
+      {!allOnPhone && cards.length > 2 && (
+        <button type="button" onClick={() => setAllOnPhone(true)} className="min-h-11 self-start text-small text-muted underline underline-offset-4 lg:hidden" data-testid="evidence-more">
+          {t.more(cards.length)}
+        </button>
+      )}
     </section>
   );
 }

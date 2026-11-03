@@ -4,6 +4,7 @@ import { validateGuide, type GuideOutput } from "./guide";
 const bi = (ja: string, en: string) => ({ ja, en });
 const note = (over: Partial<GuideOutput["notes"][number]> = {}): GuideOutput["notes"][number] => ({
   element: 0,
+  name: bi("大提灯", "Great lantern"),
   what: bi("高さ約3.9m、重さ約700kgの大提灯", "A 3.9 m paper lantern weighing about 700 kg"),
   why: bi("門の名を掲げる顔", "It carries the gate's name like a signboard"),
   try: bi("下から見上げると底に龍の彫刻", "Look up: a dragon is carved on its base"),

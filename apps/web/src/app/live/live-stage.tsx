@@ -18,7 +18,6 @@ import { TimeTurn } from "./time-turn";
 import { Backstage } from "./backstage";
 import { StagePanel } from "./stage-panel";
 import { Button, ButtonLink } from "../ui/button";
-import { Pencil } from "../ui/marks";
 import { LoomLegend } from "../ui/legend";
 import { EvidenceColumn } from "./evidence-column";
 import { PhotoStage, useScene } from "./photo-stage";
@@ -256,49 +255,43 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
     );
   }
 
+  // one primary (the note), one secondary (the postcard), the rest as one quiet row — a flow, not a menu
+  const quiet = [
+    s.space?.aligned && s.at.visual !== undefined ? (
+      <Button key="overlay" variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} data-testid="overlay-toggle">
+        {overlayOn ? t.back : t.overlay}
+      </Button>
+    ) : null,
+    finished && s.timeline != null ? (
+      <Button key="time" variant="quiet" onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
+        {t.time}
+      </Button>
+    ) : null,
+    finished && s.names != null ? (
+      <Button key="names" variant="quiet" onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
+        {t.names}
+      </Button>
+    ) : null,
+    finished && s.space?.ok && s.space.url && (s.space.elements?.length ?? 0) > 0 ? (
+      <ButtonLink key="space" variant="quiet" href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} data-testid="space-link">
+        {s.space.aligned ? t.intoPrint : t.space}
+      </ButtonLink>
+    ) : null,
+    into && !s.space?.aligned && finished ? (
+      <ButtonLink key="into" variant="quiet" href={into}>
+        {t.intoThis}
+      </ButtonLink>
+    ) : null,
+  ].filter(Boolean);
   const actions = (
     <>
-      {s.visual?.hits[0] && s.at.visual !== undefined && (
-        <a href={s.visual.hits[0].commons} target="_blank" rel="noreferrer noopener" className="col-span-2 mb-2 flex w-full items-center gap-3" data-testid="visual">
-          {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
-          <img src={`/api/cache/visual/images/${s.visual.hits[0].file}`} alt="" className="h-12 w-9 rounded-sm object-cover" />
-          <span className="min-w-0">
-            <span className="block text-caption text-muted">
-              {t.similar} <Pencil />
-            </span>
-            <span className="block truncate font-serif text-small">{s.visual.hits[0].title}</span>
-          </span>
-        </a>
-      )}
-      {s.space?.aligned && s.at.visual !== undefined && (
-        <Button variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} className="col-span-2 -mt-2 mb-2 w-full justify-start px-0" data-testid="overlay-toggle">
-          {overlayOn ? t.back : t.overlay}
-        </Button>
-      )}
       {finished && expId && s.place && (
         <ButtonLink href={`/note/${expId}`} variant="primary" data-testid="note-link">
           {t.note}
         </ButtonLink>
       )}
       {finished && expId && s.place && <PostcardButton expId={expId} />}
-      {finished && s.timeline != null && (
-        <Button variant="quiet" onClick={() => toggle("time")} aria-expanded={panel === "time"} data-testid="time-toggle">
-          {t.time}
-        </Button>
-      )}
-      {finished && s.names != null && (
-        <Button variant="quiet" onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
-          {t.names}
-        </Button>
-      )}
-      {finished && s.space?.ok && s.space.url && (
-        <ButtonLink variant="quiet" href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} data-testid="space-link">
-          {s.space.aligned ? t.intoPrint : t.space}
-        </ButtonLink>
-      )}
-      {into && !s.space?.aligned && finished && <ButtonLink variant="quiet" href={into}>
-          {t.intoThis}
-        </ButtonLink>}
+      {quiet.length > 0 && <div className="col-span-2 flex flex-wrap items-center gap-x-1 lg:col-auto [&>*]:px-2">{quiet}</div>}
     </>
   );
 
@@ -359,7 +352,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <ExplorationView attach={replay ? undefined : expId} replay={replay ? { explorationId: expId, recordedAt: source.recordedAt } : undefined} />
               </div>
             ) : (
-              <div ref={stageRef} className={`relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:gap-8 ${s.place === null ? "lg:grid-cols-[minmax(420px,1.1fr)_auto]" : "lg:grid-cols-[minmax(320px,1fr)_auto_96px_minmax(360px,480px)]"}`}>
+              <div ref={stageRef} className={`relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:gap-8 ${s.place === null ? "lg:grid-cols-[minmax(26rem,1.1fr)_auto]" : "lg:grid-cols-[minmax(20rem,1fr)_auto_6rem_minmax(22.5rem,30rem)]"}`}>
                 <div className="order-2 min-h-0 lg:order-none">
                   <TextColumn
                     s={s}

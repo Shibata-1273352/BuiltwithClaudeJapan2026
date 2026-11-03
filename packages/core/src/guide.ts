@@ -16,6 +16,7 @@ export const GuideKanji = z.object({
 
 export const GuideNote = z.object({
   element: z.number().int().describe("index of the element in the list given (0-based)"),
+  name: Bi.describe("a short name for the element, e.g. 舎利殿 / Reliquary hall (≤ 12 字 / 5 words)"),
   what: Bi.describe("what the traveler is looking at: one concrete, sensory detail (≤ 15 words / 40 字)"),
   why: Bi.describe("why it matters in Japanese culture (≤ 20 words / 50 字)"),
   try: Bi.describe("one thing to do or notice there (≤ 15 words / 40 字)"),
@@ -52,7 +53,7 @@ export function validateGuide(out: GuideOutput, elements: GuideElement[]): { not
       dropped.push({ element: n.element, reason: "duplicate" });
       continue;
     }
-    if ([n.what, n.why, n.try].some(tooLong)) {
+    if ([n.what, n.why, n.try].some(tooLong) || (n.name && (n.name.ja.length > 24 || n.name.en.length > 60))) {
       dropped.push({ element: n.element, reason: "too_long_or_empty" });
       continue;
     }

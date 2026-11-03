@@ -125,7 +125,7 @@ export function Landing({ facts }: { facts: LandingFacts }) {
             <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
             <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
           </figure>
-          <h1 className="mt-10 font-serif text-title font-bold sm:text-display xl:text-hero">{t.hero}</h1>
+          <h1 className="mt-10 font-serif text-title leading-tight font-bold sm:text-display">{t.hero}</h1>
           <p className="mt-6 max-w-[36em] text-body text-paper/80">{t.sub}</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <ButtonLink href="/live" variant="primary" className="px-6 text-body" data-testid="try-sample">
@@ -157,7 +157,8 @@ export function Landing({ facts }: { facts: LandingFacts }) {
       </section>
 
       {/* why it can be relied on; where it works */}
-      <section className="mx-auto grid w-full max-w-7xl gap-12 border-t border-rule px-5 py-14 md:grid-cols-2" data-testid="trust">
+      <section className="mx-auto w-full max-w-7xl px-5" data-testid="trust">
+        <div className="grid gap-12 border-t border-rule py-14 md:grid-cols-2">
         <div>
           <p className="label">{t.trustTitle}</p>
           <p className="mt-3 max-w-[36em] text-body text-paper/85">{t.trust}</p>
@@ -181,10 +182,11 @@ export function Landing({ facts }: { facts: LandingFacts }) {
           <p className="mt-3 text-body text-paper/85">{t.full(facts)}</p>
           <p className="mt-3 text-small text-paper/70">{t.elsewhere}</p>
         </div>
+        </div>
       </section>
 
-      <section id="capture" className="border-t border-rule">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-6 px-5 py-14">
+      <section id="capture" className="mx-auto w-full max-w-7xl px-5">
+        <div className="flex flex-col items-start gap-6 border-t border-rule py-14">
           <div>
             <p className="label">{t.own}</p>
             <h2 className="mt-2 font-serif text-title">{t.captureTitle}</h2>

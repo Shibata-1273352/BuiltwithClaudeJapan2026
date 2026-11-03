@@ -61,7 +61,7 @@ export function FirstAnswer({ s }: { s: LiveState }) {
                 </span>
                 {main.reading && <span className="font-serif text-small text-muted italic">{main.reading}</span>}
               </p>
-              {main.meaning && <p className="font-serif text-lead text-paper/90">{main.meaning[lang]}</p>}
+              {main.meaning && <p className="font-serif text-body text-paper/90">{main.meaning[lang]}</p>}
               <p className="mt-0.5 text-caption text-lantern">{l.byClaude}</p>
             </m.div>
           ) : s.see ? (
@@ -80,10 +80,8 @@ export function FirstAnswer({ s }: { s: LiveState }) {
         <AnimatePresence mode="wait">
           {since ? (
             <m.div key="a2" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-1" data-testid="since-when">
-              <p className="font-serif text-lead">
-                <span className="mr-2 font-serif text-title tabular-nums">{since.since}</span>
-                {since.label[lang]}
-              </p>
+              <p className="font-serif text-title leading-tight tabular-nums">{since.since}</p>
+              <p className="mt-0.5 font-serif text-small text-paper/85">{since.label[lang]}</p>
               <p className="mt-0.5 text-caption text-muted">{l.byCode}</p>
             </m.div>
           ) : placeKnown && (s.place === null || tl) ? (

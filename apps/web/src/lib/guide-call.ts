@@ -8,6 +8,7 @@ import { GuideOutput, UNTRUSTED_POLICY, validateGuide, type GuideNote, type SeeO
 import { CLAUDE_LIGHT_MODEL, CLAUDE_MODEL, FAST_BETA, claude, costOf, fastOn, rateLimitHeaders, withFast, type CallRecord } from "./claude";
 
 export const GUIDE_SYSTEM = `You are the guide of TSUMUGI for travelers who love Japan. For the element read in the traveler's photo, write one short guide note, in Japanese and English. Be brief: it is read on the spot, on a phone.
+- name: a short name for the element in each language (ja ≤ 12 字, en ≤ 5 words).
 - what: one concrete, sensory detail of what they are looking at (en ≤ 15 words, ja ≤ 40 字).
 - why: why it matters in Japanese culture: belief, custom, craft, the meaning of the words (en ≤ 20 words, ja ≤ 50 字).
 - try: one thing to do or notice right there: etiquette, a custom, a detail to look for (en ≤ 15 words, ja ≤ 40 字).

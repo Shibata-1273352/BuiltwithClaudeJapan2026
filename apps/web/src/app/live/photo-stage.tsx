@@ -210,7 +210,7 @@ export function PhotoStage({
             data-testid="stage-overlay"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print aligned to the photo */}
-            <img src={overlay!} alt={t.printAlt} className="size-full object-cover" />
+            <img src={scene?.alignment?.artifact ? `/api/cache/artifacts/${scene.alignment.artifact}/image.jpg` : overlay!} alt={t.printAlt} className="size-full object-cover" />
             <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night/90 to-transparent px-4 pt-10 pb-3 text-caption text-paper/80">
               {t.printCap}
               {facingLine && <span className="mt-0.5 block font-hand text-small text-paper" data-testid="facing-line">{facingLine}</span>}
