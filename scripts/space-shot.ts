@@ -31,6 +31,14 @@ try {
   await page.waitForTimeout(2500);
   await page.screenshot({ path: path.join(out, `${lang}-1-split.png`) });
   await page.waitForTimeout(9000); // 1.8 s + the 1.6 s move + the 1.2 s opening (slow on a software renderer)
+  // a software renderer may fall to 2D (FR-37) while the camera walks: choose 3D, as a visitor can
+  if (rest.includes("--auto") && (await page.getByTestId("space-try-3d").count())) {
+    await page.screenshot({ path: path.join(out, `${lang}-2a-fell-2d.png`) });
+    await page.getByTestId("space-try-3d").click();
+    await page.locator("canvas").first().waitFor({ timeout: 30_000 });
+    await page.waitForTimeout(6000);
+    if (await page.getByTestId("space-2d").count()) fails.push("fell back to 2D again after choosing 3D");
+  }
   const box = (await page.locator("canvas").first().boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.waitForTimeout(800);

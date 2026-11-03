@@ -57,6 +57,10 @@
     filter: drop-shadow(0 0 6px color-mix(in srgb, currentColor 55%, transparent));
   }
 }
+/* presenter (FR-46, P key / ?present=1): larger type for 1920x1080 */
+html[data-present] {
+  font-size: 22px;
+}
 /* wide and 4K screens (CSS width >= 2200 px): the whole page scales with the viewport, so a 3840-wide
    screen shows the 1920 layout at twice the size — type, spacing and max widths are all rem */
 @media (min-width: 2200px) {
@@ -68,10 +72,6 @@
   }
 }
 
-/* presenter (FR-46, P key / ?present=1): larger type for 1920x1080 */
-html[data-present] {
-  font-size: 22px;
-}
 html[data-present] .present-hide {
   display: none !important;
 }

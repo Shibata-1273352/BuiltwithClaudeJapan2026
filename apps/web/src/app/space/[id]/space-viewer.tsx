@@ -3,7 +3,25 @@ import { BackLink } from "../../ui/back-link";
 import { Button } from "../../ui/button";
 import { PrintDiorama } from "./diorama";
 import { Tag } from "../../ui/marks";
+import { useLang } from "../../i18n";
+import { LazyMotion, domAnimation, m } from "motion/react";
 
+const L = {
+  ja: {
+    inside: "絵の中",
+    print: "歌川広重《名所江戸百景 浅草金龍山》1856",
+    how: "版画の奥行きを推定して開いています（推定）。ポインタで覗き込めます。",
+    back: "今へ戻る",
+    state: { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" },
+  },
+  en: {
+    inside: "Inside the print",
+    print: "Utagawa Hiroshige, Kinryūzan Temple in Asakusa (1856)",
+    how: "The print opens by its estimated depth (an estimate). Move the pointer to look around.",
+    back: "Back to now",
+    state: { present: "stood", absent: "absent", unknown: "to be checked", withheld: "withheld" },
+  },
+} as const;
 const LAYER_JA: Record<string, string> = { lantern: "大提灯", lantern_base: "提灯の金具", gate: "門", people: "人" };
 const debugOn = () => typeof location !== "undefined" && new URLSearchParams(location.search).get("debug") === "1";
 
@@ -238,7 +256,7 @@ export function SpaceViewer({
   // Before the 1866 fire the Kansei-era gate Hiroshige painted stood: open the print automatically.
   const overlayBase = ys && ys.state === "present" && year < 1866 ? Math.max(overlay, 0.85) : overlay;
   const overlayEff = inside ? 1 : overlayBase;
-  const photoOpacity = inside ? 0 : 1; // the photo dissolves as we enter the painting
+  const photoOpacity = inside && !moving ? 0 : 1; // the photo stays under the print during the move and dissolves on arrival
   const [fps, setFpsState] = useState(0);
   // FR-37: a device that cannot keep 30 fps (e.g. an older phone) gets the 2D view
   const fpsLog = useRef<number[]>([]);
@@ -276,6 +294,10 @@ export function SpaceViewer({
     setYear(into ? 1856 : 2026);
     setMoving(performance.now());
   };
+  // inside the print there is only the print: the panel closes (full screen), the way back stays
+  const immersive = inside && !flat && !moving && opened > 0;
+  const lang = useLang();
+  const l = L[lang];
   const elements = Object.entries(scene.elements).sort((a, b) => LAYER_Z[a[1].layer] - LAYER_Z[b[1].layer]);
 
   useEffect(() => {
@@ -295,7 +317,7 @@ export function SpaceViewer({
 
   return (
     <div className="flex flex-1 flex-col lg:flex-row">
-      <div className="relative h-[70vh] flex-1 lg:h-auto">
+      <div className={`relative flex-1 ${immersive ? "h-dvh" : "h-[70vh] lg:h-auto"}`}>
         {flat ? (
           <Flat2D photo={file(scene.photo)} art={align ? `/api/cache/artifacts/${align.artifact}/image.jpg` : null} rect={align ? artifactRectInPhoto(align) : null} overlay={overlayEff} inside={inside} reason={force2d ? "指定により2D表示" : "この端末では3Dの動きが重いため、2D表示に切り替えました"} onTry3d={force2d ? undefined : () => {
             fpsLog.current = [];
@@ -318,8 +340,9 @@ export function SpaceViewer({
               renderOrder={i + 1}
             />
           ))}
-          {align && artRect && inside && opened > 0 && (
+          {align && artRect && artFrame && inside && opened > 0 && (
             <PrintDiorama
+              camera={artFrame}
               image={`/api/cache/artifacts/${align.artifact}/image.jpg`}
               depth={`/api/cache/artifacts/${align.artifact}/depth.png`}
               rect={{ x: artRect.x * depthCompensation(artZ), y: artRect.y * depthCompensation(artZ), w: artRect.w * depthCompensation(artZ), h: artRect.h * depthCompensation(artZ) }}
@@ -341,7 +364,7 @@ export function SpaceViewer({
           )}
           <OrbitControls
             ref={controls as never}
-            enabled={!moving}
+            enabled={!moving && !inside}
             enablePan={false}
             minDistance={0.5}
             maxDistance={8}
@@ -355,6 +378,36 @@ export function SpaceViewer({
           <Fps onFps={setFps} />
         </Canvas>
         )}
+        {immersive && (
+          <LazyMotion features={domAnimation} strict>
+          <m.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: reduced ? 0 : 1.2, duration: 0.6 }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-6 bg-gradient-to-t from-night/85 to-transparent px-6 pt-24 pb-8 lg:px-12 lg:pb-10"
+            data-testid="space-inside"
+          >
+            <div className="max-w-[36rem]">
+              <p className="label">{l.inside}</p>
+              <p className="mt-2 font-serif text-title">{l.print}</p>
+              {ys && (
+                <p className="mt-2 flex flex-wrap items-center gap-3 font-serif text-body text-paper/85" data-testid="space-year-state" data-state={ys.state}>
+                  {ys.label[lang]}
+                  <Tag tone={ys.state === "present" ? "toki" : "muted"} dashed={ys.state !== "present"}>
+                    {l.state[ys.state]}
+                  </Tag>
+                </p>
+              )}
+              <p className="mt-3 text-caption text-muted">{l.how}</p>
+            </div>
+            <div className="pointer-events-auto flex gap-3">
+              <Button variant="secondary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={() => go(false)}>
+                {l.back}
+              </Button>
+            </div>
+          </m.div>
+          </LazyMotion>
+        )}
         {!flat && debugOn() && (
           <p className="pointer-events-none absolute right-3 top-3 rounded-sm bg-night/70 px-2 py-1 text-caption text-muted">
             {fps} fps
@@ -362,7 +415,8 @@ export function SpaceViewer({
         )}
       </div>
 
-      <aside className="flex w-full flex-col gap-7 px-6 py-10 lg:w-96 lg:pr-10">
+      {!immersive && (
+      <aside className="flex w-full flex-col gap-7 px-6 py-10 lg:w-[24rem] lg:pr-10">
         <BackLink className="-ml-1 mb-1" />
         <h1 className="font-serif text-title">間（ま）</h1>
         <p className="-mt-4 text-caption text-muted">写真を SAM 3 と深度で層に分け、広重の絵と重ねる</p>
@@ -472,6 +526,7 @@ export function SpaceViewer({
           </ul>
         </section>
       </aside>
+      )}
     </div>
   );
 }
