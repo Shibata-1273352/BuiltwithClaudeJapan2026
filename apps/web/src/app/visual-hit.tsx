@@ -1,5 +1,5 @@
 /** FR-58: a gallery print with the region that matched the photo's lantern outlined (similarity, not evidence). */
-export type VisualHit = { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[] };
+export type VisualHit = { id: string; title: string; commons: string; score: number; file: string; crop?: string; box?: number[]; into?: string | null };
 
 export function VisualHitCard({ h, width = "w-32" }: { h: VisualHit; width?: string }) {
   const [x1, y1, x2, y2] = h.box ?? [0, 0, 1, 1];
@@ -22,6 +22,12 @@ export function VisualHitCard({ h, width = "w-32" }: { h: VisualHit; width?: str
         類似度 {h.score.toFixed(2)}
         {h.crop?.startsWith("sam") ? " ・提灯どうし" : ""}
       </span>
+      {/* the same print as the one aligned to the photo: open it in 間 and enter the painting */}
+      {h.into?.startsWith("/space/") && (
+        <a href={h.into} className="mt-1 inline-flex min-h-11 items-center rounded-full bg-toki px-3 font-bold text-night" data-testid="visual-into">
+          この絵の中へ
+        </a>
+      )}
     </li>
   );
 }

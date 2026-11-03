@@ -159,7 +159,7 @@ const GATE_LAYERS = new Set(["lantern", "lantern_base", "gate"]);
 const GATE_OPACITY = { present: 1, absent: 0.06, unknown: 0.35, withheld: 0.35 } as const;
 const STATE_JA = { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" } as const;
 
-export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJson; timeline?: TimelineData }) {
+export function SpaceViewer({ id, scene, timeline, autoEnter = false }: { id: string; scene: SceneJson; timeline?: TimelineData; autoEnter?: boolean }) {
   const reduced = usePrefersReducedMotion();
   const [split, setSplit] = useState(0);
   const [overlay, setOverlay] = useState(0);
@@ -196,6 +196,15 @@ export function SpaceViewer({ id, scene, timeline }: { id: string; scene: SceneJ
     const t = setTimeout(() => setSplit(performance.now()), 400);
     return () => clearTimeout(t);
   }, []);
+  // 「提灯から提灯へ」→ この絵の中へ: arriving with ?enter=1 enters the aligned print after the split
+  useEffect(() => {
+    if (!autoEnter || !align) return;
+    const t = setTimeout(() => {
+      setInside(true);
+      setMoving(performance.now());
+    }, 1800);
+    return () => clearTimeout(t);
+  }, [autoEnter, align]);
 
   return (
     <div className="flex flex-1 flex-col lg:flex-row">

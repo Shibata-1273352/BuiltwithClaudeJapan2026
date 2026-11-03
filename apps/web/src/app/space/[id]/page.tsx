@@ -13,7 +13,7 @@ import { SpaceViewer } from "./space-viewer";
 
 export const metadata = { title: "TSUMUGI — 間" };
 
-async function Scene({ params }: { params: Promise<{ id: string }> }) {
+async function Scene({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ enter?: string }> }) {
   await connection();
   const { id } = await params;
   // A visitor's own photo (cap_…): only its session or the read-only presenter (same rule as the cache route)
@@ -35,14 +35,14 @@ async function Scene({ params }: { params: Promise<{ id: string }> }) {
   // The time slider uses the reviewed timeline of the subject (FR-56).
   const titles = sourceTitles();
   const tl = timelineData(target, entities().get(target)?.name, (s) => titles.get(s) ?? s);
-  return <SpaceViewer id={id} scene={scene} timeline={tl} />;
+  return <SpaceViewer id={id} scene={scene} timeline={tl} autoEnter={(await searchParams).enter === "1"} />;
 }
 
 export default function SpacePage(props: PageProps<"/space/[id]">) {
   return (
     <main className="flex flex-1 flex-col">
       <Suspense fallback={<p className="p-8 text-muted">読み込み中…</p>}>
-        <Scene params={props.params} />
+        <Scene params={props.params} searchParams={props.searchParams as Promise<{ enter?: string }>} />
       </Suspense>
     </main>
   );
