@@ -36,17 +36,18 @@ try {
   if (!(await obj.count())) fails.push("no touchable object");
   const box = await obj.boundingBox();
   if (box) {
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.75);
     await page.waitForTimeout(250);
     await shot("2-touch");
-    await obj.click();
+    // smaller objects (an inscription) sit on top of the lantern: touch the lantern where it is alone
+    await obj.click({ position: { x: box.width * 0.85, y: box.height * 0.75 } });
     await page.waitForTimeout(700);
     await shot("3-open");
     if (!(await page.getByTestId("kanji-parts").count())) fails.push("tap did not open the kanji parts");
     // drag and let go: the object follows and springs back
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.75);
     await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 + 120, box.y + box.height / 2 + 60, { steps: 8 });
+    await page.mouse.move(box.x + box.width * 0.85 + 120, box.y + box.height * 0.75 + 60, { steps: 8 });
     await page.waitForTimeout(150);
     await shot("4-drag");
     await page.mouse.up();
