@@ -69,20 +69,40 @@ function getPosition(): Promise<{ lat: number; lon: number } | "denied" | "unava
   );
 }
 
-export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation: boolean }) {
+/**
+ * `replay`: FR-47 — show a stored exploration again with its original pacing instead of starting a
+ * new one (only when live fails). A banner says "recording" for the whole time.
+ */
+export function ExplorationView({ jpeg, useLocation = false, replay }: { jpeg?: Blob; useLocation?: boolean; replay?: { explorationId: string; recordedAt: string } }) {
   const [events, setEvents] = useState<Ev[]>([]);
-  const [status, setStatus] = useState<string>("送信の準備中…");
-  const [expId, setExpId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>(replay ? "探索中…" : "送信の準備中…");
+  const [expId, setExpId] = useState<string | null>(replay?.explorationId ?? null);
   const [lang, setLang] = useState<"ja" | "en">("ja");
   const [alt, setAlt] = useState<Partial<Record<"ja" | "en", NarrativeEvent>>>({});
   const [langBusy, setLangBusy] = useState(false);
-  const [locStatus, setLocStatus] = useState<string>(useLocation ? "位置情報：確認中" : "位置情報：使わない");
+  const [locStatus, setLocStatus] = useState<string>(replay ? "記録の再生（位置情報は使いません）" : useLocation ? "位置情報：確認中" : "位置情報：使わない");
   const started = useRef(false);
 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
     let es: EventSource | null = null;
+    const listen = (url: string) => {
+      es = new EventSource(url);
+      const on = (e: MessageEvent) => {
+        const ev = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
+        setEvents((prev) => (prev.some((p) => p.seq === ev.seq) ? prev : [...prev, ev]));
+        if (e.type === "done") setStatus("完了");
+        if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
+        if (e.type === "done" || e.type === "failed") es?.close();
+      };
+      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "space", "visual", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+    };
+    if (replay) {
+      listen(`/api/explorations/${replay.explorationId}/events?pace=replay`);
+      return () => es?.close();
+    }
+    if (!jpeg) return;
     (async () => {
       const form = new FormData();
       form.append("image", jpeg, "capture.jpg");
@@ -116,18 +136,10 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
       const { events: url, exploration_id } = await ex.json();
       setExpId(exploration_id);
       setStatus("探索中…");
-      es = new EventSource(url);
-      const on = (e: MessageEvent) => {
-        const ev = { seq: Number(e.lastEventId), type: e.type, data: JSON.parse(e.data) };
-        setEvents((prev) => (prev.some((p) => p.seq === ev.seq) ? prev : [...prev, ev]));
-        if (e.type === "done") setStatus("完了");
-        if (e.type === "failed") setStatus(`失敗：${(ev.data as { message: string }).message}`);
-        if (e.type === "done" || e.type === "failed") es?.close();
-      };
-      for (const t of ["received", "stage", "see", "place", "plan", "candidates", "gap", "claims", "existence", "conflicts", "threads", "names", "timeline", "narrative", "space", "visual", "ai_call", "notice", "done", "failed"]) es.addEventListener(t, on);
+      listen(url);
     })().catch(() => setStatus("通信に失敗しました"));
     return () => es?.close();
-  }, [jpeg, useLocation]);
+  }, [jpeg, useLocation, replay]);
 
   const pick = <T,>(t: string) => events.find((e) => e.type === t)?.data as T | undefined;
   const see = pick<SeeOutput>("see");
@@ -192,6 +204,11 @@ export function ExplorationView({ jpeg, useLocation }: { jpeg: Blob; useLocation
   );
   return (
     <section className="flex w-full flex-col gap-4 rounded-lg border border-muted/30 p-4" data-testid="exploration">
+      {replay && (
+        <p role="status" className="sticky top-0 z-10 -mx-4 -mt-4 rounded-t-lg bg-ba px-4 py-2 text-sm font-bold text-paper" data-testid="replay-banner">
+          記録の再生：live ではありません（{new Date(replay.recordedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} の探索）
+        </p>
+      )}
       <Guide line={guide} />
       <p className="font-bold" data-testid="exploration-status">
         {status}

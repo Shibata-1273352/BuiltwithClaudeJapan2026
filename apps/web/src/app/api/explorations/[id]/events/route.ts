@@ -1,5 +1,6 @@
 import { eventsAfter, subscribe, TERMINAL, type StoredEvent } from "@/lib/dag/events";
 import { isPresenter } from "@/lib/presenter";
+import { replaySchedule } from "@/lib/replay";
 import { sessionId } from "@/lib/session";
 import { store } from "@/lib/store";
 
@@ -31,18 +32,25 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
         controller.enqueue(enc.encode(`id: ${e.seq}\nevent: ${e.type}\ndata: ${JSON.stringify(e.data)}\n\n`));
         if (TERMINAL.includes(e.type)) close();
       };
-      const unsub = subscribe(id, send);
+      // FR-47 ?pace=replay: the stored events only (never live), with their original pacing
+      const paced = url.searchParams.get("pace") === "replay";
+      const timers: ReturnType<typeof setTimeout>[] = [];
+      const unsub = paced ? () => {} : subscribe(id, send);
       const hb = setInterval(() => !closed && controller.enqueue(enc.encode(`: hb ${Date.now()}\n\n`)), 15_000);
       const close = () => {
         if (closed) return;
         closed = true;
         unsub();
         clearInterval(hb);
+        timers.forEach(clearTimeout);
         controller.close();
       };
       cleanup = close;
       controller.enqueue(enc.encode("retry: 2000\n\n"));
-      for (const e of eventsAfter(id, after)) send(e); // replay (also covers events emitted before subscribe)
+      if (paced) {
+        const speed = Math.min(4, Math.max(0.5, Number(url.searchParams.get("speed") ?? 1) || 1));
+        for (const { at, event } of replaySchedule(eventsAfter(id, after), { speed })) timers.push(setTimeout(() => send(event), at));
+      } else for (const e of eventsAfter(id, after)) send(e); // replay (also covers events emitted before subscribe)
       req.signal.addEventListener("abort", close);
     },
     cancel() {

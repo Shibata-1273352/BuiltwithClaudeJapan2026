@@ -14,7 +14,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const infra = path.join(here, "..", "infra", "neo4j");
 const dict = EntityDictionary.parse(JSON.parse(readFileSync(path.join(here, "..", "corpus", "entities.json"), "utf8")));
 const reset = process.argv.includes("--reset");
-const REL_TYPES = new Set(["DEDICATED_TO", "DEPICTS"]); // whitelist: relation types are not parameterizable in Cypher
+const REL_TYPES = new Set(["DEDICATED_TO", "DEPICTS", "SUCCEEDS"]); // whitelist: relation types are not parameterizable in Cypher
 
 const driver = driverFromEnv();
 try {

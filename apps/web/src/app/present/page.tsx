@@ -4,7 +4,13 @@ import { PresentLive } from "./present-live";
 
 export const metadata = { title: "TSUMUGI — 発表モード" };
 
-export default function PresentPage() {
+async function Live({ searchParams }: { searchParams: Promise<{ replay?: string }> }) {
+  const r = (await searchParams).replay;
+  // FR-47: ?replay=<exploration id> replays a recording (validated; the events route checks access)
+  return <PresentLive replayId={r && /^exp_[0-9a-f]{20}$/.test(r) ? r : undefined} />;
+}
+
+export default function PresentPage({ searchParams }: PageProps<"/present">) {
   return (
     <main className="flex min-h-screen flex-1 flex-col gap-8 px-12 py-10">
       <header className="flex items-start justify-between gap-8">
@@ -15,7 +21,9 @@ export default function PresentPage() {
           </Suspense>
         </div>
       </header>
-      <PresentLive />
+      <Suspense fallback={null}>
+        <Live searchParams={searchParams as Promise<{ replay?: string }>} />
+      </Suspense>
     </main>
   );
 }
