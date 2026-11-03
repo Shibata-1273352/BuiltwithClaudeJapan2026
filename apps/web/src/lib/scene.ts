@@ -94,3 +94,13 @@ export function artifactRectInPhoto(a: NonNullable<SceneJson["alignment"]>): [nu
   const y2 = (ah - ty) / k2 / ph;
   return [x1, y1, x2, y2];
 }
+
+/**
+ * FR-37: switch to the 2D view when the device cannot keep 30 fps. The first second (shader
+ * compile, texture upload) is ignored; then `needed` consecutive samples below `min` trigger it.
+ */
+export function shouldFall2D(samples: number[], min = 30, needed = 3): boolean {
+  const s = samples.slice(1);
+  for (let i = 0; i + needed <= s.length; i++) if (s.slice(i, i + needed).every((f) => f < min)) return true;
+  return false;
+}

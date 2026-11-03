@@ -222,7 +222,8 @@ def build_photo_scene(models: "Models", img: Image.Image, scene_id: str, artifac
 
     # Background plate: remove lifted (fore/midground) elements so no "ghost" stays behind them.
     t0 = time.perf_counter()
-    lifted = [masks_by_key[k] for k, v in elements.items() if v["layer"] != "background"]
+    # People are always removed from the plate too, so the 人の層 can be faded on its own (FR-36).
+    lifted = [masks_by_key[k] for k, v in elements.items() if v["layer"] != "background" or k == "people"]
     save_plate(img, lifted, out / "plate.jpg")
     timings["plate"] = round((time.perf_counter() - t0) * 1000)
 

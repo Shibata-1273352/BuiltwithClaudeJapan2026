@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { artifactRectInPhoto, depthCompensation, easeInOut, framePlane, photoWorldSize, rectToPlane, type SceneJson } from "./scene";
+import { artifactRectInPhoto, depthCompensation, easeInOut, framePlane, photoWorldSize, rectToPlane, type SceneJson, shouldFall2D } from "./scene";
 
 describe("scene geometry", () => {
   it("maps the full photo to a centered plane", () => {
@@ -56,5 +56,14 @@ describe("scene geometry", () => {
     expect(y1).toBeCloseTo(0.125); // (0+50)/2/200
     expect(x2).toBeCloseTo(1); // (300-100)/2/100
     expect(y2).toBeCloseTo(1); // (350+50)/2/200
+  });
+});
+
+describe("shouldFall2D (FR-37)", () => {
+  it("ignores the first second and needs three slow seconds in a row", () => {
+    expect(shouldFall2D([5, 60, 60, 60])).toBe(false);
+    expect(shouldFall2D([5, 25, 28, 29])).toBe(true);
+    expect(shouldFall2D([5, 25, 40, 25, 25])).toBe(false);
+    expect(shouldFall2D([60, 60, 20, 20, 20])).toBe(true);
   });
 });

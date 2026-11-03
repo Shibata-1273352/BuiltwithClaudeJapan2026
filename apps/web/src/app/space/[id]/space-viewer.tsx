@@ -20,6 +20,7 @@ import {
   depthCompensation,
   photoWorldSize,
   rectToPlane,
+  shouldFall2D,
   type SceneElement,
   type SceneJson,
 } from "@/lib/scene";
@@ -154,12 +155,46 @@ function Fps({ onFps }: { onFps: (n: number) => void }) {
   return null;
 }
 
+/** FR-37: the same photo and overlay without WebGL (rect = the print's place in the photo, normalized). */
+function Flat2D({ photo, art, rect, overlay, reason }: { photo: string; art: string | null; rect: [number, number, number, number] | null; overlay: number; reason: string }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-2 p-4" data-testid="space-2d">
+      <div className="relative max-h-full">
+        {/* eslint-disable-next-line @next/next/no-img-element -- session-scoped scene photo */}
+        <img src={photo} alt="" className="block max-h-[62vh] w-auto rounded" />
+        {art && rect && overlay > 0 && (
+          // eslint-disable-next-line @next/next/no-img-element -- public-domain print, aligned by anchors
+          <img
+            src={art}
+            alt="歌川広重《浅草金龍山》"
+            className="absolute"
+            style={{ left: `${rect[0] * 100}%`, top: `${rect[1] * 100}%`, width: `${(rect[2] - rect[0]) * 100}%`, height: `${(rect[3] - rect[1]) * 100}%`, opacity: overlay }}
+          />
+        )}
+      </div>
+      <p className="text-xs text-muted">{reason}</p>
+    </div>
+  );
+}
+
 /** Layers that belong to the permanent gate; they follow the time slider (FR-56). */
 const GATE_LAYERS = new Set(["lantern", "lantern_base", "gate"]);
 const GATE_OPACITY = { present: 1, absent: 0.06, unknown: 0.35, withheld: 0.35 } as const;
 const STATE_JA = { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" } as const;
 
-export function SpaceViewer({ id, scene, timeline, autoEnter = false }: { id: string; scene: SceneJson; timeline?: TimelineData; autoEnter?: boolean }) {
+export function SpaceViewer({
+  id,
+  scene,
+  timeline,
+  autoEnter = false,
+  force2d = false,
+}: {
+  id: string;
+  scene: SceneJson;
+  timeline?: TimelineData;
+  autoEnter?: boolean;
+  force2d?: boolean;
+}) {
   const reduced = usePrefersReducedMotion();
   const [split, setSplit] = useState(0);
   const [overlay, setOverlay] = useState(0);
@@ -174,7 +209,17 @@ export function SpaceViewer({ id, scene, timeline, autoEnter = false }: { id: st
   const overlayBase = ys && ys.state === "present" && year < 1866 ? Math.max(overlay, 0.85) : overlay;
   const overlayEff = inside ? 1 : overlayBase;
   const photoOpacity = inside ? 0 : 1; // the photo dissolves as we enter the painting
-  const [fps, setFps] = useState(0);
+  const [fps, setFpsState] = useState(0);
+  // FR-37: a device that cannot keep 30 fps (e.g. an older phone) gets the 2D view
+  const fpsLog = useRef<number[]>([]);
+  const [flat, setFlat] = useState(force2d);
+  const setFps = (n: number) => {
+    setFpsState(n);
+    fpsLog.current.push(n);
+    if (!flat && shouldFall2D(fpsLog.current)) setFlat(true);
+  };
+  const [people, setPeople] = useState(1); // FR-36: fade the crowd only
+  const hasPeople = Boolean(scene.elements.people);
   const world = useMemo(() => photoWorldSize(scene.size), [scene.size]);
   const file = (f: string) => `/api/cache/scenes/${id}/${f}`;
   const align = scene.alignment?.ok ? scene.alignment : undefined;
@@ -209,6 +254,9 @@ export function SpaceViewer({ id, scene, timeline, autoEnter = false }: { id: st
   return (
     <div className="flex flex-1 flex-col lg:flex-row">
       <div className="relative h-[70vh] flex-1 lg:h-auto">
+        {flat ? (
+          <Flat2D photo={file(scene.photo)} art={align ? `/api/cache/artifacts/${align.artifact}/image.jpg` : null} rect={align ? artifactRectInPhoto(align) : null} overlay={overlayEff} reason={force2d ? "指定により2D表示" : "この端末では3Dが30fpsに届かないため、2D表示に切り替えました"} />
+        ) : (
         <Canvas camera={{ position: [0, 0, CAMERA_Z], fov: 30 }} dpr={[1, 2]} gl={{ antialias: true }}>
           <color attach="background" args={["#0e1426"]} />
           <LayerPlane url={file(scene.plate ?? scene.photo)} rect={{ x: 0, y: 0, ...world }} targetZ={0} split={split} reduced={reduced} opacity={photoOpacity} />
@@ -220,7 +268,7 @@ export function SpaceViewer({ id, scene, timeline, autoEnter = false }: { id: st
               targetZ={LAYER_Z[el.layer]}
               split={split}
               reduced={reduced}
-              opacity={(GATE_LAYERS.has(key) ? gateOpacity : 1) * photoOpacity}
+              opacity={(GATE_LAYERS.has(key) ? gateOpacity : 1) * (key === "people" ? people : 1) * photoOpacity}
               renderOrder={i + 1}
             />
           ))}
@@ -246,22 +294,28 @@ export function SpaceViewer({ id, scene, timeline, autoEnter = false }: { id: st
           <AspectProbe onAspect={setAspect} />
           <Fps onFps={setFps} />
         </Canvas>
-        <p className="pointer-events-none absolute right-3 top-3 rounded bg-night/70 px-2 py-1 text-xs text-muted">
-          {fps} fps
-        </p>
+        )}
+        {!flat && (
+          <p className="pointer-events-none absolute right-3 top-3 rounded bg-night/70 px-2 py-1 text-xs text-muted">
+            {fps} fps
+          </p>
+        )}
       </div>
 
       <aside className="flex w-full flex-col gap-6 p-6 lg:w-96">
         <h1 className="font-serif text-3xl">間（ま）</h1>
-        <button
-          type="button"
-          className="min-h-11 rounded-full border border-ma px-5 text-ma"
-          onClick={() => setSplit(split ? 0 : performance.now())}
-        >
-          {split ? "平面に戻す" : "層に割る"}
-        </button>
+        {/* 3D-only controls are hidden in the 2D view (FR-37) */}
+        {!flat && (
+          <button
+            type="button"
+            className="min-h-11 rounded-full border border-ma px-5 text-ma"
+            onClick={() => setSplit(split ? 0 : performance.now())}
+          >
+            {split ? "平面に戻す" : "層に割る"}
+          </button>
+        )}
 
-        {align && (
+        {align && !flat && (
           <button
             type="button"
             data-testid="enter-painting"
@@ -271,6 +325,27 @@ export function SpaceViewer({ id, scene, timeline, autoEnter = false }: { id: st
           >
             {inside ? "今へ戻る" : "絵の中へ（広重 1856）"}
           </button>
+        )}
+
+        {hasPeople && !flat && (
+          <label className="flex flex-col gap-2" data-testid="space-people">
+            <span className="flex items-baseline justify-between">
+              <span>人の層</span>
+              <span className="text-sm text-muted tabular-nums">{Math.round(people * 100)}%</span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={people}
+              onChange={(e) => setPeople(Number(e.target.value))}
+              className="min-h-11 accent-[var(--thread-ma)]"
+              aria-label="人の層の濃さ"
+              data-testid="people-slider"
+            />
+            <span className="text-xs text-muted">人を薄くすると、その下は周囲から補った背景です（推定）。</span>
+          </label>
         )}
 
         {timeline && ys && (
