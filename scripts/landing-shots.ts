@@ -17,7 +17,7 @@ const browser = await chromium.launch();
 const fails: string[] = [];
 try {
   for (const lang of ["ja", "en"]) {
-    const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+    const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2 }  /* sharp on 4K and Retina */);
     const u = new URL(base);
     await ctx.addCookies([
       { name: "tsumugi_token", value: process.env.ACCESS_TOKEN!, domain: u.hostname, path: "/", httpOnly: true, sameSite: "Strict" },

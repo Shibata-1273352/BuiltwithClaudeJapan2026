@@ -153,7 +153,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]" data-testid="time-turn">
       {/* the window */}
-      <div className="relative mx-auto h-[min(50vh,32rem)] max-w-full overflow-hidden rounded-md bg-ink" style={{ aspectRatio: aspect }}>
+      <div className="relative mx-auto h-[min(50vh,32rem)] max-w-full lg:h-[min(70vh,46rem)] overflow-hidden rounded-md bg-ink" style={{ aspectRatio: aspect }}>
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element -- the visitor's (face-blurred) photo
           <img src={photo} alt="" className={`absolute inset-0 size-full object-cover transition-[filter] duration-700 ${stood ? "" : "brightness-[0.28] grayscale"}`} />
