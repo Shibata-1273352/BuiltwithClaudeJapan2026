@@ -16,6 +16,7 @@ import type { SourceCard } from "@/lib/live/state";
 import { presentPeriodAround, segments, sourceYear, yearState, type TimelineData } from "@/lib/time-river";
 import { dict, useDict, useLang } from "../i18n";
 import { Button } from "../ui/button";
+import { plainLabel } from "./text-column";
 
 const FROM = 1750;
 const TO = 2026;
@@ -185,7 +186,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
             className="pointer-events-none absolute border border-dashed border-paper/60"
             style={{ left: `${scene.elements.gate.bbox[0] * 100}%`, top: `${scene.elements.gate.bbox[1] * 100}%`, width: `${(scene.elements.gate.bbox[2] - scene.elements.gate.bbox[0]) * 100}%`, height: `${(scene.elements.gate.bbox[3] - scene.elements.gate.bbox[1]) * 100}%` }}
           >
-            <span className="absolute -top-6 left-0 text-caption text-paper/80">{l.temporary}</span>
+            <span className="absolute top-2 left-2 rounded-sm bg-night/80 px-1.5 text-caption text-paper">{l.temporary}</span>
           </div>
         )}
         {/* before the fire: the print the gate was painted in */}
@@ -211,7 +212,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
           </Button>
         </div>
         <p className="font-serif text-title leading-snug" data-testid="time-label">
-          {ys.label[lang]}
+          {plainLabel(ys.label[lang], lang, data.name?.en)}
         </p>
         <AnimatePresence mode="wait">
           {writer && (

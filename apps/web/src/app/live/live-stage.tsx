@@ -5,6 +5,7 @@
  * threads drawn across all of them. Every SSE event visibly changes something while the AI works.
  * "リスト表示" (6.4) shows the same running exploration as the accessible list.
  */
+import { hasPrintRegions, NamesLoom } from "./names-loom";
 import { plainLabel } from "./text-column";
 import { MuteToggle } from "./mute-toggle";
 import Link from "next/link";
@@ -419,7 +420,11 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 )}
                 {panel === "names" && s.names != null && (
                   <StagePanel title={t.namesTitle} onClose={() => setPanel(null)} testid="names-panel" wide>
-                    <NamesLayer names={s.names as NamesData} lang={lang} />
+                    {hasPrintRegions((scene as { alignment?: { artifact?: string } } | null)?.alignment?.artifact) ? (
+                      <NamesLoom names={s.names as NamesData} artifact={(scene as { alignment: { artifact: string } }).alignment.artifact} />
+                    ) : (
+                      <NamesLayer names={s.names as NamesData} lang={lang} />
+                    )}
                   </StagePanel>
                 )}
                 <RopeLayer stageRef={stageRef} anchors={anchors} axisRef={axisRef} specs={specs} since={elapsed} hot={hot} reduced={reduced} pluckRef={pluckRef} />
