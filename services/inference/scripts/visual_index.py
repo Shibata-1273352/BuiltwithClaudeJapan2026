@@ -42,6 +42,18 @@ def main() -> None:
         t0 = time.perf_counter()
         info = visual.build_index(model, proc, device, gallery, DATA / "cache" / "visual" / "images", OUT)
         print(json.dumps({**info, "seconds": round(time.perf_counter() - t0, 1)}))
+    elif sys.argv[1] == "check":
+        # FR-58 acceptance: the lantern cut-out of each scene finds a lantern print within the top 5.
+        # Gold: prints whose great lantern is the subject (checked by eye on a contact sheet).
+        gold = ("Kinryūzan Temple in Asakusa",)
+        idx = visual.Index(OUT)
+        rows = []
+        for scene in sys.argv[2:]:
+            q = visual.embed(model, proc, device, [scene_crop(scene, "lantern")])[0]
+            hits = idx.search(q, k=len(idx.meta["items"]))
+            rank = next((i + 1 for i, h in enumerate(hits) if h["title"] in gold), None)
+            rows.append({"scene": scene, "rank": rank, "top5": [h["title"] for h in hits[:5]], "in_top5": bool(rank and rank <= 5)})
+        print(json.dumps({"recall_at_5": sum(r["in_top5"] for r in rows) / len(rows), "rows": rows}, ensure_ascii=False, indent=1))
     else:
         q = visual.embed(model, proc, device, [scene_crop(sys.argv[2], sys.argv[3])])[0]
         for r in visual.Index(OUT).search(q, k=int(sys.argv[4]) if len(sys.argv) > 4 else 10):

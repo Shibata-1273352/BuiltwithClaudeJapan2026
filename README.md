@@ -67,6 +67,11 @@ npm run corpus:search          # retrieval smoke test
 (cd services/inference && uv run python scripts/build_scene.py artifact met-56689 "$DATA_DIR/samples/met_56689.jpg")
 (cd services/inference && uv run python scripts/build_scene.py photo "$DATA_DIR/samples/<photo>.jpg" --artifact met-56689)
 
+# 6b. Visual search (FR-58, P1): gallery from Wikimedia Commons (polite, ~1 request/s), then the index
+npx tsx --env-file=.env scripts/visual/collect.ts
+(cd services/inference && uv run python scripts/visual_index.py build)
+(cd services/inference && uv run python scripts/visual_index.py check kaminarimon_cc0)   # lantern -> lantern print in the top 5?
+
 # 7. Web
 npm run setup:web-assets       # on-device face detection model + WASM into apps/web/public (not committed)
 npm run build && npm run start -w web -- -p 3000
@@ -99,6 +104,9 @@ npm run met -- 56689                              # The Met endpoints + fixture
 | Corpus | Bird (Gutenberg #2184), Scidmore (#72989), 永井荷風『日和下駄』, 高村光雲『幕末維新懐古談』 (青空文庫) | Public domain in Japan and the US; see `corpus/sources.json`. Texts are downloaded at ingestion, not committed. |
 | Neo4j | `neo4j:5-community` 5.26.32, pinned by digest | GPLv3, run unmodified as a separate container (not bundled) |
 | The Met Collection API | search `v1.1/search`, objects `v1/objects/{id}` | Data CC0; images only when `isPublicDomain` |
+| SigLIP (visual search, FR-58) | `google/siglip-base-patch16-224` @ `7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed`, safetensors | Apache-2.0 |
+| Visual-search gallery | Hiroshige, *One Hundred Famous Views of Edo*, one public-domain scan per print from Wikimedia Commons (`corpus/visual-gallery.json`) | Public domain (each file's Commons page and license are recorded) |
+| Other official sources | Kan'ei-ji, Tourism Agency (R1-00086/87), NDL, GO TOKYO, Tokyo Construction Bureau PDFs | Short quotations with attribution; excerpts verified verbatim at ingestion (`corpus/sources.json`) |
 
 **SAM License summary** (read 2026-11-02, version of 2025-11-19): non-exclusive, worldwide, royalty-free license to use, modify and redistribute — **no non-commercial or research-only restriction**. Conditions: redistribution must ship the license text; publications using SAM must acknowledge it; no use subject to ITAR or prohibited by trade controls (military, weapons, espionage, nuclear); no reverse engineering. TSUMUGI does not redistribute the weights.
 

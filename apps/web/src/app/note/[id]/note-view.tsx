@@ -22,6 +22,7 @@ const T = {
     space: "間（ま）で見る",
     aligned: "広重の絵と位置合わせ済み",
     seen: "写真の中で読めたもの",
+    visual: "提灯から提灯へ（似た図像。根拠ではありません）",
     noNarrative: "この言語の物語はまだありません。",
     make: "作る",
     derived: "推論（年表との照合）",
@@ -43,6 +44,7 @@ const T = {
     space: "View in 間 (ma)",
     aligned: "aligned to the Hiroshige print",
     seen: "Read in the photo",
+    visual: "Lantern to lantern (similar images, not evidence)",
     noNarrative: "No story in this language yet.",
     make: "Write it",
     derived: "derived (checked against the chronology)",
@@ -169,6 +171,23 @@ export function NoteView({ note, initialLang }: { note: Note; initialLang: Lang 
           )}
         </div>
       </section>
+
+      {note.visual.length > 0 && (
+        <section data-testid="note-visual">
+          <h2 className="mb-3 font-serif text-xl">{t.visual}</h2>
+          <ul className="flex gap-3 overflow-x-auto pb-2">
+            {note.visual.map((h) => (
+              <li key={h.id} className="w-28 shrink-0 text-xs">
+                <a href={h.commons} target="_blank" rel="noreferrer noopener">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- public-domain gallery thumbnail */}
+                  <img src={`/api/cache/visual/images/${h.file}`} alt={h.title} className="h-36 w-28 rounded object-cover" />
+                  <span className="mt-1 block leading-snug">{h.title}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="grid gap-8 md:grid-cols-2">
         <div>

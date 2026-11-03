@@ -33,6 +33,8 @@ def embed(model, proc, device: torch.device, images: list[Image.Image], batch: i
     for i in range(0, len(images), batch):
         inputs = proc(images=[im.convert("RGB") for im in images[i : i + batch]], return_tensors="pt").to(device)
         f = model.get_image_features(**inputs)
+        if not isinstance(f, torch.Tensor):  # newer transformers return an output object
+            f = f.pooler_output
         f = f / f.norm(dim=-1, keepdim=True)
         out.append(f.float().cpu().numpy())
     return np.concatenate(out) if out else np.zeros((0, 768), dtype=np.float32)

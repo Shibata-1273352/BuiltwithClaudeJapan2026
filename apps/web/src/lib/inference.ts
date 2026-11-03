@@ -26,7 +26,8 @@ const VisualResponse = z.object({
       z.object({
         id: z.string().regex(/^[a-z0-9-]{1,64}$/),
         title: z.string().max(300),
-        commons: z.string().url(),
+        // used as a link in the page: https on Wikimedia Commons only (a javascript: URL passes .url())
+        commons: z.string().regex(/^https:\/\/commons\.wikimedia\.org\/[^\s"'<>]+$/),
         license: z.string().max(100),
         file: z.string().regex(/^[a-z0-9][a-z0-9_.-]{0,63}\.jpg$/),
         score: z.number(),

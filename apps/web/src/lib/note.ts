@@ -54,6 +54,8 @@ export type Note = {
   place: { entity: string; path: string[] } | null;
   see: { label: string; text_original: string | null; reading: string | null; meaning: { ja: string; en: string } | null }[];
   space: { url: string; aligned: boolean; elements: string[] } | null;
+  /** FR-58: prints that look like the cut-out lantern (similarity, not evidence) */
+  visual: { id: string; title: string; commons: string; score: number; file: string }[];
   narratives: Partial<Record<Lang, NarrativeLike>>;
   cites: Record<string, Cite>;
   threads: { id: string; layer: string; state: string; label: { ja: string; en: string } }[];
@@ -148,6 +150,7 @@ export function buildNote(
     place: place ? { entity: place.entity, path: place.path.map((p) => p.name.ja).reverse() } : null,
     see,
     space: space?.ok && space.url ? { url: space.url, aligned: Boolean(space.aligned), elements: space.elements ?? [] } : null,
+    visual: first<{ hits: Note["visual"] }>(ev, "visual")?.hits ?? [],
     narratives,
     cites,
     threads: threads.map(({ id: tid, layer, state, label }) => ({ id: tid, layer, state, label })),

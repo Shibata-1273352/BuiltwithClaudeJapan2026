@@ -34,7 +34,7 @@ async function api(params: Record<string, string>) {
   return r.json() as Promise<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 const members = async (cat: string, type: "subcat" | "file") =>
-  ((await api({ action: "query", list: "categorymembers", cmtitle: cat, cmtype: type, cmlimit: "200" })).query.categorymembers as { title: string }[]).map((m) => m.title);
+  (((await api({ action: "query", list: "categorymembers", cmtitle: cat, cmtype: type, cmlimit: "200" })).query?.categorymembers ?? []) as { title: string }[]).map((m) => m.title);
 
 const subcats = (await members(ROOT_CAT, "subcat")).filter((c) => /\(One Hundred Famous Views of Edo\)|Plum Garden in Kameido/.test(c));
 const items: { id: string; title: string; commons: string; license: string; thumb: string; file: string }[] = [];
@@ -42,7 +42,14 @@ for (const cat of subcats) {
   const files = (await members(cat, "file")).filter((f) => /\.(jpe?g|png|tif)$/i.test(f));
   const pick = files.find((f) => /Brooklyn/i.test(f)) ?? files[0];
   if (!pick) continue;
-  const info = await api({ action: "query", titles: pick, prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: "800", iiextmetadatafilter: "LicenseShortName" });
+  const q = { action: "query", titles: pick, prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: "800", iiextmetadatafilter: "LicenseShortName" };
+  let info = await api(q);
+  if (!info.query) {
+    console.log(`no result for ${pick} (${JSON.stringify(info.error ?? {}).slice(0, 120)}); retrying in 30s`);
+    await sleep(30_000);
+    info = await api(q);
+  }
+  if (!info.query) continue;
   const ii = (Object.values(info.query.pages)[0] as { imageinfo?: { thumburl: string; descriptionurl: string; extmetadata: { LicenseShortName?: { value: string } } }[] }).imageinfo?.[0];
   const license = ii?.extmetadata.LicenseShortName?.value ?? "";
   if (!ii || !/public domain|PD|CC0/i.test(license)) continue;
