@@ -9,8 +9,8 @@ import { dict, useDict, useLang } from "../i18n";
 import { STAGE_WORK, WHO_LABEL } from "./labels";
 
 const T = dict({
-  ja: { steps: "探索の段階", done: "探索が完了しました", finished: (s: string) => `完了 ${s} 秒`, eta: (n: number) => `残り 約${n}秒`, soon: "まもなく", replay: "記録の再生", fin: "完了", elapsed: "経過", sec: "秒", sources: "資料", passages: "読んだ節", langs: "言語", accepted: "採用した主張", down: "格下げ・却下", threads: "糸", broken: "切れた糸", calls: "Claude 呼び出し", cost: "費用", code: "コード", read: (n: number) => `写真から ${n} 要素を読み取り`, place: "場所：", layers: (n: number) => `${n} 層に分離`, aligned: " · 広重の絵と位置合わせ", similar: "似た図像：", graph: "根拠グラフに保存" },
-  en: { steps: "Steps of the exploration", done: "The exploration is complete", finished: (s: string) => `Done in ${s} s`, eta: (n: number) => `about ${n} s left`, soon: "almost there", replay: "Replay", fin: "Done", elapsed: "elapsed", sec: "s", sources: "sources", passages: "passages read", langs: "languages", accepted: "claims kept", down: "downgraded / rejected", threads: "threads", broken: "broken", calls: "Claude calls", cost: "cost", code: "Code", read: (n: number) => `read ${n} things in the photo`, place: "Place: ", layers: (n: number) => `${n} layers`, aligned: " · aligned with Hiroshige's print", similar: "Similar picture: ", graph: "saved to the evidence graph" },
+  ja: { steps: "探索の段階", done: "探索が完了しました", finished: (s: string) => `完了 ${s} 秒`, eta: (n: number) => `残り 約${n}秒`, soon: "まもなく", replay: "記録の再生", fin: "完了", elapsed: "経過", sec: "秒", sources: "見つけた資料", passages: "読んだ節", langs: "言語", accepted: "採用した主張", down: "格下げ・却下", threads: "糸", broken: "切れた糸", calls: "Claude 呼び出し", cost: "費用", code: "コード", read: (n: number) => `写真から ${n} 要素を読み取り`, place: "場所：", layers: (n: number) => `${n} 層に分離`, aligned: " · 広重の絵と位置合わせ", similar: "似た図像：", graph: "根拠グラフに保存" },
+  en: { steps: "Steps of the exploration", done: "The exploration is complete", finished: (s: string) => `Done in ${s} s`, eta: (n: number) => `about ${n} s left`, soon: "almost there", replay: "Replay", fin: "Done", elapsed: "elapsed", sec: "s", sources: "sources found", passages: "passages read", langs: "languages", accepted: "claims kept", down: "downgraded / rejected", threads: "threads", broken: "broken", calls: "Claude calls", cost: "cost", code: "Code", read: (n: number) => `read ${n} things in the photo`, place: "Place: ", layers: (n: number) => `${n} layers`, aligned: " · aligned with Hiroshige's print", similar: "Similar picture: ", graph: "saved to the evidence graph" },
 });
 
 export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: number; finished: boolean }) {
@@ -115,10 +115,10 @@ export function ResultStrip({ s, elapsed }: { s: LiveState; elapsed: number }) {
       <div>
         <Num v={sec} label={t.elapsed} digits={1} unit={t.sec} ticking />
       </div>
-      <div>
+      <div className="present-hide">
         <Num v={n.sources} label={t.sources} />
       </div>
-      <div>
+      <div className="present-hide">
         <Num v={n.threads} label={t.threads} />
         <Num v={n.broken} label={t.broken} />
       </div>
@@ -134,7 +134,6 @@ function toastsOf(s: LiveState, t: (typeof T)["ja"], lang: "ja" | "en"): Toast[]
   if (s.see && s.at.see !== undefined) out.push({ key: "see", at: s.at.see, who: "Claude", text: `${t.read(s.see.elements.length)}${see ? ` · ${(see.elapsedMs / 1000).toFixed(1)} s` : ""}` });
   if (s.place && s.at.place !== undefined) out.push({ key: "place", at: s.at.place, who: t.code, text: `${t.place}${[...s.place.path].reverse().map((p) => p.name[lang]).join(" › ")}` });
   if (s.space?.ok && s.at.space !== undefined) out.push({ key: "space", at: s.at.space, who: "SAM 3", text: `${t.layers(s.space.elements?.length ?? 0)} · ${((s.space.ms ?? 0) / 1000).toFixed(1)} s${s.space.aligned ? t.aligned : ""}` });
-  if (s.visual?.hits.length && s.at.visual !== undefined) out.push({ key: "visual", at: s.at.visual, who: "SigLIP", text: `${t.similar}${s.visual.hits[0].title}` });
   if (s.graph && s.at.graph !== undefined) out.push({ key: "graph", at: s.at.graph, who: "Neo4j", text: `${t.graph} · ${((s.graph.ms ?? 0) / 1000).toFixed(1)} s` });
   return out;
 }

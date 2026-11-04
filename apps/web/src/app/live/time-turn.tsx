@@ -80,7 +80,24 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
         .sort((a, b) => a.year - b.year),
     [data],
   );
-  const stops = useMemo(() => [...new Set([...events.map((e) => e.year), ...writers.map((w) => w.year)])].sort((a, b) => a - b), [events, writers]);
+  // stop where the code's judgment is settled: the year of a rebuild is "cannot be confirmed at
+  // year precision", so the gate is shown standing at the first year the timeline says it stood
+  const settled = (y0: number) => {
+    for (let y = y0; y <= Math.min(TO, y0 + 3); y++) {
+      const st = yearState(data, y).state;
+      if (st === "present" || st === "absent") return y;
+    }
+    return y0;
+  };
+  const stops = useMemo(
+    () => [...new Set([...events.map((e) => settled(e.year)), ...writers.map((w) => w.year)])].sort((a, b) => a - b),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- settled depends on data only
+    [events, writers, data],
+  );
+  // the beats of the story hold longer: a writer's year, a loss, a rebuild
+  const keyStop = useMemo(() => new Set([...writers.map((w) => w.year), ...events.filter((e) => e.event === "destroyed" || e.event === "rebuilt").map((e) => settled(e.year))]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- settled depends on data only
+    [events, writers, data]);
   const writer = writers.filter((w) => Math.abs(w.year - year) <= 3).sort((a, b) => Math.abs(a.year - year) - Math.abs(b.year - year))[0] ?? null;
   const card = writer ? cards.find((c) => c.sourceId === writer.source) : undefined;
   const lastEvent = [...events].reverse().find((e) => e.year <= year) ?? null;
@@ -124,11 +141,11 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
       if (hold > 0) hold -= dt;
       else {
         const next = stops.find((s) => s > y + 0.01);
-        const speed = reduced ? Infinity : 26; // years per second
+        const speed = reduced ? Infinity : 40; // years per second
         const ny = Math.min(next ?? TO, y + (speed * dt) / 1000);
         if (next !== undefined && ny >= next) {
           y = next;
-          hold = 1300;
+          hold = keyStop.has(next) ? 1800 : 500;
         } else y = ny;
         setYear(Math.round(y));
         if (y >= TO) {
@@ -141,7 +158,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
     raf.current = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- start from the year shown when play is pressed
-  }, [playing, stops]);
+  }, [playing, stops, keyStop]);
 
   // the print the gate was painted in: shown while the same gate stood as in the print's own year
   const printYear = scene?.alignment?.artifact ? (writers.find((w) => w.source === scene.alignment!.artifact)?.year ?? null) : null;
@@ -153,7 +170,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]" data-testid="time-turn">
       {/* the window */}
-      <div className="relative mx-auto h-[min(50vh,32rem)] max-w-full lg:h-[min(70vh,46rem)] overflow-hidden rounded-md bg-ink" style={{ aspectRatio: aspect }}>
+      <div className="relative mx-auto h-[min(50vh,32rem)] max-w-full lg:h-[min(60vh,40rem)] overflow-hidden rounded-md bg-ink" style={{ aspectRatio: aspect }}>
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element -- the visitor's (face-blurred) photo
           <img src={photo} alt="" className={`absolute inset-0 size-full object-cover transition-[filter] duration-700 ${stood ? "" : "brightness-[0.28] grayscale"}`} />
@@ -222,22 +239,8 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
           </Button>
         </div>
         <p className="font-serif text-title leading-snug" data-testid="time-label">
-          {plainLabel(ys.label[lang], lang, data.name?.en)}
+          {plainLabel(ys.label[lang], lang, data.name?.en).replace(/^\d{3,4}年：|^\d{3,4}: /, "")}
         </p>
-        <AnimatePresence mode="wait">
-          {writer && (
-            <m.figure key={writer.source} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-writer">
-              <figcaption className="label">{l.came(writer.year)}</figcaption>
-              <p className="mt-1 font-serif text-lead">{writer.title}</p>
-              {card?.excerpt && !/^Title:/.test(card.excerpt) && (
-                <blockquote className="mt-2 line-clamp-4 font-serif text-body text-paper/85" lang={card.lang}>
-                  {card.excerpt}
-                </blockquote>
-              )}
-              <p className={`mt-2 text-small ${writer.value === "absent" ? "text-toki" : "text-paper/80"}`}>{l.judged[writer.value] ?? writer.value}</p>
-            </m.figure>
-          )}
-        </AnimatePresence>
         {conflict && (
           <m.figure initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-conflict">
             <figcaption className="label">{l.conflict}</figcaption>
@@ -254,6 +257,20 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
             <p className="mt-2 text-caption text-paper/75">{conflict.explanation[lang]}</p>
           </m.figure>
         )}
+        <AnimatePresence mode="wait">
+          {writer && (
+            <m.figure key={writer.source} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-writer">
+              <figcaption className="label">{l.came(writer.year)}</figcaption>
+              <p className="mt-1 font-serif text-lead">{writer.title}</p>
+              {card?.excerpt && !/^Title:/.test(card.excerpt) && (
+                <blockquote className="mt-2 line-clamp-4 font-serif text-body text-paper/85" lang={card.lang}>
+                  {card.excerpt}
+                </blockquote>
+              )}
+              <p className={`mt-2 text-small ${writer.value === "absent" ? "text-toki" : "text-paper/80"}`}>{l.judged[writer.value] ?? writer.value}</p>
+            </m.figure>
+          )}
+        </AnimatePresence>
         <div>
           <p className="label">{l.events}</p>
           <ol className="mt-2 flex flex-col gap-1 text-small">

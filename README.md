@@ -3,7 +3,7 @@
 > 撮るだけで、目の前の日本が、意味と物語になる。
 > Take a photo — the Japan in front of you turns into meaning and story.
 
-**Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer.
+**Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer. My career has been at a telecom carrier, the job of connecting people; TSUMUGI (紡ぐ, *tsumugu*, to weave) connects time, place and people, with every thread checked against its source.
 
 **Who it is for.** Travellers who love Japan, and the Japanese friends who show them around: standing in front of a gate, a sign or a lantern, with a phone.
 
@@ -11,14 +11,14 @@
 
 1. **The first answer, in seconds.** Claude reads the writing in the photo (風雷神門 — the Gate of the Wind and Thunder Gods), and code answers *how long it has been here* from a reviewed timeline (the present gate since its rebuilding).
 2. **Touch, and it explains.** The objects lift off the photo (SAM 3); touch one and it trembles, its threads are plucked; Claude's guide note says what to look at, why it matters, what to try, and how the kanji are built (雷 = 雨 + 田).
-3. **Across time.** Turn the years: the gate burns away at its fire and rises when rebuilt; in 1878 Isabella Bird walked an Asakusa with no gate — judged by code against the timeline, never by Claude; where the sources disagree, both are shown.
+3. **Across time.** Turn the years: the gate burns away at its fire and rises when rebuilt; in 1878 Isabella Bird walked an Asakusa where the permanent Kaminarimon had not yet been rebuilt (a temporary gate was put up in 1868) — judged by code against the timeline, never by Claude; where the sources disagree, both are shown.
 4. **Ask.** Claude answers from this run's sources only, with native citations checked against the original; what the sources do not say, it says it does not know.
 5. **Into the print, and home.** Hiroshige's 1856 print opens into depth with snow falling; the names each source used land on what they name in it; a postcard and a travel note keep the checked sentence.
 6. **Anywhere.** At a place with no sources, the reading and the guide still work; history is told only where it can be checked.
 
-**Why it can be relied on.** Claude reads, explains and writes; every yes or no a traveller relies on is decided by code (claims checked against the sentence they cite, existence judged against a reviewed timeline, citations re-checked). The evaluation runs as one Batch API job and the numbers on screen are computed from it — see [`evaluation/results/`](evaluation/results/) (the latest report, `latest.json`, is what the app reads) and the in-app page `/how`.
+**Why it can be relied on.** Claude reads, explains and writes; every yes or no a traveller relies on is decided by code (claims checked against the sentence they cite, existence judged against the timeline, citations re-checked). Quotes are cut from the original by code — Claude only points to sentence numbers — so they match the original by construction; answers to a visitor's question are Claude's, written from this run's sources, with each citation checked to come from them. The evaluation runs as one Batch API job and the numbers on screen are computed from it — see [`evaluation/results/`](evaluation/results/) (the latest report, `latest.json`, is what the app reads) and the in-app page `/how`.
 
-**Where it works today.** Full history (sources and a reviewed timeline): Kaminarimon (Sensō-ji), Konpon Chūdō (Kan'ei-ji, Ueno), Azuma Bridge (Sumida River). Everywhere else: the reading and the guide.
+**Where it works today.** Full history (sources and a timeline): Kaminarimon (Sensō-ji; timeline checked by a person), Konpon Chūdō (Kan'ei-ji, Ueno) and Azuma Bridge (Sumida River; timelines compiled with Claude Code, awaiting a person's check). Everywhere else: the reading and Claude's guide, which may draw on what Claude knows and is labelled as Claude's, never as evidence.
 
 - In the app: `/` (start), `/live` (try it at Kaminarimon), `/how` (how Claude is used, measured), `/notes` (travel notes and the trip weave).
 - Demo script (video): [`docs/demo-script.md`](docs/demo-script.md) · How Claude and Claude Code are used: [`docs/claude-code.md`](docs/claude-code.md)
@@ -96,7 +96,7 @@ npm run build && npm run start -w web -- -p 3000
 ## Checks
 
 ```bash
-npm test                      # vitest (209 tests)
+npm test                      # vitest
 npm run typecheck && npm run lint
 (cd services/inference && uv run pytest)   # inference server: token, input validation, visual search
 npm run test:security         # SEC-01..10 (SEC-01..03 call Claude; SEC_SKIP_LLM=1 to skip; SEC-08 needs Neo4j)
@@ -136,7 +136,7 @@ Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compo
 
 ### Claude API limits observed (2026-11-02)
 
-45,000 requests/min, 10M input tokens/min, 2M output tokens/min. One "see" call costs about $0.05.
+One "see" call costs about $0.05.
 
 ## The live stage (6.2–6.3)
 
@@ -230,7 +230,7 @@ Benchmarks: `scripts/bench-see.ts <photo>` (Claude), `scripts/bench-scene.ts <ph
 
 ## Evaluation (`npm run eval`, REQUIREMENTS.md 10)
 
-A limited, hand-made evaluation set (3 sites; gold annotated by Claude Code, **human review pending**). It checks citation agreement and mis-bindings of entity and era; it does not prove a zero hallucination rate. Full tables: [`evaluation/results/2026-11-03.md`](evaluation/results/2026-11-03.md). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
+A limited, hand-made evaluation set (3 sites; gold annotated by Claude Code, **human review pending**). It checks citation agreement and mis-bindings of entity and era; it does not prove a zero hallucination rate. The tables below are the first run (`evaluation/results/2026-11-03.md`); the latest run, which the app reads, is [`evaluation/results/2026-11-03-perf.md`](evaluation/results/2026-11-03-perf.md). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
 
 | Method (4.9) | Recall@10 en / ja | Entity identification | Relation (observed ≠ mentions) | Support (proxy) |
 | --- | --- | --- | --- | --- |
@@ -247,7 +247,7 @@ A limited, hand-made evaluation set (3 sites; gold annotated by Claude Code, **h
 | Relation context: identification / support (proxy) | 100% / 86% | 100% / 91% |
 | Gap round: candidate recall en / ja | 71% / 52% | 71% / 50% |
 
-Also: citations exactly match the canonical text 100% (n=44); fabricated citations rejected 4/4; narration sentences written beyond the claims and caught by the checks 1 of 20, shown 0; holds where the gold says hold 5/5; RAG-08 16/16 live explorations; live runs median 42.6 s, $0.17, 0 failures of 24. The run used the Message Batches API (23 requests, $0.38).
+Also (first run): citations match the canonical text by construction (code cuts them; the check guards the pipeline, it does not measure Claude); fabricated citations rejected 4/4 (synthetic cases); narration sentences written beyond the claims and caught by the checks 1 of 20, none shown (failing sentences are never shown, by design); holds where the gold says hold 5/5. Existence accuracy is judged against the same timeline the gold comes from, so it is a regression check; the publication-date ablation is the informative number. Live-run figures (median time, cost, failures) and the batch size of the latest run are in its report.
 
 What the numbers do **not** show yet: on this small set Claude's raw proposals were already 100% on the listed forbidden claims, so the value of the code checks shows up in citations, time and narration rather than in relation precision; and the relation context did not improve the support proxy. Both need harder cases.
 
@@ -282,7 +282,7 @@ Last run 2026-11-03: **17/17 passed** (vitest), plus **12/12** inference-server 
 See [`docs/claude-code.md`](docs/claude-code.md). The project assets that were used, checked in:
 
 - **Plan → review**: every large change was planned in plan mode and reviewed by an advisor pass before code.
-- **Subagents**: research, the ja/en pass, a requirements gap scan, and fresh-eyes design critiques against the judging criteria ([`.claude/agents/design-critic.md`](.claude/agents/design-critic.md), three rounds).
+- **Subagents**: research, the ja/en pass, a requirements gap scan, and fresh-eyes critiques against the judging criteria ([`.claude/agents/design-critic.md`](.claude/agents/design-critic.md)), each round from a different side: the judges, the message and the amount of text, a first-time visitor in English, the video frame by frame, and a skeptical engineer reading the code.
 - **Skills**: the `claude-api` skill before every API change (citations, Batch, fast mode); [`.claude/skills/tsumugi-verify`](.claude/skills/tsumugi-verify/SKILL.md) — which check to run for which change.
 - **Hooks**: [`.claude/settings.json`](.claude/settings.json) runs the design rules test (`apps/web/src/design.test.ts`) after every edit of a screen file, and feeds a failure back to Claude ([`scripts/hooks/design-check.mjs`](scripts/hooks/design-check.mjs)); gitleaks runs before every commit (lefthook).
 - **Verified on the machine**: every screen by screenshot scripts, the whole by `scripts/acceptance.ts`.

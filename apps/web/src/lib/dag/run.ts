@@ -384,7 +384,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
     //    Claude calls overlap instead of queueing (latency budget 4.13).
     const runGap = async (): Promise<Retrieved[]> => {
       if (ctx.remaining() < 35_000) {
-        emit(explorationId, "gap", { skipped: "time", assessment: "残り時間が少ないため、追加の探索は行いませんでした。" });
+        emit(explorationId, "gap", { skipped: "time" }); // the code's decision (time), shown as code, never as Claude's judgment
         return [];
       }
       ctx.claude();

@@ -15,7 +15,8 @@ const T = dict({
   ja: {
     back: "TSUMUGI",
     title: "しくみ",
-    lead: "Claude に任せるのは、読むこと・解説すること・書くこと。旅行者が頼る「はい／いいえ」は、すべてコードが決めます。",
+    lead: "Claude が読み、解説し、探し、書く。旅行者が頼る「はい／いいえ」は、コードが確かめる。",
+    why: "Claude でなければできないこと：縦書きの筆文字を原文のまま読む。明治の英文と日本語の資料から、主張とその原文を抜き出す。何が足りないかを自分で判断し、探す語を出す。一文ずつ資料を引用しながら、物語と答えを書く。",
     splitTitle: "Claude がすること、コードが決めること",
     colStage: "段階",
     colClaude: "Claude",
@@ -24,7 +25,7 @@ const T = dict({
       { stage: "視る", claude: "写真の文字を原文のまま読み、読み・意味・場所の候補を出す（画像の理解、構造化出力、途中経過のストリーミング）", code: "枠の妥当性を確かめ、場所を辞書に照合する。辞書にない場所では資料を出さない" },
       { stage: "ガイド", claude: "見どころ・意味・やってみること・漢字のなりたち・次の質問（要素ごとに小さな並列呼び出し）", code: "写真にない漢字、長すぎる文を落とす。ガイドは根拠や糸には決してしない" },
       { stage: "確かめる", claude: "日英の資料から主張と原文を抜き出し（並列）、足りない観点を判断して追加で探す", code: "主張ごとに検査（文の実在、主語、否定、時代…）し、採用・格下げ・却下を決める" },
-      { stage: "時を照らす", claude: "—", code: "書かれた年に、それが本当にあったかを年表で判定する。Claude には判定させない" },
+      { stage: "時を照らす", claude: "あえて任せない（存在の判定は誤りが許されないため）", code: "書かれた年に、それが本当にあったかを年表で判定する。この段では Claude に判定させない（質問への答えは Claude が資料から書く）" },
       { stage: "紡ぐ", claude: "主張を引用しながら、この場所の物語を書く", code: "各文の引用をもう一度確かめ、根拠のない文は捨てる" },
       { stage: "糸を引く", claude: "質問に、今回の資料だけから答える（ネイティブの引用：search_result）", code: "引用が原文にあるかを照合する。なければ「書かれていません」と答える" },
       { stage: "評価", claude: "同じ呼び出しを Batch API で一括実行する", code: "正解データと比べて採点し、画面の数字をそこから計算する" },
@@ -48,11 +49,11 @@ const T = dict({
       ["Batch API", "評価を一括・半額で回し、画面の数字はその結果から出す"],
     ],
     evalTitle: "評価の数字",
-    evalLine: (f: LandingFacts) => `引用の原文一致 ${f.citationExactPct}%（${f.citationN} 件）・作られた引用の拒否 ${f.rejected}/${f.fabricated}・根拠のない文の表示 ${f.unsupportedShown}（${f.evalRun}）`,
+    evalLine: (f: LandingFacts) => `引用は原文からコードが切り出す（Claude は文の番号だけを指す）：${f.citationExactPct}%（${f.citationN} 件）・作った引用の拒否 ${f.rejected}/${f.fabricated}（人工の${f.fabricated}例）・根拠のない文は設計上表示しない（${f.evalRun}）`,
     codeTitle: "Claude Code で作った",
     code: [
       ["計画 → レビュー", "要件から計画モードで計画を立て、別の目でレビューしてから実装した"],
-      ["サブエージェント", "調査、日英化、そして新しい目のデザイン批評（2回、.claude/agents/design-critic.md）"],
+      ["サブエージェント", "調査、日英化、そして毎回ちがう観点からの新しい目の批評（.claude/agents/design-critic.md）"],
       ["スキル", "Claude API の使い方を確かめるスキル。確認手順をまとめた .claude/skills/tsumugi-verify"],
       ["フック", "画面のファイルを編集するたびにデザイン規則のテストを走らせる（.claude/settings.json）"],
       ["実機での確認", "各モデルをこの Mac で動かし、画面は撮影スクリプトで確かめた"],
@@ -61,7 +62,8 @@ const T = dict({
   en: {
     back: "TSUMUGI",
     title: "How it works",
-    lead: "Claude reads, explains and writes. Every yes or no a traveller relies on is decided by code.",
+    lead: "Claude reads, explains, searches and writes. Every yes or no a traveller relies on is checked by code.",
+    why: "What needs Claude here: reading vertical brush script in its original form; pulling claims and their exact wording out of Meiji-era English and Japanese sources; judging what is missing and choosing what to search for next; writing the story and the answers sentence by sentence, citing the sources.",
     splitTitle: "What Claude does, what code decides",
     colStage: "Stage",
     colClaude: "Claude",
@@ -70,7 +72,7 @@ const T = dict({
       { stage: "Read", claude: "Reads the text in the photo as written, with reading, meaning and place candidates (vision, structured outputs, streaming)", code: "Checks the boxes; matches the place against the dictionary. No sources at a place it does not know" },
       { stage: "Guide", claude: "What to look at, why it matters, what to try, how the kanji are built, the next questions (small parallel calls)", code: "Drops kanji not in the photo and anything too long. A guide note never becomes evidence or a thread" },
       { stage: "Check", claude: "Takes claims and exact excerpts from Japanese and English sources (in parallel); judges what is missing and searches again", code: "Checks each claim (sentence exists, subject, negation, era …) and accepts, downgrades or rejects it" },
-      { stage: "Time", claude: "—", code: "Decides from the timeline whether it existed when the source was written. Claude is never asked" },
+      { stage: "Time", claude: "Deliberately not Claude (existence must not be wrong)", code: "Decides from the timeline whether it existed when the source was written; Claude is not asked at this stage (answers to questions are Claude's, from the sources)" },
       { stage: "Weave", claude: "Writes the story of the place, citing claims", code: "Re-checks every sentence's citations; drops sentences without support" },
       { stage: "Ask", claude: "Answers a question from this run's sources only (native citations: search_result)", code: "Checks each quote against the original; with none, says the sources do not say" },
       { stage: "Evaluate", claude: "Runs the same calls in one Batch API job", code: "Scores against the gold data; the numbers on screen are computed from it" },
@@ -94,11 +96,11 @@ const T = dict({
       ["Batch API", "The evaluation runs in one batch at half the cost; the numbers on screen come from it"],
     ],
     evalTitle: "Evaluation",
-    evalLine: (f: LandingFacts) => `Quotes match the original ${f.citationExactPct}% (${f.citationN}) · fabricated quotes rejected ${f.rejected}/${f.fabricated} · unsupported sentences shown ${f.unsupportedShown} (${f.evalRun})`,
+    evalLine: (f: LandingFacts) => `Quotes are cut from the original by code (Claude only points to sentence numbers): ${f.citationExactPct}% (${f.citationN}) · fabricated quotes rejected ${f.rejected}/${f.fabricated} (${f.fabricated} synthetic cases) · unsupported sentences are never shown, by design (${f.evalRun})`,
     codeTitle: "Built with Claude Code",
     code: [
       ["Plan → review", "Plans in plan mode from the requirements, reviewed by a second pair of eyes before any code"],
-      ["Subagents", "Research, the ja/en pass, and fresh-eyes design critiques (twice; .claude/agents/design-critic.md)"],
+      ["Subagents", "Research, the ja/en pass, and fresh-eyes critiques from a different side each round (.claude/agents/design-critic.md)"],
       ["Skills", "The Claude API skill before every API change; the checks gathered in .claude/skills/tsumugi-verify"],
       ["Hooks", "Every edit of a screen file runs the design rules test (.claude/settings.json)"],
       ["Checked on the machine", "Each model run on this Mac; every screen checked by screenshot scripts"],
@@ -119,6 +121,9 @@ export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; r
       <div>
         <h1 className="font-serif text-display">{t.title}</h1>
         <p className="mt-3 max-w-[40em] text-body text-paper/85">{t.lead}</p>
+        <p className="mt-4 max-w-[44em] border-l-2 border-lantern pl-4 font-serif text-body" data-testid="why-claude">
+          {t.why}
+        </p>
       </div>
 
       <section className="border-t border-rule pt-6">

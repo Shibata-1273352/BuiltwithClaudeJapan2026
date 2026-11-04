@@ -14,7 +14,7 @@ import { dict, useDict } from "../i18n";
 
 const L = dict({
   ja: { open: (l: string) => `${l}：触れる・開く`, hint: "触れて、引いてみる" },
-  en: { open: (l: string) => `${l}: touch to open`, hint: "Touch it, pull it" },
+  en: { open: (l: string) => `${l}: touch to open`, hint: "Tap something in the photo" },
 });
 
 export function ObjectsLayer({

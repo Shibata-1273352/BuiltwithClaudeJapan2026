@@ -22,8 +22,8 @@ const OPEN_MS = 1400;
 /** the farthest point sits this fraction of the camera distance behind the print plane */
 const DEPTH_RATIO = 0.75;
 /** the walk toward the gate: this fraction of the distance, over WALK_S seconds */
-const WALK = 0.16;
-const WALK_S = 9;
+const WALK = 0.32;
+const WALK_S = 5;
 /** sway and lean, as fractions of the camera distance */
 const SWAY = 0.035;
 const LEAN = 0.07;
@@ -156,7 +156,7 @@ export function PrintDiorama({
       <mesh ref={mesh} geometry={geo} renderOrder={101}>
         <meshBasicMaterial map={tex} toneMapped={false} side={THREE.DoubleSide} />
       </mesh>
-      {!reduced && opened > 0 && <Snow w={rect.w * (1 + DEPTH_RATIO)} h={rect.h * (1 + DEPTH_RATIO)} depth={dist * DEPTH_RATIO} opened={opened} />}
+      {!reduced && opened > 0 && <Snow w={rect.w} h={rect.h} depth={dist * DEPTH_RATIO} opened={opened} />}
     </group>
   );
 }
@@ -173,9 +173,10 @@ function Snow({ w, h, depth, opened, n = 1600 }: { w: number; h: number; depth: 
     const s = new Float32Array(n);
     for (let i = 0; i < n; i++) {
       const zz = -depth * rnd() + depth * 0.05;
-      const spread = 1 + -zz / depth; // farther flakes cover a wider area (the view widens with depth)
-      p[i * 3] = (rnd() - 0.5) * w * spread * 0.6;
-      p[i * 3 + 1] = (rnd() - 0.5) * h * spread * 0.6;
+      // inside the print only: a flake at depth z covers the print's frame as seen from the camera
+      const spread = 1 + (-zz / depth) * DEPTH_RATIO;
+      p[i * 3] = (rnd() - 0.5) * w * spread * 0.92;
+      p[i * 3 + 1] = (rnd() - 0.5) * h * spread * 0.92;
       p[i * 3 + 2] = zz;
       s[i] = (0.04 + rnd() * 0.08) * h * 0.25;
     }
@@ -190,7 +191,7 @@ function Snow({ w, h, depth, opened, n = 1600 }: { w: number; h: number; depth: 
     for (let i = 0; i < n; i++) {
       arr[i * 3 + 1] -= speed[i] * dt;
       arr[i * 3] += Math.sin(time * 0.7 + i) * 0.0004 * h;
-      if (arr[i * 3 + 1] < -h * 0.6) arr[i * 3 + 1] = h * 0.6;
+      if (arr[i * 3 + 1] < -h * 0.46) arr[i * 3 + 1] = h * 0.46;
     }
     a.needsUpdate = true;
     if (mat.current) mat.current.opacity = Math.min(0.85, Math.max(0, (performance.now() - opened - 600) / 1600) * 0.85);

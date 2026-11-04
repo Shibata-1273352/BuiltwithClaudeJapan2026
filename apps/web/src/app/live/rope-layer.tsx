@@ -147,6 +147,49 @@ export function RopeLayer({
         });
         cur.grown = true;
       }
+      // 組紐: where an object's ink threads leave it, they are braided into one cord (one strand per
+      // question that has a source: 時・場・言・間), then part toward their years and sources
+      for (const g of svg.querySelectorAll<SVGGElement>("g[data-braid]")) {
+        const from = g.dataset.braid!;
+        const a = anchors.current.get(from);
+        const mine = [...live.current.values()].filter((l) => l.spec.from === from && l.spec.kind === "ink" && l.grown && l.els[0]?.classList.contains("on"));
+        const strands = [...g.querySelectorAll<SVGPathElement>("path")];
+        if (!a || !mine.length) {
+          strands.forEach((e) => e.classList.remove("on"));
+          continue;
+        }
+        const pa = attach(from, a, origin);
+        // the cord heads where its threads go: the mean of their first few points
+        let dx = 0;
+        let dy = 0;
+        for (const l of mine) {
+          const q = l.ropes[0].pts[Math.min(3, l.ropes[0].pts.length - 1)];
+          const d = Math.hypot(q.x - pa.x, q.y - pa.y) || 1;
+          dx += (q.x - pa.x) / d;
+          dy += (q.y - pa.y) / d;
+        }
+        const n = Math.hypot(dx, dy) || 1;
+        const ux = dx / n;
+        const uy = dy / n;
+        const L = 110;
+        const amp = 4.5;
+        const wave = 22;
+        const k = strands.length;
+        strands.forEach((el, i) => {
+          const phase = (2 * Math.PI * i) / k;
+          let d = "";
+          for (let j = 0; j <= 28; j++) {
+            const t = j / 28;
+            const taper = Math.min(1, t / 0.18) * Math.min(1, (1 - t) / 0.25);
+            const off = amp * taper * Math.sin((2 * Math.PI * t * L) / wave + phase);
+            const x = pa.x + ux * L * t - uy * off;
+            const y = pa.y + uy * L * t + ux * off;
+            d += `${j ? " L" : "M"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+          }
+          el.setAttribute("d", d);
+          el.classList.add("on");
+        });
+      }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -158,8 +201,27 @@ export function RopeLayer({
     for (const id of [...live.current.keys()]) if (!ids.has(id)) live.current.delete(id);
   }, [specKey, specs]);
 
+  const braids = useMemo(() => {
+    const by = new Map<string, string[]>();
+    for (const sp of specs) {
+      if (sp.kind !== "ink" || !sp.from.startsWith("obj:")) continue;
+      const cs = by.get(sp.from) ?? [];
+      if (!cs.includes(sp.color)) cs.push(sp.color);
+      by.set(sp.from, cs);
+    }
+    return [...by.entries()];
+  }, [specs]);
+
   return (
     <svg ref={svgRef} className="pointer-events-none absolute inset-0 z-10 hidden lg:block" aria-hidden data-testid="rope-layer">
+      {braids.map(([from, colors]) => (
+        <g key={`braid:${from}`} data-braid={from} className="glow" style={{ opacity: hot && !from.includes(hot) ? 0.15 : 1, transition: "opacity 200ms" }}>
+          {/* a single question still braids: its strand twists with a paper strand (the cord's other ply) */}
+          {(colors.length > 1 ? colors : [...colors, "var(--paper)"]).map((c, i) => (
+            <path key={i} fill="none" stroke={c} strokeWidth={2} strokeOpacity={c === "var(--paper)" ? 0.5 : 1} style={{ ["--sw" as string]: 2 }} strokeLinecap="round" />
+          ))}
+        </g>
+      ))}
       {specs.map((s) => {
         const dim = hot && !s.id.includes(hot) ? 0.15 : 1;
         const parts = s.kind === "ink" ? [0, 1] : [0];

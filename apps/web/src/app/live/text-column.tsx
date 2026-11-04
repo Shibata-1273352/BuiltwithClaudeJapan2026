@@ -5,6 +5,7 @@
  * the photo, Claude's judgment of what is missing (labelled as Claude's), the broken thread, and
  * finally the story, sentence by sentence, each citing its sources.
  */
+import { interimSince } from "@/lib/time-river";
 import { FirstAnswer } from "./first-answer";
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
@@ -27,6 +28,9 @@ const T = dict({
     received: "写真を受け取りました。",
     broken: "切れた糸",
     notYet: (p: string) => `${p}は、まだなかった`,
+    notYetPermanent: (p: string) => `恒久的な${p}は、まだなかった`,
+    byCodeShort: "年表との照合（コード）。Claude には判定させない",
+    interim: (y: number) => `${y}年に仮設の門が設けられた（年表）。その後もあったかは記録されていない`,
     byCode: "年表との照合はコード。Claude には判定させていません。",
     words: "写真の中の文字",
     judgment: "Claude の判断 ── 何が足りないか",
@@ -34,8 +38,10 @@ const T = dict({
     ja: "日本語",
     en: "英語",
     sep: "、",
-    story: "この場所の物語",
-    threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：${src} 資料`,
+    searched: (n: number) => `Claude が足りない観点を判断し、追加で探した（${n} 節が見つかった）：`,
+    story: "この場所の物語 ── Claude が書き、一文ずつコードが確かめた",
+    skippedGap: "追加の探索はしなかった（残り時間が少ないため・コードの判断）",
+    threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：糸のある資料 ${src}`,
   },
   en: {
     ask: ["Read the signs and inscriptions as written", "Add readings and meanings in Japanese and English", "Box what is in the photo", "Name the place, from wide to narrow"],
@@ -48,8 +54,11 @@ const T = dict({
     tried: (c: string) => `Places the photo may show: ${c}`,
     where: "Where is this photo?",
     received: "Photo received.",
-    broken: "Broken thread",
+    broken: "Not there that year",
     notYet: (p: string) => `${p || "it"} was gone`,
+    notYetPermanent: (p: string) => `the permanent ${p || "structure"} was gone`,
+    byCodeShort: "checked against the timeline by code, not by Claude",
+    interim: (y: number) => `a temporary gate was put up in ${y} (timeline); whether one stood later is not recorded`,
     byCode: "Checked against the timeline by code — not left to Claude.",
     words: "Words in the photo",
     judgment: "Claude's judgment — what is missing",
@@ -57,8 +66,10 @@ const T = dict({
     ja: "Japanese",
     en: "English",
     sep: ", ",
-    story: "The story of this place",
-    threads: (n: number, b: number, src: number) => `${n} threads (${b} broken) from ${src} sources`,
+    searched: (n: number) => `Claude judged what was missing and searched again (${n} passages found): `,
+    story: "The story of this place — written by Claude, each sentence checked by code",
+    skippedGap: "No further search (little time left — the code's decision)",
+    threads: (n: number, b: number, src: number) => `${n} threads (${b} broken), from ${src} sources with threads`,
   },
 });
 
@@ -169,6 +180,12 @@ export function TextColumn({
   const readings = (s.see?.elements ?? s.seeProgress?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
   const showBroken = broken.length > 0 && since("threads") > 1800;
+  const brokenYearNum = (() => {
+    const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
+    const row = s.existence?.rows.find((r) => r.source === src);
+    return row?.time?.start ? Number(row.time.start.slice(0, 4)) : null;
+  })();
+  const interim = brokenYearNum && s.timeline ? interimSince(s.timeline as never, brokenYearNum) : null;
   const brokenYear = (() => {
     const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
     const row = s.existence?.rows.find((r) => r.source === src);
@@ -181,16 +198,16 @@ export function TextColumn({
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.found}>
-      <div className="fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12 [&>*]:shrink-0">
-        {/* the place */}
-        <div className="min-h-28">
+      <div className="answer-col fade-end flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto pr-3 pb-12 [&>*]:shrink-0">
+        {/* the place (presenter/video: the first answer and the discovery name it, so the column keeps 1878 in frame) */}
+        <div className={`min-h-28 ${docked ? "present-hide" : ""}`}>
           {docked ? (
             <div>
-              <p className="label">{[...s.place!.path.slice(1)].reverse().map((p) => p.name[ui]).join(ui === "ja" ? " ／ " : " / ")}</p>
+              <p className="present-hide label">{[...s.place!.path.slice(1)].reverse().map((p) => p.name[ui]).join(ui === "ja" ? " ／ " : " / ")}</p>
               <m.h1 layoutId="place-ja" className={`mt-1 font-serif font-bold ${ui === "ja" ? "text-display" : "text-title leading-tight"}`} data-testid="place-title">
                 {ui === "ja" ? placeName.ja : placeName.en}
               </m.h1>
-              <m.p layoutId="place-en" className="font-serif text-lead text-paper/70 italic">
+              <m.p layoutId="place-en" className="present-hide font-serif text-lead text-paper/70 italic">
                 {ui === "ja" ? placeName.en : placeName.ja}
               </m.p>
             </div>
@@ -219,10 +236,12 @@ export function TextColumn({
               </p>
               <p className="mt-1 flex items-baseline gap-4">
                 <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
-                <span className="font-serif text-title">{t.notYet(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
+                <span className="font-serif text-title">{(interim ? t.notYetPermanent : t.notYet)(ui === "ja" ? (placeName?.ja ?? "") : shortName(placeName?.en ?? ""))}</span>
               </p>
-              <p className="mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
-              <p className="mt-1 text-caption text-muted">{t.byCode}</p>
+              {interim && <p className="present-hide mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
+              <p className="present-hide mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
+              <p className="present-hide mt-1 text-caption text-muted">{t.byCode}</p>
+              <p className="present-only mt-1 text-caption text-muted">{t.byCodeShort}</p>
             </m.div>
           )}
         </AnimatePresence>
@@ -251,6 +270,11 @@ export function TextColumn({
         )}
 
         {/* Claude's own judgment (gap.assessment), labelled as Claude's — not a code decision */}
+        {s.gap?.skipped === "time" && !s.gap.assessment && (
+          <p className="text-caption text-muted" data-testid="gap-skipped">
+            {t.skippedGap}
+          </p>
+        )}
         {s.gap?.assessment && !showStory && (
           <m.figure initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="claude-line">
             <figcaption className="label">{t.judgment}</figcaption>
@@ -276,7 +300,7 @@ export function TextColumn({
 
         {/* the story, sentence by sentence (350 ms each), with source numbers */}
         {showStory && (
-          <article data-testid="narrative" lang={story?.lang ?? s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
+          <article className="present-hide" data-testid="narrative" lang={story?.lang ?? s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>
             <p className="label">{t.story}</p>
             <div className="mt-2 flex flex-col gap-3">
               {sentences.map((x, i) => {
@@ -307,7 +331,19 @@ export function TextColumn({
         )}
 
         {/* the viewpoint may land after the story has started: keep it, below the story */}
-        {showStory && <ViewpointCard s={s} />}
+        {/* after the story, Claude's judgment stays as one line: what it found missing, what it searched for */}
+        {showStory && s.gap?.gaps && s.gap.gaps.length > 0 && (
+          <p className="border-l-2 border-lantern pl-4 text-caption text-muted" data-testid="claude-searched">
+            {t.searched(s.gap.found ?? 0)}
+            <span className="text-paper">
+              {s.gap.gaps
+                .flatMap((g) => g.terms)
+                .slice(0, 4)
+                .join(t.sep)}
+            </span>
+          </p>
+        )}
+        {showStory && <div className="present-hide"><ViewpointCard s={s} /></div>}
         {showStory && world}
 
         {/* threads that exist but are not drawn on a phone */}

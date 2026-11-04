@@ -54,6 +54,7 @@ const T = dict({
     stage: "舞台表示",
     recorded: (d: string) => `${d} に実行した探索の録画`,
     failed: "探索を最後まで進められませんでした：",
+    why: { deadline: "時間内に終わりませんでした。", error: "処理に失敗しました。", stalled: "サーバーからの応答が途絶えました。" } as Record<string, string>,
     replayShort: "記録を再生する（録画）",
     timeTitle: (p: string) => `時をめくる：${p}はいつ、そこにあったか`,
     namesTitle: "言の地層：資料ごとの呼び名",
@@ -76,6 +77,7 @@ const T = dict({
     stage: "Stage view",
     recorded: (d: string) => `Recording of an exploration run on ${d}`,
     failed: "The exploration could not finish: ",
+    why: { deadline: "it ran out of time.", error: "something went wrong.", stalled: "the server stopped responding." } as Record<string, string>,
     replayShort: "Play the recording",
     timeTitle: (p: string) => `Turn the years: when was ${p} there?`,
     namesTitle: "Layers of names: what each source called it",
@@ -258,7 +260,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   // one primary (the note), one secondary (the postcard), the rest as one quiet row — a flow, not a menu
   const quiet = [
     s.space?.aligned && s.at.visual !== undefined ? (
-      <Button key="overlay" variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} data-testid="overlay-toggle">
+      <Button key="overlay" variant="quiet" onClick={() => setOverlayOn((v) => !v)} aria-pressed={overlayOn} className="present-hide" data-testid="overlay-toggle">
         {overlayOn ? t.back : t.overlay}
       </Button>
     ) : null,
@@ -268,7 +270,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       </Button>
     ) : null,
     finished && s.names != null ? (
-      <Button key="names" variant="quiet" onClick={() => toggle("names")} aria-expanded={panel === "names"} data-testid="names-toggle">
+      <Button key="names" variant="quiet" onClick={() => toggle("names")} aria-expanded={panel === "names"} className="present-hide" data-testid="names-toggle">
         {t.names}
       </Button>
     ) : null,
@@ -291,7 +293,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
         </ButtonLink>
       )}
       {finished && expId && s.place && <PostcardButton expId={expId} />}
-      {quiet.length > 0 && <div className="col-span-2 flex flex-wrap items-center gap-x-1 lg:col-auto [&>*]:px-2">{quiet}</div>}
+      {quiet.length > 0 && <div className="quiet-row col-span-2 flex flex-wrap items-center gap-x-1 lg:col-auto [&>*]:px-2">{quiet}</div>}
     </>
   );
 
@@ -336,9 +338,9 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
               </span>
             </div>
             {s.failed && (
-              <p className="text-small text-ba" role="alert">
+              <p className="text-small text-paper" role="alert">
                 {t.failed}
-                {s.failed.message}
+                {t.why[(s.failed as { reason?: string }).reason ?? "error"] ?? t.why.error}
                 {demoReplay && (
                   <a href={`/replay/${demoReplay}`} className="ml-3 underline" data-testid="fallback-replay">
                     {t.replayShort}
@@ -403,7 +405,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                   <YearAxis s={s} cards={cards} axisRef={axisRef} scrub={scrub} onScrub={finished && s.timeline ? onScrub : undefined} scrubLabel={ys?.label[lang]} />
                 </div>
                 <div className={`order-3 min-h-0 lg:order-none ${s.place === null ? "hidden" : ""}`}>
-                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} />
+                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} />
                 </div>
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
