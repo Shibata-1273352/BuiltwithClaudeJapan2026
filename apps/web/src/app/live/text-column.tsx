@@ -5,6 +5,7 @@
  * the photo, Claude's judgment of what is missing (labelled as Claude's), the broken thread, and
  * finally the story, sentence by sentence, each citing its sources.
  */
+import { By } from "../ui/by";
 import { interimSince } from "@/lib/time-river";
 import { FirstAnswer } from "./first-answer";
 import { AnimatePresence, m } from "motion/react";
@@ -222,7 +223,7 @@ export function TextColumn({
               {s.placeTried?.length ? <p className="mt-2 pl-4 text-caption text-muted">{t.tried(s.placeTried.join(t.sep))}</p> : null}
             </div>
           ) : (
-            <p className="font-serif text-display text-paper/80">{s.stages.see ? t.where : t.received}</p>
+            <p className={`font-serif text-paper/80 ${s.stages.see ? "text-title" : "text-display"}`}>{s.stages.see ? t.where : t.received}</p>
           )}
         </div>
 
@@ -230,9 +231,9 @@ export function TextColumn({
         <FirstAnswer s={s} />
         {/* after the story, Claude's judgment stays as one line: what it found missing, what it searched for */}
         {showStory && s.gap?.gaps && s.gap.gaps.length > 0 && (
-          <p className="border-l-2 border-lantern pl-4 text-caption text-muted" data-testid="claude-searched">
-            {t.searched(s.gap.found ?? 0)}
-            <span className="text-paper">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-muted" data-testid="claude-searched">
+            <By who="claude" did={{ ja: `足りないものを探し直した（+${s.gap.found ?? 0} 節）`, en: `searched again for what was missing (+${s.gap.found ?? 0})` }} />
+            <span className="present-hide text-paper">
               {s.gap.gaps
                 .flatMap((g) => g.terms)
                 .slice(0, 4)
@@ -245,11 +246,15 @@ export function TextColumn({
         <AnimatePresence>
           {showBroken && (
             <m.div key="broken" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} data-testid="broken-callout">
-              <p className="label flex items-center gap-2">
+              <p className="label flex flex-wrap items-center gap-2">
                 <svg width="28" height="6" aria-hidden>
                   <path d="M0 3 H10 M18 3 H28" stroke="var(--thread-toki)" strokeWidth="2" />
                 </svg>
                 {t.broken}
+                {/* presenter (the video): the code's verdict sits on the label line, so it is always in frame */}
+                <span className="present-only-inline ml-2">
+                  <By who="code" did={{ ja: "年表で判定（Claude ではない）", en: "timeline — not Claude" }} />
+                </span>
               </p>
               <p className="mt-1 flex items-baseline gap-4">
                 <span className="font-serif text-hero leading-none text-toki tabular-nums">{brokenYear ?? ""}</span>
@@ -258,7 +263,6 @@ export function TextColumn({
               {interim && <p className="present-hide mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
               <p className="present-hide mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
               <p className="present-hide mt-1 text-caption text-muted">{t.byCode}</p>
-              <p className="present-only mt-1 text-caption text-muted">{t.byCodeShort}</p>
             </m.div>
           )}
         </AnimatePresence>

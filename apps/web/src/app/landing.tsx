@@ -32,6 +32,9 @@ const T = dict({
     sub: "撮った場所が、いつ、何だったのか。日英の原典で確かめて、あなたの言葉で。",
     trySample: "雷門で試す",
     heroAlt: "TSUMUGI の画面：写真の文字の読み、いつからあるか、資料へ伸びる糸",
+    now: "いま",
+    nowAlt: "いまの雷門の大提灯（写真、CC0）",
+    printAlt: "歌川広重《名所江戸百景 浅草金龍山》の雷門の大提灯",
     own: "カメラで撮る",
     sampleNote: "例の写真は Wikimedia Commons の CC0。その場でライブに解析します。",
     moments: [
@@ -72,6 +75,9 @@ const T = dict({
     sub: "When was this place, and what was it? Checked in Japanese and English sources, told in your language.",
     trySample: "Try it at Kaminarimon",
     heroAlt: "The TSUMUGI stage: the words in the photo read, how long it has stood, threads to the sources",
+    now: "now",
+    nowAlt: "The great lantern of Kaminarimon today (photo, CC0)",
+    printAlt: "The great lantern of Kaminarimon in Utagawa Hiroshige's Kinryūzan Temple in Asakusa",
     own: "Open the camera",
     sampleNote: "The example photo is CC0 from Wikimedia Commons, analysed live.",
     moments: [
@@ -116,16 +122,9 @@ export function Landing({ facts }: { facts: LandingFacts }) {
       </header>
 
       {/* the scene, the value, the action */}
-      <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 pt-10 pb-14 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-14 lg:pt-14">
+      <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 pt-10 pb-14 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-14 lg:pt-14">
         <div>
           <h1 className="font-serif text-title leading-tight font-bold sm:text-display">{t.hero}</h1>
-          <p className="mt-6 max-w-[36em] text-body text-paper/80">{t.sub}</p>
-          <figure className="mt-8 max-w-[38em] border-l-2 border-lantern pl-4" data-testid="origin">
-            <figcaption className="label">{t.origin}</figcaption>
-            <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
-            <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
-            <p className="mt-3 text-small text-paper/80" data-testid="career">{t.career}</p>
-          </figure>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <ButtonLink href="/live" variant="primary" className="px-6 text-body" data-testid="try-sample">
               {t.trySample}
@@ -134,9 +133,18 @@ export function Landing({ facts }: { facts: LandingFacts }) {
           </div>
           <p className="mt-3 text-caption text-muted">{t.sampleNote}</p>
         </div>
-        <figure className="mx-auto w-full">
-          {/* eslint-disable-next-line @next/next/no-img-element -- a screenshot of the app (the guide card) */}
-          <img src={`/landing/hero-${lang}.jpg`} alt={t.heroAlt} className="w-full rounded-md ring-1 ring-rule" />
+        {/* now ⇄ then: the same place, today and in Hiroshige's print (CC0 photo; public-domain print) */}
+        <figure className="mx-auto grid w-full grid-cols-2 gap-3" data-testid="now-then">
+          <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element -- CC0 photo of the place */}
+            <img src="/landing/now.jpg" alt={t.nowAlt} className="aspect-[3/4] w-full rounded-md object-cover" />
+            <span className="mt-2 block font-serif text-title text-paper">{t.now}</span>
+          </div>
+          <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print of the same place */}
+            <img src="/landing/print.jpg" alt={t.printAlt} className="aspect-[3/4] w-full rounded-md object-cover" />
+            {facts.printYear !== null && <span className="mt-2 block font-serif text-title text-toki tabular-nums">{facts.printYear}</span>}
+          </div>
         </figure>
       </section>
 
@@ -147,12 +155,20 @@ export function Landing({ facts }: { facts: LandingFacts }) {
             <li key={m.img} className="flex flex-col gap-3">
               <span className="text-caption text-muted tabular-nums">{String(i + 1).padStart(2, "0")}</span>
               <p className="font-serif text-title leading-tight">{m.title}</p>
-              <p className="text-small text-paper/75">{m.body}</p>
               {/* eslint-disable-next-line @next/next/no-img-element -- a screenshot of the app */}
               <img src={`/landing/${m.img}-${lang}.jpg`} alt="" loading="lazy" className={`mt-2 w-full rounded-md ${m.img === "postcard" ? "mx-auto max-w-[16rem]" : ""}`} />
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-5 pb-14">
+          <figure className="max-w-[38em] border-l-2 border-lantern pl-4" data-testid="origin">
+            <figcaption className="label">{t.origin}</figcaption>
+            <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
+            <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
+            <p className="mt-3 text-small text-paper/80" data-testid="career">{t.career}</p>
+          </figure>
       </section>
 
       {/* why it can be relied on; where it works */}

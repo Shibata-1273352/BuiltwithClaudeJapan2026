@@ -77,9 +77,6 @@ html[data-present] .quiet-row > * {
   font-size: var(--text-small);
 }
 /* presenter: the 1878 discovery fits the frame with the first answer */
-html[data-present] [data-testid="broken-callout"] .text-hero {
-  font-size: var(--text-display);
-}
 html[data-present] [data-testid="broken-callout"] > p.flex {
   flex-wrap: wrap;
   row-gap: 0.25rem;
@@ -95,11 +92,43 @@ html[data-present] .answer-col {
 .present-only {
   display: none;
 }
+.present-only-inline {
+  display: none;
+}
+html[data-present] .present-only-inline {
+  display: inline-flex;
+}
 html[data-present] .present-only {
   display: block;
 }
 html[data-present] .turn-pic {
   height: min(46vh, 30rem);
+}
+/* the beat lights one place (a change of state, 400 ms; reduced motion: at once) */
+.stage-grid > *,
+.stage-grid .answer-col > *,
+.stage-grid [data-testid="evidence-card"] {
+  transition: opacity 400ms ease-out;
+}
+.stage-grid[data-beat="panel"] > :not(aside):not(svg) {
+  opacity: 0.3;
+}
+.stage-grid[data-beat="broken"] .answer-col > :not([data-testid="broken-callout"]) {
+  opacity: 0.45;
+}
+/* presenter, at 1878: the dimmed search line folds so the discovery and the code's verdict fit the frame */
+html[data-present] .stage-grid[data-beat="broken"] [data-testid="claude-searched"] {
+  display: none;
+}
+.stage-grid[data-beat="broken"] [data-testid="evidence-card"][data-absent="0"] {
+  opacity: 0.4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-grid > *,
+  .stage-grid .answer-col > *,
+  .stage-grid [data-testid="evidence-card"] {
+    transition: none;
+  }
 }
 html[data-present] .present-hide {
   display: none !important;

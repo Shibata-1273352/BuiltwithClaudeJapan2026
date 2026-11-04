@@ -10,7 +10,7 @@ const L = {
   ja: {
     inside: "絵の中",
     print: "歌川広重《名所江戸百景 浅草金龍山》1856",
-    how: "版画の奥行きを推定して開いています（推定）。ポインタで覗き込めます。",
+    how: "奥行きは推定",
     back: "今へ戻る",
     state: { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" },
     title: "間（ま）",
@@ -34,7 +34,7 @@ const L = {
   en: {
     inside: "Inside the print",
     print: "Utagawa Hiroshige, Kinryūzan Temple in Asakusa (1856)",
-    how: "The print opens by its estimated depth (an estimate). Move the pointer to look around.",
+    how: "depth: an estimate",
     back: "Back to now",
     state: { present: "stood", absent: "absent", unknown: "to be checked", withheld: "withheld" },
     title: "Ma — the space between",
@@ -426,12 +426,9 @@ export function SpaceViewer({
               {ys && (
                 <p className="mt-2 flex flex-wrap items-center gap-3 font-serif text-body text-paper/85" data-testid="space-year-state" data-state={ys.state}>
                   {ys.label[lang]}
-                  <Tag tone={ys.state === "present" ? "toki" : "muted"} dashed={ys.state !== "present"}>
-                    {l.state[ys.state]}
-                  </Tag>
                 </p>
               )}
-              <p className="mt-3 text-caption text-muted">{l.how}</p>
+              <p className="mt-2 text-caption text-muted">{l.how}</p>
             </div>
             <div className="pointer-events-auto flex gap-3">
               <Button variant="secondary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={() => go(false)}>

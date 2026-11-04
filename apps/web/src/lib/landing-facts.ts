@@ -15,6 +15,8 @@ export type LandingFacts = {
   unsupportedShown: number;
   evalRun: string;
   places: { ja: string; en: string; reviewed: boolean }[];
+  /** the year of the print on the landing (from the corpus, not typed) */
+  printYear: number | null;
   sources: number;
   languages: number;
 };
@@ -39,7 +41,8 @@ export function landingFacts(): LandingFacts {
     if (!cur || (cur.former && !entry.former)) bySite.set(key, { ...entry, reviewed: entry.reviewed || Boolean(cur?.reviewed) });
   }
   const places = [...bySite.values()].map(({ ja, en, reviewed }) => ({ ja, en, reviewed })).sort((a, b) => Number(b.reviewed) - Number(a.reviewed));
-  const list = (sources as { sources: { lang: string }[] }).sources;
+  const list = (sources as { sources: { lang: string; id?: string; first_published?: number }[] }).sources;
+  const printYear = list.find((x) => x.id === "met-56689")?.first_published ?? null;
   return {
     citationExactPct: Math.round(e.citation.exact * 100),
     citationN: e.citation.n,
@@ -48,6 +51,7 @@ export function landingFacts(): LandingFacts {
     unsupportedShown: e.generation.shown,
     evalRun: e.run,
     places,
+    printYear,
     sources: list.length,
     languages: new Set(list.map((s) => s.lang)).size,
   };

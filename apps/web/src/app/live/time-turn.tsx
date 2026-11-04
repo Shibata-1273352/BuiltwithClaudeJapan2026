@@ -231,7 +231,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
       {/* the year, what it means, who came */}
       <div className="flex min-w-0 flex-col gap-5">
         <div className="flex items-end justify-between gap-4">
-          <m.p key={year < TO ? "y" : "now"} className={`font-serif text-hero leading-none tabular-nums ${stood ? "text-paper" : "text-toki"}`} data-testid="time-year">
+          <m.p key={year < TO ? "y" : "now"} className="font-serif text-hero leading-none text-toki tabular-nums" data-testid="time-year">
             {year}
           </m.p>
           <Button variant={playing ? "secondary" : "primary"} onClick={() => setPlaying((p) => !p)} data-testid="time-play">
@@ -271,7 +271,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
             </m.figure>
           )}
         </AnimatePresence>
-        <div>
+        <div className="present-hide">
           <p className="label">{l.events}</p>
           <ol className="mt-2 flex flex-col gap-1 text-small">
             {events.map((e) => (

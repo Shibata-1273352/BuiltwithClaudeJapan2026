@@ -1,6 +1,7 @@
 "use client";
 
 /** The evidence column (6.2): one card per source, appearing as it is found, then judged. */
+import { By } from "../ui/by";
 import { useEffect, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState, SourceCard } from "@/lib/live/state";
@@ -56,7 +57,7 @@ export function EvidenceColumn({
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.evidence} data-testid="evidence-column">
       <div className="flex items-baseline justify-between">
         <h2 className="label">{t.title}</h2>
-        {s.candidates.length > 0 && <span className="text-caption text-muted tabular-nums">{t.n(new Set(s.candidates.map((c) => c.passageId)).size)}</span>}
+        {s.candidates.length > 0 && <span className="present-hide text-caption text-muted tabular-nums">{t.n(new Set(s.candidates.map((c) => c.passageId)).size)}</span>}
       </div>
       {/* what was searched, in one line: topic × language, "none" struck through */}
       <p className="present-hide flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted" data-testid="search-matrix" aria-label={t.matrix}>
@@ -95,6 +96,7 @@ export function EvidenceColumn({
                 className={`relative border-b border-rule py-3 pr-1 pl-4 outline-none focus-visible:bg-paper/5 ${hot === c.sourceId ? "bg-paper/5" : ""}`}
                 style={{ borderLeft: `2px ${c.state === "pending" ? "dashed" : "solid"} ${color}` }}
                 data-testid="evidence-card"
+                data-absent={c.existence?.value === "absent" ? "1" : "0"}
               >
                 <div className="flex items-baseline gap-2">
                   <span className="min-w-0 flex-1 truncate font-serif text-body" lang={c.lang}>
@@ -106,11 +108,15 @@ export function EvidenceColumn({
                       {c.yearKind === "published" ? t.pubMark : ""}
                     </span>
                   )}
-                  <span className="text-caption text-muted">{c.lang === "ja" ? t.jaMark : t.enMark}</span>
+                  <span className="rounded-sm border border-rule-strong px-1.5 text-caption leading-5 text-paper/80" lang={c.lang}>
+                    {c.lang === "ja" ? "日本語" : "English"}
+                  </span>
                 </div>
                 {c.excerptKey && c.lang !== ui && tr[c.excerptKey] ? (
                   <div className={`${c.existence?.value === "absent" ? "" : "present-hide"} mt-1`}>
-                    <p className="text-caption text-muted">{t.refLabel}</p>
+                    <p>
+                      <By who="claude" did={{ ja: "参考訳（根拠は下の原文）", en: "translation — the original below is the evidence" }} />
+                    </p>
                     <p className="line-clamp-2 text-small text-paper/85" lang={ui}>
                       {tr[c.excerptKey]}
                     </p>
@@ -123,14 +129,14 @@ export function EvidenceColumn({
                     {c.excerpt.replace(/^Title:\s*/, "")}
                   </p>
                 )}
-                <div className={`mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted ${holdBroken && c.existence?.value === "absent" ? "invisible" : ""}`}>
+                <div className={`mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted ${holdBroken && c.existence?.value === "absent" ? "invisible" : ""} ${c.existence?.value === "absent" ? "" : "present-hide"}`}>
                   {c.existence && (
                     <span className={c.existence.value === "absent" ? "font-medium text-paper" : ""}>
                       {EXIST_LABEL[ui][c.existence.value]}
                     </span>
                   )}
                   {c.state && (
-                    <span className={`inline-flex items-center gap-1.5 ${broken ? "text-paper" : ""}`}>
+                    <span className={`inline-flex items-center gap-1.5 ${broken ? "present-hide text-paper" : ""}`}>
                       <svg width="16" height="4" aria-hidden>
                         <path d={broken ? "M0 2 H6 M10 2 H16" : "M0 2 H16"} stroke={color} strokeWidth="2" strokeDasharray={c.state === "pending" ? "3 2" : undefined} />
                       </svg>
