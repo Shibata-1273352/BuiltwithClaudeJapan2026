@@ -48,7 +48,8 @@
   "titleSheen": [
    1.45,
    3.1
-  ]
+  ],
+  "plateCut": 0.75
  },
  "knot": 15.0,
  "scenes": [
@@ -61,7 +62,7 @@
   {
    "id": "wall",
    "start": 23.5,
-   "end": 37.5,
+   "end": 38.5,
    "segments": [
     {
      "src": "takes/wall.mp4",
@@ -72,15 +73,15 @@
     },
     {
      "still": "takes/empty.png",
-     "dur": 0.8,
+     "dur": 1.8,
      "cam": null
     }
    ]
   },
   {
    "id": "enter",
-   "start": 37.5,
-   "end": 40.0,
+   "start": 38.5,
+   "end": 41.0,
    "segments": [
     {
      "still": "takes/empty.png",
@@ -91,8 +92,8 @@
   },
   {
    "id": "read",
-   "start": 40.0,
-   "end": 69.2,
+   "start": 41.0,
+   "end": 70.2,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -105,8 +106,8 @@
   },
   {
    "id": "print",
-   "start": 69.2,
-   "end": 78.95,
+   "start": 70.2,
+   "end": 79.95,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -119,8 +120,8 @@
   },
   {
    "id": "absence",
-   "start": 78.95,
-   "end": 88.35000000000001,
+   "start": 79.95,
+   "end": 89.35,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -138,8 +139,8 @@
   },
   {
    "id": "check",
-   "start": 88.35000000000001,
-   "end": 95.35000000000001,
+   "start": 89.35,
+   "end": 96.35,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -161,8 +162,8 @@
   },
   {
    "id": "burn",
-   "start": 95.35000000000001,
-   "end": 102.65,
+   "start": 96.35,
+   "end": 103.65,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -184,8 +185,8 @@
   },
   {
    "id": "gift",
-   "start": 102.65,
-   "end": 116.05000000000001,
+   "start": 103.65,
+   "end": 117.05,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -198,8 +199,8 @@
   },
   {
    "id": "knot",
-   "start": 116.05000000000001,
-   "end": 119.05000000000001,
+   "start": 117.05,
+   "end": 120.05,
    "segments": [
     {
      "seq": "knot",
@@ -210,20 +211,20 @@
   },
   {
    "id": "reveal",
-   "start": 119.05000000000001,
-   "end": 129.05,
+   "start": 120.05,
+   "end": 130.55,
    "segments": []
   },
   {
    "id": "reach",
-   "start": 129.05,
-   "end": 135.05,
+   "start": 130.55,
+   "end": 136.55,
    "segments": []
   },
   {
    "id": "other",
-   "start": 135.05,
-   "end": 143.05,
+   "start": 136.55,
+   "end": 144.55,
    "segments": [
     {
      "src": "takes/other.mp4",
@@ -236,14 +237,14 @@
   },
   {
    "id": "close",
-   "start": 143.05,
-   "end": 155.05,
+   "start": 144.55,
+   "end": 156.55,
    "segments": []
   },
   {
    "id": "concept",
-   "start": 155.05,
-   "end": 160.05,
+   "start": 156.55,
+   "end": 161.55,
    "segments": [
     {
      "still": "concept.png",
@@ -259,12 +260,12 @@
   },
   {
    "id": "credit",
-   "start": 160.05,
-   "end": 166.05,
+   "start": 161.55,
+   "end": 167.55,
    "segments": []
   }
  ],
- "end": 166.05,
+ "end": 167.55,
  "bridges": {
   "enter": {
    "rect": [
@@ -306,7 +307,7 @@
   "reach": "模式図"
  },
  "nameLines": [
-  3.8,
-  4.9
+  5.15,
+  7.15
  ]
 }

@@ -10,7 +10,7 @@ import { useLang } from "../i18n";
 
 export function By({ who, did }: { who: "claude" | "code"; did?: { ja: string; en: string } }) {
   const lang = useLang();
-  const name = who === "claude" ? "Claude" : lang === "ja" ? "コード" : "code";
+  const name = who === "claude" ? "Claude" : lang === "ja" ? "プログラム" : "code";
   return (
     <span className="inline-flex items-center gap-1.5 text-caption leading-5 whitespace-nowrap" data-by={who}>
       <span className={`rounded-sm border px-1.5 ${who === "claude" ? "border-lantern/60 text-lantern" : "border-rule-strong text-muted"}`}>{name}</span>

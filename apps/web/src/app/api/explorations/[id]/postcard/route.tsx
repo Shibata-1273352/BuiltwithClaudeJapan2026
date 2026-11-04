@@ -75,7 +75,7 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
   const placeSub = d.place ? (lang === "ja" ? d.place.en : [gloss, d.place.ja].filter(Boolean).join(" · ")) : "";
   const t =
     lang === "ja"
-      ? { q1: "これ、なんて書いてあるの？", q2: "いつからあるの？", since: (y: string) => `${y}年から`, byClaude: "Claude が写真から読んだ", byCode: "年表で判定（コード）", by: "Claude が読み、コードが確かめた" }
+      ? { q1: "これ、なんて書いてあるの？", q2: "いつからあるの？", since: (y: string) => `${y}年から`, byClaude: "Claude が写真から読んだ", byCode: "年表で判定（プログラム）", by: "Claude が読み、プログラムが確かめた" }
       : { q1: "What does it say?", q2: "How long has it been here?", since: (y: string) => `Since ${y}`, byClaude: "read from the photo by Claude", byCode: "decided by code, from the timeline", by: "Read by Claude, checked by code" };
   const cutH = 720;
   const cutW = Math.min(960, cutH * aspect);

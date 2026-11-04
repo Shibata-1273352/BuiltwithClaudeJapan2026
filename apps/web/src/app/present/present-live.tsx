@@ -23,8 +23,8 @@ const STAGE_JA: Record<string, string> = {
   "extract:ja": "証拠の抽出・日（Claude）",
   extract2: "追加の抽出（Claude）",
   gap: "不足の判断（Claude、抽出と並行）",
-  existence: "存在判定（コード）",
-  names: "言の地層（コード）",
+  existence: "存在判定（プログラム）",
+  names: "言の地層（プログラム）",
   narrate: "紡ぐ（Claude）",
   space: "間・空間解析（推論サーバー、並行）",
   graph: "Evidence Graph 保存",
@@ -197,7 +197,7 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-title">コードの検証</h2>
+        <h2 className="font-serif text-title">プログラムの検証</h2>
         <p>
           主張 {claims.length} 件 → 採用 {claims.length - downgraded.length} ・格下げ/却下 {downgraded.length}
         </p>
@@ -226,7 +226,7 @@ export function PresentLive({ replayId }: { replayId?: string } = {}) {
           </>
         )}
         <p className="mt-auto text-body text-muted">
-          目的はコードのDAGが固定し、Claudeは段階ごとの限られた判断だけを行う。出力はすべてコードが検査する（OWASP ASI01）。
+          目的はプログラムのDAGが固定し、Claudeは段階ごとの限られた判断だけを行う。出力はすべてプログラムが検査する（OWASP ASI01）。
         </p>
       </section>
     </div>

@@ -46,7 +46,7 @@ const L = dict({
     now: "いま",
     came: (y: number) => `${y}年、この場所を書いた人`,
     judged: { present: "その年、門はあった", absent: "その年、門はなかった", unknown: "判定保留" } as Record<string, string>,
-    byCode: "判定は年表との照合（コード）。原文は資料のまま。",
+    byCode: "判定は年表との照合（プログラム）。原文は資料のまま。",
     temporary: "仮設の門",
     print: "広重がこの年に見た門",
     events: "この門の出来事",
