@@ -20,6 +20,22 @@
 
 **Where it works today.** Full history (sources and a timeline): Kaminarimon (Sensō-ji; timeline checked by a person), Konpon Chūdō (Kan'ei-ji, Ueno) and Azuma Bridge (Sumida River; timelines compiled with Claude Code, awaiting a person's check). Everywhere else: the reading and Claude's guide, which may draw on what Claude knows and is labelled as Claude's, never as evidence.
 
+**What others do, and what only TSUMUGI does** (as far as their published materials show, checked 2026-11-04):
+
+| Others | TSUMUGI |
+| --- | --- |
+| Translate the text in a photo (Google Lens, Papago, DeepL, Apple Visual Look Up) | Reads the brush lettering and era dates, explains the meaning and the kanji, then says how long it has stood — from a human-reviewed timeline |
+| Answer with web links (Lens AI Overviews) | Quotes period primary sources verbatim, in Japanese and English; each claim is checked by code against the sentence it cites |
+| Show past scenes at fixed AR points (Hyper Edohaku XR, NHK AR Time Warp) | Decides by code whether it existed in the year you choose; when sources disagree, shows both |
+| Guides written by an institution (Bloomberg Connects, Smartify) | Works from any photo; tells history only where it can be checked, and says "not in the sources" otherwise |
+
+**Why it matters** (official sources):
+- Visitors to Japan in 2025: 42,683,600, a record ([JNTO, 2026-01-21](https://www.jnto.go.jp/news/press/20260121_monthly.html)).
+- The Japan Tourism Agency has written about 9,000 English commentaries since FY2018, because the appeal of sites "does not come across" (「魅力が伝わらない」, [観光庁 多言語解説整備支援事業](https://www.mlit.go.jp/tagengo-db/about.html)). TSUMUGI quotes texts from this database, checked, from a photo.
+- The national guideline for English commentary asks not to translate literally but to add what a visitor needs to understand (文化庁・観光庁「文化財の英語解説のあり方について」2016, 視点1).
+
+**The story the demo tells** (all from stored sources): the gate burned in 慶応元年 (1865/66); 「実に95年間も雷門は再建されなかった」 (Sensō-ji); in 1960 it was rebuilt with Matsushita Kōnosuke's donation — said by Sensō-ji in Japanese and by the Japan Tourism Agency in English, which TSUMUGI ties into one knot; and Claude reads his name on the lantern base in the visitor's photo. When the record of the fire was thin, Claude decided to search again and found Takamura Kōun's memoir of that night, which disagrees with the temple's date; both are shown.
+
 - In the app: `/` (start), `/live` (try it at Kaminarimon), `/how` (how Claude is used, measured), `/notes` (travel notes and the trip weave).
 - Demo script (video): [`docs/demo-script.md`](docs/demo-script.md) · How Claude and Claude Code are used: [`docs/claude-code.md`](docs/claude-code.md)
 - Final verification (integration, acceptance, performance): [`docs/verification/final-2026-11-04.md`](docs/verification/final-2026-11-04.md)

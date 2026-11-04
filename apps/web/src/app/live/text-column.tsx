@@ -39,6 +39,7 @@ const T = dict({
     ja: "日本語",
     en: "英語",
     sep: "、",
+    found2: "見つけた：",
     searched: (n: number) => `Claude が足りない観点を判断し、追加で探した（${n} 節が見つかった）：`,
     judgedEn: (n: number) => `${n}`,
     story: "この場所の物語 ── Claude が書き、一文ずつコードが確かめた",
@@ -68,6 +69,7 @@ const T = dict({
     ja: "Japanese",
     en: "English",
     sep: ", ",
+    found2: "found: ",
     searched: (n: number) => `Claude judged what was missing and searched again (${n} passages found): `,
     judgedEn: (n: number) => `Claude judged what was still missing and searched again — ${n} more passages found.`,
     story: "The story of this place — written by Claude, each sentence checked by code",
@@ -186,6 +188,7 @@ export function TextColumn({
   const readings = (s.see?.elements ?? s.seeProgress?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
   const showBroken = broken.length > 0 && since("threads") > 1800 && !holdBroken;
+  const foundTitles = [...new Set((s.gap?.candidates ?? []).map((c) => c.sourceTitle).filter(Boolean))].slice(0, 2);
   const brokenYearNum = (() => {
     const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
     const row = s.existence?.rows.find((r) => r.source === src);
@@ -233,6 +236,13 @@ export function TextColumn({
         {showStory && s.gap?.gaps && s.gap.gaps.length > 0 && (
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-muted" data-testid="claude-searched">
             <By who="claude" did={{ ja: `足りないものを探し直した（+${s.gap.found ?? 0} 節）`, en: `searched again for what was missing (+${s.gap.found ?? 0})` }} />
+            {/* what that search brought in: the sources it found that the first search had not */}
+            {foundTitles.length > 0 && (
+              <span className="text-paper" data-testid="claude-found">
+                {t.found2}
+                <span className="font-serif text-body">{foundTitles.join(t.sep)}</span>
+              </span>
+            )}
             <span className="present-hide text-paper">
               {s.gap.gaps
                 .flatMap((g) => g.terms)

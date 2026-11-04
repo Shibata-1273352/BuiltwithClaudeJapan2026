@@ -59,6 +59,14 @@ await shot("4-1866");
 await panel.getByRole("slider").fill("1961");
 await page.waitForTimeout(1500);
 await shot("4-1961");
+if ((await panel.getByTestId("time-knot").count()) === 0) fails.push("1961: the Japanese and English records do not tie a knot");
+await page.keyboard.press("Escape");
+await page.waitForTimeout(600);
+// 6a (proof). one check in 舞台裏: a claim code held back, and why
+await vis("backstage-toggle").click();
+await page.waitForTimeout(1200);
+await shot("6a-check");
+if ((await page.getByTestId("one-check").count()) === 0) fails.push("backstage: no one-check example");
 await page.keyboard.press("Escape");
 // 5. into the print
 await page.goto(`${base}/space/${scene}?enter=1&present=1`, { waitUntil: "domcontentloaded" });
