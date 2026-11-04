@@ -362,7 +362,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <ExplorationView attach={replay ? undefined : expId} replay={replay ? { explorationId: expId, recordedAt: source.recordedAt } : undefined} />
               </div>
             ) : (
-              <div ref={stageRef} className={`relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:gap-8 ${s.place === null ? "lg:grid-cols-[minmax(26rem,1.1fr)_auto]" : "lg:grid-cols-[minmax(20rem,1fr)_auto_6rem_minmax(22.5rem,30rem)]"}`}>
+              <div ref={stageRef} data-beat={panel === "time" || panel === "names" ? "panel" : ys?.state === "absent" && !(holdBroken && !scrubbedOnce) ? "broken" : undefined} className={`stage-grid relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:gap-8 ${s.place === null ? "lg:grid-cols-[minmax(26rem,1.1fr)_auto]" : "lg:grid-cols-[minmax(20rem,1fr)_auto_6rem_minmax(22.5rem,30rem)]"}`}>
                 <div className="order-2 min-h-0 lg:order-none">
                   <TextColumn
                     s={s}

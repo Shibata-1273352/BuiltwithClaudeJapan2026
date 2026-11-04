@@ -177,7 +177,7 @@ export function PhotoStage({
           .map((e, i, all) => (
             <m.span
               key={i}
-              className="absolute max-w-[45%] rounded-sm bg-night/85 px-2 py-0.5 text-caption shadow"
+              className={`${i > 0 ? "present-hide " : ""}absolute max-w-[45%] rounded-sm bg-night/85 px-2 py-0.5 text-caption shadow`}
               // labels whose boxes start close together stack upward instead of overlapping
               style={{ left: `${e.box.x * 100}%`, top: `calc(${e.box.y * 100}% - ${1.6 + 1.7 * all.slice(0, i).filter((p) => Math.abs(p.box.y - e.box.y) < 0.08).length}rem)` }}
               initial={{ opacity: 0, y: 6 }}
@@ -231,8 +231,8 @@ export function PhotoStage({
               />
             </m.div>
             <span className="absolute inset-y-0 left-1/2 w-px bg-paper/70" />
-            <span className="absolute bottom-3 left-4 font-serif text-title text-paper drop-shadow-lg">{t.now}</span>
-            {printYear && <span className="absolute bottom-3 left-[calc(50%+1rem)] font-serif text-title text-toki tabular-nums drop-shadow-lg">{printYear}</span>}
+            <span className="absolute bottom-3 left-3 rounded-sm bg-night px-2 font-serif text-title text-paper">{t.now}</span>
+            {printYear && <span className="absolute bottom-3 left-[calc(50%+0.75rem)] rounded-sm bg-night px-2 font-serif text-title text-toki tabular-nums">{printYear}</span>}
           </m.div>
         )}
       </AnimatePresence>

@@ -96,6 +96,7 @@ export function EvidenceColumn({
                 className={`relative border-b border-rule py-3 pr-1 pl-4 outline-none focus-visible:bg-paper/5 ${hot === c.sourceId ? "bg-paper/5" : ""}`}
                 style={{ borderLeft: `2px ${c.state === "pending" ? "dashed" : "solid"} ${color}` }}
                 data-testid="evidence-card"
+                data-absent={c.existence?.value === "absent" ? "1" : "0"}
               >
                 <div className="flex items-baseline gap-2">
                   <span className="min-w-0 flex-1 truncate font-serif text-body" lang={c.lang}>

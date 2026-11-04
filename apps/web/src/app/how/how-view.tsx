@@ -161,8 +161,8 @@ export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; r
           <thead>
             <tr className="text-left text-caption text-muted">
               <th className="w-28 py-2 font-normal">{t.colStage}</th>
-              <th className="py-2 font-normal text-lantern">{t.colClaude}</th>
-              <th className="py-2 font-normal">{t.colCode}</th>
+              <th className="py-2 font-serif text-lead font-normal text-lantern">{t.colClaude}</th>
+              <th className="py-2 font-serif text-lead font-normal text-paper">{t.colCode}</th>
             </tr>
           </thead>
           <tbody>
@@ -170,7 +170,7 @@ export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; r
               <tr key={r.stage} className="border-t border-rule align-top">
                 <td className="py-3 pr-4 font-serif text-body">{r.stage}</td>
                 <td className={`py-3 pr-6 font-serif text-body ${i === 3 ? "text-muted" : "text-paper"}`}>{short[i]?.[0] ?? r.claude}</td>
-                <td className="py-3 font-serif text-body text-paper/80">{short[i]?.[1] ?? r.code}</td>
+                <td className="py-3 font-serif text-body text-paper">{short[i]?.[1] ?? r.code}</td>
               </tr>
             ))}
           </tbody>

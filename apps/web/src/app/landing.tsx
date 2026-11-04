@@ -122,7 +122,7 @@ export function Landing({ facts }: { facts: LandingFacts }) {
       </header>
 
       {/* the scene, the value, the action */}
-      <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 pt-10 pb-14 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-14 lg:pt-14">
+      <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 pt-10 pb-14 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-14 lg:pt-14">
         <div>
           <h1 className="font-serif text-title leading-tight font-bold sm:text-display">{t.hero}</h1>
           <div className="mt-8 flex flex-wrap items-center gap-3">
