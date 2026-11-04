@@ -94,6 +94,9 @@ const T = dict({
   },
 });
 
+/** negating words, underlined in the one-check example (ja and en; display only, the check itself is in code) */
+const NEGATION = /(ではなく|ではない|なかった|ない|ず|\bnot\b|\bno\b|\bnever\b)/;
+
 export function Backstage({
   s,
   onClose,
@@ -131,12 +134,20 @@ export function Backstage({
               <figcaption className="flex flex-wrap items-center gap-2">
                 <By who="code" did={{ ja: example.status === "rejected" ? "却下" : "格下げ", en: example.status === "rejected" ? "rejected" : "downgraded" }} />
                 <span className="text-small text-paper">
-                  {lang === "ja" ? "通らなかった検査：" : "check not passed: "}
-                  {CHECK[example.failed_checks!.includes("negation_handled") ? "negation_handled" : example.failed_checks![0]]?.[lang] ?? example.failed_checks![0]}
+                  {example.failed_checks!.includes("negation_handled") ? (lang === "ja" ? "否定の文を、主張として採らなかった" : "a negation, not taken as a claim") : lang === "ja" ? "通らなかった検査：" : "check not passed: "}
+                  {example.failed_checks!.includes("negation_handled") ? null : (CHECK[example.failed_checks![0]]?.[lang] ?? example.failed_checks![0])}
                 </span>
               </figcaption>
               <blockquote className="mt-2 line-clamp-3 font-serif text-body text-paper/90" lang={example.lang}>
-                {example.excerpt}
+                {example.excerpt.split(NEGATION).map((part, k) =>
+                  NEGATION.test(part) ? (
+                    <span key={k} className="underline decoration-paper decoration-2 underline-offset-4">
+                      {part}
+                    </span>
+                  ) : (
+                    part
+                  ),
+                )}
               </blockquote>
             </figure>
           )}

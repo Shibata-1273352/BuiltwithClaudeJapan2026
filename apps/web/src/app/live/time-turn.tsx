@@ -50,7 +50,7 @@ const L = dict({
     conflict: "資料が食い違う",
     record: "この出来事の記録（原文）",
     knot: "日本語と英語の記録が、この年に結ばれる",
-    yourPhoto: "あなたの写真から",
+    yourPhoto: "写真から",
   },
   en: {
     play: "Let the years flow",
@@ -66,7 +66,7 @@ const L = dict({
     conflict: "The sources disagree",
     record: "The record of this event (the sources' own words)",
     knot: "The Japanese and the English records tie in this year",
-    yourPhoto: "From your photo",
+    yourPhoto: "From the photo",
   },
 });
 
@@ -227,9 +227,12 @@ export function TimeTurn({
             <div className="min-w-0">
               <p className="text-caption text-muted">{l.yourPhoto}</p>
               {baseReadings.map((rd, k) => (
-                <p key={k} className="font-serif text-lead leading-tight whitespace-nowrap" lang="ja">
-                  {rd.text_original}
-                </p>
+                <div key={k}>
+                  <p className="font-serif text-lead leading-tight whitespace-nowrap" lang="ja">
+                    {rd.text_original}
+                  </p>
+                  {rd.meaning?.[lang] && <p className="text-caption text-paper/80">{rd.meaning[lang]}</p>}
+                </div>
               ))}
               <p className="mt-1">
                 <By who="claude" />

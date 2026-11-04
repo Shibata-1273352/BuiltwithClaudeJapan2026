@@ -5,7 +5,7 @@
 
 ## 物語の背骨：95年の不在と、写真の中の名前
 
-ひとことで言うと、95 年間再建されなかった門と、それを寄進した一人の人と、いま撮った写真に刻まれたその名前の物語です。日本語と英語の記録が、一つの結び目になります。
+ひとことで言うと、95 年間再建されなかった門と、それを寄進した一人の人と、写真の提灯に刻まれたその名前の物語です。日本語と英語の記録が、一つの結び目になります。
 
 場面ごとの事実は、すべて保存済みの資料の文か、Claude の読み（印付き）に裏付けがあります。
 
@@ -17,15 +17,15 @@
 5. **寄進**：1960 年、門は寄進によって再建された。日本語の記録（浅草寺）と英語の記録（観光庁の多言語解説）が、この年に結ばれる。
    - 浅草寺：「現在の門は、昭和35年（1960）に…松下幸之助氏の寄進により、再建された。」
    - 観光庁："The current Kaminarimon was built in 1960 with donations from Matsushita Konosuke"
-6. **つながり**：写真の名前は、門を返した人だった。あの日の質問に、いまは答えられる。
+6. **つながり**：写真の提灯の名前は、門を返した人だった。あの日の質問に、いまは答えられる。
 
-写真の名前と寄進者が同じ人だという断定は、コードではしない。画面では「あなたの写真から（Claude の読み）」と「記録の原文」を並べて見せるだけで、結びつけるのは見る人とナレーションに任せる。
+写真の名前と寄進者が同じ人だという断定は、コードではしない。画面では「写真から（Claude の読み）」と「記録の原文」を並べて見せるだけで、結びつけるのは見る人とナレーションに任せる。
 
 ## 審査基準から決めたこと
 
 | 基準 | 見せること |
 | --- | --- |
-| インパクト 30% | 公式テーマ「多くの人を阻んできた壁を取り払う」（言葉の壁）。観光庁は約 9,000 本の英語解説を整備してきた。理由は、観光地の魅力が「伝わらない」から。TSUMUGI はその解説文を、写真から、確かめて引用する |
+| インパクト 30% | 公式テーマ「多くの人を阻んできた壁を取り払う」（言葉の壁）。観光庁は英語解説を数千本整えてきた。理由は、観光地の魅力が「伝わらない」から。TSUMUGI は、写真から合う解説文を探し、確かめて引用する |
 | デモ 25% | 冒頭 6 秒のつかみ。謎を一つ持たせて、最後に回収する。結び目と絵の中が「見て楽しい」場面 |
 | Claude の活用 25% | 縦書きの筆文字と元号を読む。足りないものを自分で判断して探し直し、食い違う証言を見つける。答えには引用が付く。Claude Code で作った（フックの映像） |
 | 深さと実行力 20% | 存在の判定はコード。否定の文を見分けて主張を格下げした実例を見せる。食い違いは両方を出す。引用は原文のまま |
@@ -36,33 +36,36 @@
 
 | 時間 | 場面 | 画面・操作 | ナレーション（日本語） | 英語字幕 |
 | --- | --- | --- | --- | --- |
-| 0:00–0:06 | 冒頭 | 1878 年の夜のコマ（`R?present=1&hold=broken&at=end` で年を 1878 年に）。音楽なしで 1.5 秒の無音、糸の音 | （無音のあと）「1878年。この写真の恒久的な門は、まだなかった。」 | "1878. The permanent gate in this photo was not there yet." |
-| 0:06–0:20 | 壁 | 入口（いま｜1856） | 「浅草で、外国人の友人に聞かれました。『これ、なんて書いてあるの？ いつからあるの？』。人と人をつなぐ仕事をしてきたのに、答えられませんでした。」 | "In Asakusa, a friend asked me what this says, and how long it has been here. I connect people for a living — and I couldn't answer." |
-| 0:20–0:45 | Claude が読む | `R?present=1&hold=broken&speed=0.5`。文字が写真から浮かぶ → 風雷神門 → 金具の名前 | 「Claude が縦書きの筆文字を読みます。風雷神門、風神と雷神の門。提灯の金具には、ひとつの名前。この人は、誰なのか。」 | "Claude reads the brush lettering: the Gate of the Wind and Thunder Gods. On the lantern's base, a name. Who is he?" |
-| 0:45–1:25 | 時を越える | 完了（いま｜1856）→ Claude の判断の一行（見つけた：幕末維新懐古談）→ 年を 1878 年へ → 時をめくるで 1866 年（食い違い） | 「1856年、広重が描いた門。1866年、門は燃えました。Claude は資料が足りないと判断して探し直し、焼けた夜を回想した彫刻家の本を見つけました。日付は、寺の記録と食い違います。だから、両方を出します。1878年、イザベラ・バードは、恒久的な門のない参道を歩きました。」 | "1856: Hiroshige draws the gate. It burns. Claude judged the record thin, searched again, and found a sculptor's memoir of that night — it disagrees with the temple, so both are shown. 1878: Isabella Bird walks an avenue with no permanent gate." |
-| 1:25–1:45 | 絵の中へ | `/space/<scene>?enter=1&3d=1` | 「広重の1856年へ。」（あとは雪の音だけ） | "Into Hiroshige's 1856." |
-| 1:45–2:15 | 寄進 | 時をめくる →「時を流す」（1961 年で止まる）→ 日英の結び目 → あなたの写真から：松下幸之助 | 「95年のあいだ、雷門は再建されませんでした。1960年、一人の寄進で、門は戻りました。日本語の記録と、英語の記録が、ここで結ばれます。あなたの写真の名前は、門を返した人でした。」 | "For 95 years the gate was not rebuilt. In 1960, one man's gift brought it back. The Japanese and English records tie here. The name in your photo is the man who gave the gate back." |
-| 2:15–2:40 | 確かめる | 舞台裏（確かめの実例：否定の文）→ `/how` → 3 秒だけ Claude Code のフック | 「Claude が読み、コードが確かめます。この文は否定だとコードが見分け、主張を格下げしました。政府は観光地の英語解説を約9,000本整備してきました。TSUMUGI は、その文章を写真から、確かめて引きます。」 | "Claude reads; code checks. Here code saw a negation and held a claim back. Japan has written about 9,000 English commentaries; TSUMUGI quotes them, checked, from a photo." |
-| 2:40–3:00 | 締め | 絵はがき → 入口 | 「この場所を書き残した人たちと、いまの友人を、一本ずつ確かめた糸で紡ぐ。あの日の質問に、いまは答えられます。TSUMUGI。」 | "The people who wrote about this place, and my friend today — woven with threads checked one by one. Now I can answer. TSUMUGI." |
+| 0:00–0:08 | 冒頭：謎 | 提灯の金具の大写し（舞台の写真を編集で拡大）。Claude の枠と「Claude」の印。音楽なしで 1.5 秒の無音 | （無音のあと）「この提灯には、ひとつの名前があります。この人は誰なのか。なぜこの門は、95年も再建されなかったのか。」 | "There is a name on this lantern. Who is he — and why was this gate not rebuilt for 95 years?" |
+| 0:08–0:20 | 壁 | 入口（いま｜1856） | 「浅草で、外国人の友人に聞かれました。『これ、なんて書いてあるの？ いつからあるの？』。人と人をつなぐ仕事をしてきたのに、答えられませんでした。」 | "In Asakusa, a friend asked me what this says, and how long it has been here. I connect people for a living — and I couldn't answer." |
+| 0:20–0:40 | Claude が読む | `R?present=1&hold=broken&speed=0.5`。文字が写真から浮かぶ → 風雷神門 → 年月の銘 → 金具の名前 | 「Claude が縦書きの筆文字を読みます。風雷神門、風神と雷神の門。提灯の年月の銘、そして金具の名前まで。」 | "Claude reads the brush lettering — the Gate of the Wind and Thunder Gods — then the date on the lantern, and the name on its base." |
+| 0:40–1:15 | 焼けて、食い違う | 完了（いま｜1856）→ Claude の判断の一行（見つけた：幕末維新懐古談）→ 時をめくるで 1866 年（両論） | 「1856年、広重が描いた門。そして門は燃えました。Claude は資料が足りないと判断して探し直し、焼けた夜を回想した彫刻家の本を見つけました。日付は、寺の記録と食い違います。だから、両方を出します。」 | "1856: Hiroshige draws the gate. Then it burns. Claude judged the record thin, searched again, and found a sculptor's memoir of that night. It disagrees with the temple on the date — so both are shown." |
+| 1:15–1:30 | 確かめる | 舞台裏の確かめの実例（否定の言葉に下線） | 「Claude が読み、コードが確かめます。この文は否定だと見分け、主張として採りませんでした。」 | "Claude reads; code checks. This sentence is a negation, so it was not taken as a claim." |
+| 1:30–1:50 | 不在 | 年を 1878 年へ（`hold=broken`、ここで初めて発見が出る）→ 写真が夜に沈み、糸が切れる | 「1878年、イザベラ・バードは、恒久的な門のない参道を歩きました。判定したのは、年表を照らしたコードです。」 | "1878: Isabella Bird walks an avenue with no permanent gate. Code decided that, from the timeline." |
+| 1:50–1:55 | 絵の中へ（つなぎ） | `/space/<scene>?enter=1&3d=1` を 5 秒 | （雪の音だけ） | — |
+| 1:55–2:35 | 寄進 | 時をめくる →「時を流す」（1961 年で止まる）→ 日英の結び目 → 写真から：松下幸之助（Claude の読み・英語の意味） | 「95年のあいだ、雷門は再建されませんでした。1960年、一人の寄進で、門は戻りました。日本語の記録と、英語の記録が、ここで結ばれます。この写真の提灯に刻まれた名前は、門を返した人でした。」 | "For 95 years the gate was not rebuilt. In 1960, one man's gift brought it back — the Japanese and English records tie here. The name on this lantern is the man who gave the gate back." |
+| 2:35–2:45 | 広がり | `/how`（2 秒）→ 入口の「いま使える場所」 | 「政府は観光地の英語解説を数千本整えてきました。TSUMUGI は、写真から合う一本を探し、確かめて引用します。」 | "Japan has written thousands of these English commentaries. TSUMUGI finds the right one from a photo and quotes it, checked." |
+| 2:45–3:00 | 締め | 絵はがき（1960 年の記録の一文が入る） | 「この場所を書き残した人たちと、いまの友人を、一本ずつ確かめた糸で紡ぐ。あの日の質問に、いまは答えられます。誰が門を返したのかも。TSUMUGI。」 | "The people who wrote about this place, and my friend today, woven with threads checked one by one. Now I can answer — and say who gave the gate back. TSUMUGI." |
 
-- **必ず入れる場面**：0:00–1:25、1:45–2:40
-- **時間が足りなければ削る場面**：絵の中へ（1:25–1:45）、締めの絵はがき
+- **必ず入れる場面**：0:00–1:50、1:55–2:35、締め
+- **時間が足りなければ削る場面**：絵の中へ、広がり
+- **Claude Code のフックの映像**（3 秒）：入れるなら「広がり」と差し替える。物語の流れを優先する。
 
 **数字の出どころ**（ナレーションだけで使い、画面には手で打たない）
 - 95 年：浅草寺の記録の原文「実に95年間」
 - 1960：年表と資料の原文
-- 約 9,000 本：観光庁 多言語解説整備支援事業 https://www.mlit.go.jp/tagengo-db/about.html
+- 英語解説の数（ナレーションでは「数千本」）：観光庁 多言語解説整備支援事業（約 9,000 本と公表） https://www.mlit.go.jp/tagengo-db/about.html
 - 訪日客 42,683,600 人（2025 年）：JNTO 2026-01-21 https://www.jnto.go.jp/news/press/20260121_monthly.html
 
 ## 提出用の要約（100〜200語）
 
 **日本語**
 
-外国人の友人に浅草で「これ、なんて書いてあるの？ いつからあるの？」と聞かれ、答えられなかった。TSUMUGI は、その壁を取り払う。写真を撮ると、Claude が縦書きの筆文字を読み、意味を解説する。コードは、日英の一次資料と人が確認した年表で、その場所が「その年にあったか」を確かめる。Claude は資料が足りないと判断すれば探し直し、食い違う証言は両方を示す。資料にないことは「書かれていません」と答える。雷門は 95 年間再建されなかった。1960 年、一人の寄進で再建され、その名前は、いま撮った提灯に刻まれている。時と場所と人を、確かめた糸で紡ぐ。
+外国人の友人に浅草で「これ、なんて書いてあるの？ いつからあるの？」と聞かれ、答えられなかった。TSUMUGI は、その壁を取り払う。写真を撮ると、Claude が縦書きの筆文字を読み、意味を解説する。コードは、日英の一次資料と人が確認した年表で、その場所が「その年にあったか」を確かめる。Claude は資料が足りないと判断すれば探し直し、食い違う証言は両方を示す。資料にないことは「書かれていません」と答える。雷門は 95 年間再建されなかった。1960 年、一人の寄進で再建され、その名前は、写真の提灯に刻まれている。時と場所と人を、確かめた糸で紡ぐ。
 
 **English**
 
-In Asakusa, a friend asked me what a sign said and how long the gate had stood. I couldn't answer. TSUMUGI removes that wall. Take a photo: Claude reads the vertical brush lettering and explains it. Code checks, against Japanese and English primary sources and a human-reviewed timeline, whether the place existed in a given year. When the record is thin, Claude decides to search again. When sources disagree, both are shown. What the sources don't say, it says so. Kaminarimon was not rebuilt for 95 years. In 1960 one man's gift rebuilt it, and his name is on the lantern in your photo. TSUMUGI weaves time, place and people with threads checked one by one.
+In Asakusa, a friend asked me what a sign said and how long the gate had stood. I couldn't answer. TSUMUGI removes that wall. Take a photo: Claude reads the vertical brush lettering and explains it. Code checks, against Japanese and English primary sources and a human-reviewed timeline, whether the place existed in a given year. When the record is thin, Claude decides to search again. When sources disagree, both are shown. What the sources don't say, it says so. Kaminarimon was not rebuilt for 95 years. In 1960 one man's gift rebuilt it, and his name is on the lantern in the photo. TSUMUGI weaves time, place and people with threads checked one by one.
 
 ## 撮影の手順
 

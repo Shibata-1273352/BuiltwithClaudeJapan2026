@@ -59,7 +59,10 @@ export function yearState(d: TimelineData, year: number): YearState {
       state: "withheld",
       temporary: false,
       evidence,
-      label: { ja: `${year}年：判定保留（${what.ja}が史料間で一致しない）`, en: `${year}: withheld (sources disagree on ${what.en})` },
+      label:
+        what === DISPUTED_WHAT.destroyed
+          ? { ja: `${year}年：焼失。ただし焼けた日は資料で食い違う`, en: `${year}: burned — the sources disagree on the date` }
+          : { ja: `${year}年：判定保留（${what.ja}が史料間で一致しない）`, en: `${year}: withheld (sources disagree on ${what.en})` },
     };
   }
   return {
