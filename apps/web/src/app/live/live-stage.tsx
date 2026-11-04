@@ -419,7 +419,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
                   <StagePanel title={t.timeTitle(s.place?.path[0]?.name[lang] ?? "")} onClose={() => setPanel(null)} testid="time-panel" wide>
-                    <TimeTurn data={s.timeline as RiverData} sceneId={s.space?.scene_id ?? null} scene={scene as never} photo={photoUrl} cards={cards} />
+                    <TimeTurn data={s.timeline as RiverData} sceneId={s.space?.scene_id ?? null} scene={scene as never} photo={photoUrl} cards={cards} readings={s.see?.elements ?? []} />
                   </StagePanel>
                 )}
                 {panel === "names" && s.names != null && (

@@ -43,7 +43,7 @@ export type LiveState = {
   associations?: { ok: boolean; items: Association[] };
   candidates: (Candidate & { seq: number })[];
   candidateGroups: { facet: string; lang: "en" | "ja"; found: number; notFound: boolean; seq: number }[];
-  gap?: { assessment?: string; gaps?: { facet: string; lang: string; reason: string; terms: string[] }[]; found?: number; skipped?: string };
+  gap?: { assessment?: string; gaps?: { facet: string; lang: string; reason: string; terms: string[] }[]; found?: number; skipped?: string; candidates?: { sourceId: string; sourceTitle: string }[] };
   claims: ClaimRow[];
   claimTotals: { accepted: number; downgraded: number; rejected: number };
   existence?: { entity: string; rows: ExistenceRow[] };

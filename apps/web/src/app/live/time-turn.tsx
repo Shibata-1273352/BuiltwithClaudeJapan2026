@@ -17,6 +17,9 @@ import { presentPeriodAround, segments, sourceYear, yearState, type TimelineData
 import { dict, useDict, useLang } from "../i18n";
 import { Button } from "../ui/button";
 import { plainLabel } from "./text-column";
+import { By } from "../ui/by";
+import { knotOf, pickQuotes, readingsInside, type EventQuotes } from "@/lib/timeline-quotes";
+import type { SeeElement } from "@/lib/live/state";
 
 const FROM = 1750;
 const TO = 2026;
@@ -45,6 +48,9 @@ const L = dict({
     print: "広重がこの年に見た門",
     events: "この門の出来事",
     conflict: "資料が食い違う",
+    record: "この出来事の記録（原文）",
+    knot: "日本語と英語の記録が、この年に結ばれる",
+    yourPhoto: "写真から",
   },
   en: {
     play: "Let the years flow",
@@ -58,12 +64,44 @@ const L = dict({
     print: "the gate as Hiroshige saw it",
     events: "What happened to this gate",
     conflict: "The sources disagree",
+    record: "The record of this event (the sources' own words)",
+    knot: "The Japanese and the English records tie in this year",
+    yourPhoto: "From the photo",
   },
 });
 
-export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: TimelineData; sceneId: string | null; scene: Scene | null; photo: string | null; cards: SourceCard[] }) {
+export function TimeTurn({
+  data,
+  sceneId,
+  scene,
+  photo,
+  cards,
+  readings = [],
+}: {
+  data: TimelineData;
+  sceneId: string | null;
+  scene: Scene | null;
+  photo: string | null;
+  cards: SourceCard[];
+  /** Claude's readings of the photo (to show what was read inside a cut-out) */
+  readings?: SeeElement[];
+}) {
   const l = useDict(L);
   const lang = useLang();
+  // each event's own evidence, verbatim (public corpus, cached per entity)
+  const [quotes, setQuotes] = useState<EventQuotes>({});
+  useEffect(() => {
+    let off = false;
+    fetch(`/api/timeline/quotes?entity=${encodeURIComponent(data.entity)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!off && j?.quotes) setQuotes(j.quotes as EventQuotes);
+      })
+      .catch(() => {});
+    return () => {
+      off = true;
+    };
+  }, [data.entity]);
   const [year, setYear] = useState(TO);
   const [playing, setPlaying] = useState(false);
   const ys = yearState(data, year);
@@ -105,6 +143,12 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
   type Conflict = { id: string; about: string; explanation: { ja: string; en: string }; sides?: { value: string; evidence: string[]; gregorian?: string }[] };
   const conflicts = ((data as unknown as { conflicts?: Conflict[] }).conflicts ?? []) as Conflict[];
   const conflict = lastEvent && year - lastEvent.year <= 3 ? conflicts.find((c) => c.about === lastEvent.id && c.sides?.length) : undefined;
+  const atEvent = lastEvent && year - lastEvent.year <= 3 ? lastEvent : null;
+  const atQuotes = atEvent ? pickQuotes(quotes[atEvent.id] ?? []) : [];
+  const knot = atEvent ? knotOf(quotes[atEvent.id] ?? []) : null;
+  // the rebuilt gate's lantern base, cut from the visitor's photo, and what Claude read on it
+  const baseCut = scene?.elements?.lantern_base ?? null;
+  const baseReadings = baseCut ? readingsInside(readings, baseCut.bbox) : [];
   const titleOf = (evidence: string[]) => {
     const src = evidence[0]?.split(":")[0];
     return (src && (data.sources.find((x) => x.source === src)?.title ?? cards.find((c) => c.sourceId === src)?.title)) || src || "";
@@ -132,7 +176,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
   useEffect(() => {
     if (!playing) return;
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let y = year >= TO - 1 ? FROM : year;
+    let y = year >= (stops[stops.length - 1] ?? TO - 1) ? FROM : year;
     let hold = 0;
     let last = performance.now();
     const step = (now: number) => {
@@ -141,6 +185,10 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
       if (hold > 0) hold -= dt;
       else {
         const next = stops.find((s) => s > y + 0.01);
+        if (next === undefined && stops.length && y >= stops[stops.length - 1]) {
+          setPlaying(false);
+          return;
+        }
         const speed = reduced ? Infinity : 40; // years per second
         const ny = Math.min(next ?? TO, y + (speed * dt) / 1000);
         if (next !== undefined && ny >= next) {
@@ -171,6 +219,27 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
     <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]" data-testid="time-turn">
       {/* the window */}
       <div className="turn-pic relative mx-auto h-[min(50vh,32rem)] max-w-full lg:h-[min(60vh,40rem)] overflow-hidden rounded-md bg-ink" style={{ aspectRatio: aspect }}>
+        {/* the rebuild: the lantern base cut from the visitor's own photo, and the name Claude read on it */}
+        {atEvent?.event === "rebuilt" && knot && baseCut && baseReadings.length > 0 && (
+          <m.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }} className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-4 rounded-md bg-night/90 p-3" data-testid="time-name">
+            {/* eslint-disable-next-line @next/next/no-img-element -- the cut-out from the visitor's own photo */}
+            <img src={`/api/cache/scenes/${sceneId}/${baseCut.png}`} alt="" className="h-10 w-auto max-w-[35%] shrink rounded-sm object-contain" />
+            <div className="min-w-0">
+              <p className="text-caption text-muted">{l.yourPhoto}</p>
+              {baseReadings.map((rd, k) => (
+                <div key={k}>
+                  <p className="font-serif text-lead leading-tight whitespace-nowrap" lang="ja">
+                    {rd.text_original}
+                  </p>
+                  {rd.meaning?.[lang] && <p className="text-caption text-paper/80">{rd.meaning[lang]}</p>}
+                </div>
+              ))}
+              <p className="mt-1">
+                <By who="claude" />
+              </p>
+            </div>
+          </m.div>
+        )}
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element -- the visitor's (face-blurred) photo
           <img src={photo} alt="" className={`absolute inset-0 size-full object-cover transition-[filter] duration-700 ${stood ? "" : "brightness-[0.28] grayscale"}`} />
@@ -257,6 +326,35 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
             <p className="mt-2 text-caption text-paper/75">{conflict.explanation[lang]}</p>
           </m.figure>
         )}
+        {atEvent && !conflict && (knot ? (
+          <m.figure key={`knot:${atEvent.id}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} data-testid="time-knot">
+            <figcaption className="label">{l.knot}</figcaption>
+            <div className="mt-2 grid grid-cols-[1.5rem_1fr] gap-x-3">
+              {/* two threads, one per language, meeting in one knot (musubi) */}
+              <svg viewBox="0 0 24 120" className="row-span-2 h-full w-6" aria-hidden preserveAspectRatio="none">
+                <m.path d="M4 8 C 4 50, 12 56, 12 64" stroke="var(--thread-koto)" strokeWidth="2" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6 }} />
+                <m.path d="M20 112 C 20 74, 12 70, 12 64" stroke="var(--thread-koto)" strokeWidth="2" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6 }} />
+                <m.circle cx="12" cy="64" r="3.5" fill="var(--thread-koto)" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.55, duration: 0.15 }} />
+              </svg>
+              <p className="font-serif text-body" lang="ja">
+                「{knot.ja.text}」<span className="ml-1 text-caption text-muted">— {knot.ja.title}</span>
+              </p>
+              <p className="mt-3 font-serif text-body" lang="en">
+                “{knot.en.text}”<span className="ml-1 text-caption text-muted">— {knot.en.title}</span>
+              </p>
+            </div>
+          </m.figure>
+        ) : atQuotes.length > 0 ? (
+          <m.figure key={`q:${atEvent.id}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-record">
+            <figcaption className="label">{l.record}</figcaption>
+            {atQuotes.map((q, i) => (
+              <p key={i} className="mt-2 font-serif text-body" lang={q.lang}>
+                {q.lang === "ja" ? `「${q.text}」` : `“${q.text}”`}
+                <span className="ml-1 text-caption text-muted">— {q.title}</span>
+              </p>
+            ))}
+          </m.figure>
+        ) : null)}
         <AnimatePresence mode="wait">
           {writer && (
             <m.figure key={writer.source} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-writer">

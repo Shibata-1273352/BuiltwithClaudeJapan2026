@@ -4,6 +4,7 @@
  * 「この探索の舞台裏」: what Claude did and what code decided in this run — each Claude call on a
  * timeline (parallel calls overlap), the checks code ran on Claude's output and what they rejected.
  */
+import { By } from "../ui/by";
 import { stripNumbers } from "@/lib/live/state";
 import { AssociationThreads } from "./association-threads";
 import { GraphDiagram } from "./graph-diagram";
@@ -93,6 +94,9 @@ const T = dict({
   },
 });
 
+/** negating words, underlined in the one-check example (ja and en; display only, the check itself is in code) */
+const NEGATION = /(ではなく|ではない|なかった|ない|ず|\bnot\b|\bno\b|\bnever\b)/;
+
 export function Backstage({
   s,
   onClose,
@@ -114,6 +118,8 @@ export function Backstage({
     for (const k of c.failed_checks ?? [])
       failed.set(k, (failed.get(k) ?? 0) + 1);
   const dropped = s.narrative?.dropped?.length ?? 0;
+  const held = s.claims.filter((c) => c.status !== "accepted" && (c.failed_checks?.length ?? 0) > 0 && c.excerpt);
+  const example = held.find((c) => c.failed_checks!.includes("negation_handled")) ?? held[0] ?? null;
   const judged = s.existence?.rows.length ?? 0;
   return (
     <StagePanel
@@ -122,6 +128,29 @@ export function Backstage({
       testid="backstage"
       wide
     >
+          {/* one check, readable: a claim Claude proposed that code held back, and why (auditability) */}
+          {example && (
+            <figure className="mb-6 border-l-2 border-rule-strong pl-4" data-testid="one-check">
+              <figcaption className="flex flex-wrap items-center gap-2">
+                <By who="code" did={{ ja: example.status === "rejected" ? "却下" : "格下げ", en: example.status === "rejected" ? "rejected" : "downgraded" }} />
+                <span className="text-small text-paper">
+                  {example.failed_checks!.includes("negation_handled") ? (lang === "ja" ? "否定の文を、主張として採らなかった" : "a negation, not taken as a claim") : lang === "ja" ? "通らなかった検査：" : "check not passed: "}
+                  {example.failed_checks!.includes("negation_handled") ? null : (CHECK[example.failed_checks![0]]?.[lang] ?? example.failed_checks![0])}
+                </span>
+              </figcaption>
+              <blockquote className="mt-2 line-clamp-3 font-serif text-body text-paper/90" lang={example.lang}>
+                {example.excerpt.split(NEGATION).map((part, k) =>
+                  NEGATION.test(part) ? (
+                    <span key={k} className="underline decoration-paper decoration-2 underline-offset-4">
+                      {part}
+                    </span>
+                  ) : (
+                    part
+                  ),
+                )}
+              </blockquote>
+            </figure>
+          )}
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
         <div>
           <h3 className="text-caption font-bold text-lantern">

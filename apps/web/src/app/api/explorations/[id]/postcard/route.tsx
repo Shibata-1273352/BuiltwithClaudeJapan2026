@@ -1,4 +1,6 @@
 import { readFile } from "node:fs/promises";
+import { eventQuotes } from "@/lib/timeline-quotes-server";
+import { pickQuotes } from "@/lib/timeline-quotes";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import { sourceTitles } from "@/lib/corpus/titles";
@@ -43,7 +45,13 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
   const [regular, bold] = await Promise.all([font("ShipporiMincho-Regular.ttf"), font("ShipporiMincho-Bold.ttf")]);
   if (!regular || !bold) return Response.json({ error: "fonts_missing", hint: "put ShipporiMincho-Regular.ttf / -Bold.ttf in DATA_DIR/fonts" }, { status: 503 });
 
-  const d = postcardData(eventsAfter(id, 0), lang, cachedNarrative(id, lang)?.sentences ?? null, sourceTitles());
+  const evs = eventsAfter(id, 0);
+  const d = postcardData(evs, lang, cachedNarrative(id, lang)?.sentences ?? null, sourceTitles());
+  // the last rebuild of the place, in its record's own words (the reader's language when there is one)
+  const tl = evs.filter((e) => e.type === "timeline").at(-1)?.data as { entity?: string; events?: { id: string; event: string }[] } | undefined;
+  const rebuild = tl?.entity ? [...(tl.events ?? [])].reverse().find((e) => e.event === "rebuilt") : undefined;
+  const rq = rebuild && tl?.entity ? (eventQuotes(tl.entity)[rebuild.id] ?? []) : [];
+  const gift = pickQuotes(rq).find((q) => q.lang === lang) ?? pickQuotes(rq)[0] ?? null;
   // the cut-out: the lantern if SAM 3 found it, else the largest object (people never)
   let cut: string | null = null;
   let aspect = 1;
@@ -111,7 +119,13 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
               <span>{t.broken(d.broken.year, d.broken.interim !== null)}</span>
             </div>
           )}
-          {d.sentence && (
+          {gift && (
+            <div style={{ display: "flex", flexDirection: "column", marginTop: 28, borderLeft: `4px solid ${C.rule}`, paddingLeft: 28 }}>
+              <span style={{ fontSize: 34, lineHeight: 1.5 }}>{gift.lang === "ja" ? `「${gift.text}」` : `“${gift.text}”`}</span>
+              <span style={{ fontSize: 24, color: C.muted, marginTop: 8 }}>— {gift.title}</span>
+            </div>
+          )}
+          {d.sentence && !gift && (
             <div style={{ display: "flex", flexDirection: "column", marginTop: 40, borderLeft: `4px solid ${C.rule}`, paddingLeft: 28 }}>
               <span style={{ fontSize: 40, lineHeight: 1.6 }}>{d.sentence.text}</span>
               {d.sentence.source && <span style={{ fontSize: 28, color: C.muted, marginTop: 12 }}>— {d.sentence.source}</span>}
