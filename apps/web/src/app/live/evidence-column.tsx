@@ -107,7 +107,9 @@ export function EvidenceColumn({
                       {c.yearKind === "published" ? t.pubMark : ""}
                     </span>
                   )}
-                  <span className="text-caption text-muted">{c.lang === "ja" ? t.jaMark : t.enMark}</span>
+                  <span className="rounded-sm border border-rule-strong px-1.5 text-caption leading-5 text-paper/80" lang={c.lang}>
+                    {c.lang === "ja" ? "日本語" : "English"}
+                  </span>
                 </div>
                 {c.excerptKey && c.lang !== ui && tr[c.excerptKey] ? (
                   <div className={`${c.existence?.value === "absent" ? "" : "present-hide"} mt-1`}>

@@ -10,6 +10,7 @@ import { AnimatePresence, m } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import type { LiveState } from "@/lib/live/state";
 import { FACING } from "./viewpoint-card";
+import { artifactRectInPhoto } from "@/lib/scene";
 
 type Scene = {
   size: [number, number];
@@ -50,6 +51,7 @@ const T = dict({
     alt: "探索している写真",
     printAlt: "広重『名所江戸百景 浅草金龍山』に写真を重ねたもの",
     printCap: "歌川広重《名所江戸百景 浅草金龍山》1856 を重ねて",
+    now: "いま",
     same: (f: string) => `あなたも広重も${f}を向いている（見立て・鉛筆）`,
     both: (a: string, b: string) => `あなたは${a}を、広重は${b}を向いている（見立て・鉛筆）`,
   },
@@ -57,6 +59,7 @@ const T = dict({
     alt: "The photo being explored",
     printAlt: "Hiroshige's Kinryūzan Temple at Asakusa laid over the photo",
     printCap: "Utagawa Hiroshige, Kinryūzan Temple at Asakusa, 1856 — laid over your photo",
+    now: "now",
     same: (f: string) => `You and Hiroshige both face ${f} (a guess, pencil)`,
     both: (a: string, b: string) => `You face ${a}, Hiroshige faced ${b} (a guess, pencil)`,
   },
@@ -115,6 +118,9 @@ export function PhotoStage({
   const showOverlay = overlay && sinceVisual >= 0 && (overlayOn || (autoHold && sinceVisual < 5200 && !absent));
   const t = useDict(T);
   const lang = useLang();
+  const align = (scene as { alignment?: { ok?: boolean; artifact?: string } } | null)?.alignment;
+  const printRect = align?.ok && align.artifact ? artifactRectInPhoto(align as never) : null;
+  const printYear = align?.artifact ? (s.candidates.find((c) => c.sourceId === align.artifact)?.year ?? null) : null;
   const placeName = s.place?.path[0]?.name; // leaf-first
   // FR-35 in one line, at the moment the print lands: you and Hiroshige, facing (pencil)
   const vf = s.viewpoint?.visitor?.facing;
@@ -175,7 +181,7 @@ export function PhotoStage({
               // labels whose boxes start close together stack upward instead of overlapping
               style={{ left: `${e.box.x * 100}%`, top: `calc(${e.box.y * 100}% - ${1.6 + 1.7 * all.slice(0, i).filter((p) => Math.abs(p.box.y - e.box.y) < 0.08).length}rem)` }}
               initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: sincePlace > 2600 ? 0 : 1, y: 0 }}
+              animate={{ opacity: sincePlace > 2600 && (i > 0 || showOverlay || absent) ? 0 : 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.15 }}
             >
               <span className="font-serif text-small text-lantern">{e.text_original}</span>
@@ -211,8 +217,27 @@ export function PhotoStage({
       })}
 
       {/* the aligned print (FR-58 / 間): wipes over the photo right → left */}
+      {/* then | now: when the print first lands, it fills the right half, placed by the alignment (the lanterns
+          meet at the seam), so "the same place, then and now" reads without a word */}
       <AnimatePresence>
-        {showOverlay && (
+        {showOverlay && !overlayOn && printRect && (
+          <m.div key="split" className="pointer-events-none absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }} data-testid="stage-split">
+            <m.div className="absolute inset-0 overflow-hidden" initial={{ clipPath: "inset(0 0 0 100%)" }} animate={{ clipPath: "inset(0 0 0 50%)" }} transition={{ duration: 0.7, ease: "easeInOut" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print, placed by the anchors */}
+              <img
+                src={`/api/cache/artifacts/${scene!.alignment!.artifact}/image.jpg`}
+                alt={t.printAlt}
+                className="absolute inset-y-0 right-0 h-full w-1/2 object-cover object-top"
+              />
+            </m.div>
+            <span className="absolute inset-y-0 left-1/2 w-px bg-paper/70" />
+            <span className="absolute bottom-3 left-4 font-serif text-title text-paper drop-shadow-lg">{t.now}</span>
+            {printYear && <span className="absolute bottom-3 left-[calc(50%+1rem)] font-serif text-title text-toki tabular-nums drop-shadow-lg">{printYear}</span>}
+          </m.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showOverlay && overlayOn && (
           <m.div
             key="overlay"
             className="absolute inset-0 bg-ink"

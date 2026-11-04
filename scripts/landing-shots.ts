@@ -27,6 +27,7 @@ try {
     await page.goto(`${base}/replay/${id}?hold=broken`, { waitUntil: "domcontentloaded" }); // the hero does not give away 1878
     await page.getByTestId("note-link").waitFor({ timeout: 120_000 });
     await page.getByTestId("stage-overlay").waitFor({ state: "detached", timeout: 12_000 }).catch(() => {});
+    await page.getByTestId("stage-split").waitFor({ state: "detached", timeout: 12_000 }).catch(() => {});
     await page.waitForTimeout(1200);
     // 0. the hero: the stage itself — the place, the first answer, the photo with its threads
     await page.screenshot({ path: path.join(out, `hero-${lang}.jpg`), type: "jpeg", quality: 82, clip: { x: 30, y: 125, width: 1230, height: 860 } });

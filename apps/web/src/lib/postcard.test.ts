@@ -32,7 +32,12 @@ describe("postcard: what the visitor takes away", () => {
     expect(d.sentence).toEqual({ text: "In 1878 the gate had not been rebuilt.", source: "Unbeaten Tracks in Japan" });
   });
   it("the broken thread and counted numbers", () => {
-    expect(d.broken).toEqual({ year: "1878", source: "Unbeaten Tracks in Japan" });
+    expect(d.broken).toEqual({ year: "1878", source: "Unbeaten Tracks in Japan", interim: null });
+  });
+  it("says 'the permanent …' when the timeline has a temporary structure before that year", () => {
+    const ev = (id: string, event: string, start: string) => ({ id, event, time: { start, end: start }, evidence: [] });
+    const timeline = { type: "timeline", data: { events: [ev("a", "destroyed", "1866-01-28"), ev("b", "temporary", "1868-01-01"), ev("c", "rebuilt", "1960-05-03")] } };
+    expect(postcardData([...events, timeline], "en", null, titles).broken?.interim).toBe(1868);
     expect(d.counts).toEqual({ sources: 2, threads: 2, claims: 1 });
     expect(d.place?.en).toBe("Kaminarimon");
     expect(d.area?.ja).toBe("浅草");

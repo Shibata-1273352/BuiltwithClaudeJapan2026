@@ -8,7 +8,7 @@ import Link from "next/link";
 import { BackLink } from "../ui/back-link";
 import type { StageFact } from "@/lib/how-facts";
 import type { LandingFacts } from "@/lib/landing-facts";
-import { dict, LangToggle, useDict } from "../i18n";
+import { dict, LangToggle, useDict, useLang } from "../i18n";
 
 type Row = { stage: string; claude: string; code: string };
 
@@ -16,6 +16,7 @@ const T = dict({
   ja: {
     back: "TSUMUGI",
     title: "しくみ",
+    more: "詳しく",
     lead: "Claude が読み、解説し、探し、書く。旅行者が頼る「はい／いいえ」は、コードが確かめる。",
     why: "Claude でなければできないこと：縦書きの筆文字を原文のまま読む。明治の英文と日本語の資料から、主張とその原文を抜き出す。何が足りないかを自分で判断し、探す語を出す。一文ずつ資料を引用しながら、物語と答えを書く。",
     splitTitle: "Claude がすること、コードが決めること",
@@ -63,6 +64,7 @@ const T = dict({
   en: {
     back: "TSUMUGI",
     title: "How it works",
+    more: "In detail",
     lead: "Claude reads, explains, searches and writes. Every yes or no a traveller relies on is checked by code.",
     why: "What needs Claude here: reading vertical brush script in its original form; pulling claims and their exact wording out of Meiji-era English and Japanese sources; judging what is missing and choosing what to search for next; writing the story and the answers sentence by sentence, citing the sources.",
     splitTitle: "What Claude does, what code decides",
@@ -109,8 +111,31 @@ const T = dict({
   },
 });
 
+/** the table at a glance (the full sentences fold below it) — same order as rows */
+const SHORT = {
+  ja: [
+    ["筆文字を読む", "場所を辞書で照合"],
+    ["見どころと漢字を解説", "根拠にはしない"],
+    ["主張を抜き出し、足りないものを探す", "主張を一つずつ検査"],
+    ["あえて任せない", "年表で、あったかを判定"],
+    ["引用しながら書く", "引用をもう一度確かめる"],
+    ["資料だけで答える", "引用が資料にあるか照合"],
+    ["Batch API で一括実行", "正解と比べて採点"],
+  ],
+  en: [
+    ["reads the brush lettering", "matches the place"],
+    ["explains what to look at", "never treated as evidence"],
+    ["pulls claims, finds what is missing", "checks each claim"],
+    ["deliberately not Claude", "decides from the timeline"],
+    ["writes, citing", "re-checks every citation"],
+    ["answers from the sources only", "checks each quote is in them"],
+    ["runs as one Batch job", "scores against the gold"],
+  ],
+} as const;
+
 export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; runs: number; since: string; facts: LandingFacts }) {
   const t = useDict(T);
+  const short = SHORT[useLang()];
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-5 py-10" data-testid="how">
       <header className="flex items-center justify-between gap-6">
@@ -141,15 +166,31 @@ export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; r
             </tr>
           </thead>
           <tbody>
-            {t.rows.map((r) => (
+            {t.rows.map((r, i) => (
               <tr key={r.stage} className="border-t border-rule align-top">
                 <td className="py-3 pr-4 font-serif text-body">{r.stage}</td>
-                <td className="py-3 pr-6 text-paper/90">{r.claude}</td>
-                <td className="py-3 text-paper/75">{r.code}</td>
+                <td className={`py-3 pr-6 font-serif text-body ${i === 3 ? "text-muted" : "text-paper"}`}>{short[i]?.[0] ?? r.claude}</td>
+                <td className="py-3 font-serif text-body text-paper/80">{short[i]?.[1] ?? r.code}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        <details className="mt-3">
+          <summary className="min-h-11 cursor-pointer text-small text-muted hover:text-paper">{t.more}</summary>
+          <dl className="mt-2 grid gap-3 text-small">
+            {t.rows.map((r) => (
+              <div key={r.stage}>
+                <dt className="text-caption text-muted">{r.stage}</dt>
+                <dd className="text-paper/85">
+                  <span className="text-lantern">Claude</span> {r.claude}
+                </dd>
+                <dd className="text-paper/75">
+                  <span className="text-muted">{t.colCode}</span> {r.code}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </details>
       </section>
 
       <section className="border-t border-rule pt-6" data-testid="how-measured">

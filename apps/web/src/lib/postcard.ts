@@ -3,6 +3,7 @@
  * from the photo, ONE sentence of the story that passed the code checks, and the broken thread.
  * Pure: built from the stored events; every number on it is counted here, never typed.
  */
+import { interimSince } from "./time-river";
 export type Bi = { ja: string; en: string };
 type Ev = { type: string; data: unknown };
 
@@ -11,7 +12,8 @@ export type PostcardData = {
   area: Bi | null;
   seal: string | null;
   sentence: { text: string; source: string | null } | null;
-  broken: { year: string; source: string | null } | null;
+  /** interim: the year a temporary structure was put up before this year (then "the permanent …") */
+  broken: { year: string; source: string | null; interim: number | null } | null;
   sceneId: string | null;
   cutout: string | null;
   counts: { sources: number; threads: number; claims: number };
@@ -69,7 +71,16 @@ export function postcardData(events: Ev[], lang: "ja" | "en", story: Sentence[] 
     area: path.at(-1)?.name ?? null,
     seal,
     sentence: s ? { text: s.text, source: sentenceSource ? (titles.get(sentenceSource) ?? sentenceSource) : null } : null,
-    broken: year ? { year, source: absentSource ? (titles.get(absentSource) ?? absentSource) : null } : null,
+    broken: year
+      ? {
+          year,
+          source: absentSource ? (titles.get(absentSource) ?? absentSource) : null,
+          interim: (() => {
+            const tl = events.filter((e) => e.type === "timeline").at(-1)?.data as { events?: unknown[] } | undefined;
+            return tl?.events ? interimSince(tl as never, Number(year)) : null;
+          })(),
+        }
+      : null,
     sceneId: space?.ok && space.scene_id ? space.scene_id : null,
     cutout: null,
     counts: {

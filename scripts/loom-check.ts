@@ -29,6 +29,7 @@ try {
   await page.getByTestId("note-link").waitFor({ timeout: 120_000 });
   // the print may still be over the photo (it holds ~5 s after the visual match): let it step back
   await page.getByTestId("stage-overlay").waitFor({ state: "detached", timeout: 12_000 }).catch(() => {});
+    await page.getByTestId("stage-split").waitFor({ state: "detached", timeout: 12_000 }).catch(() => {});
   await page.waitForTimeout(1500);
   const shot = (n: string) => page.screenshot({ path: path.join(out, `${lang}-${n}.png`) });
   await shot("1-done");

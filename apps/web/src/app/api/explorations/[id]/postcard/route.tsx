@@ -66,8 +66,8 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
   const placeSub = d.place ? (lang === "ja" ? d.place.en : [gloss, d.place.ja].filter(Boolean).join(" · ")) : "";
   const t =
     lang === "ja"
-      ? { broken: (y: string) => `${y}年、${d.place?.ja ?? ""}は、まだなかった`, counts: `資料 ${d.counts.sources} · 採用した主張 ${d.counts.claims} · 糸 ${d.counts.threads}`, by: "Claude が読み、コードが確かめた", seal: "写真から読んだ文字" }
-      : { broken: (y: string) => `In ${y}, ${shortEn || "it"} was gone`, counts: `${d.counts.sources} sources · ${d.counts.claims} claims kept · ${d.counts.threads} threads`, by: "Read by Claude, checked by code", seal: "words read from the photo" };
+      ? { broken: (y: string, permanent: boolean) => `${y}年、${permanent ? "恒久的な" : ""}${d.place?.ja ?? ""}は、まだなかった`, counts: `資料 ${d.counts.sources} · 採用した主張 ${d.counts.claims} · 糸 ${d.counts.threads}`, by: "Claude が読み、コードが確かめた", seal: "写真から読んだ文字" }
+      : { broken: (y: string, permanent: boolean) => `In ${y}, ${permanent ? "the permanent " : ""}${shortEn || "it"} was gone`, counts: `${d.counts.sources} sources · ${d.counts.claims} claims kept · ${d.counts.threads} threads`, by: "Read by Claude, checked by code", seal: "words read from the photo" };
   const cutH = 720;
   const cutW = Math.min(960, cutH * aspect);
 
@@ -108,7 +108,7 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
                 <div style={{ width: 18, height: 4 }} />
                 <div style={{ width: 26, height: 4, background: C.toki }} />
               </div>
-              <span>{t.broken(d.broken.year)}</span>
+              <span>{t.broken(d.broken.year, d.broken.interim !== null)}</span>
             </div>
           )}
           {d.sentence && (

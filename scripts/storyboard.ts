@@ -70,9 +70,9 @@ await shot("5-inside");
 await page.goto(`${base}/how`, { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(1500);
 await shot("6a-how");
-// 6b. the close
-await page.goto(`${base}/`, { waitUntil: "domcontentloaded" });
-await page.waitForTimeout(1200);
+// 6b. the close: the postcard (built from the cached story, no Claude)
+await page.goto(`${base}/api/explorations/${replay}/postcard?lang=${lang}`, { waitUntil: "load" });
+await page.waitForTimeout(800);
 await shot("6b-close");
 console.log(JSON.stringify({ out, fails }, null, 1));
 await browser.close();
