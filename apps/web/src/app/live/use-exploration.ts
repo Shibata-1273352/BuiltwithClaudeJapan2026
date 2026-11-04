@@ -103,7 +103,7 @@ export function useExploration(source: Source) {
       es = new EventSource(url);
       lastAt = performance.now();
       watchdog = setInterval(() => {
-        if (performance.now() - lastAt > STALL_MS) stalled();
+        if (performance.now() - lastAt > (source.kind === "replay" ? STALL_MS : STALL_MS * 2)) stalled();
       }, 2000);
       // a closed stream (the server went away and the browser gave up reconnecting)
       es.onerror = () => {
@@ -214,5 +214,10 @@ export function useExploration(source: Source) {
   const shownAt = (seq: number) => schedule.get(seq) ?? 0;
   const state: LiveState = useMemo(() => fold(visible, shownAt), [visible]); // eslint-disable-line react-hooks/exhaustive-deps
   const settled = (phase === "done" || phase === "failed") && visible.length === events.length;
-  return { state, phase: settled ? phase : phase === "done" || phase === "failed" ? "running" : phase, error, expId, photo, elapsed, reduced, allEvents: events };
+  const [clockScale] = useState(() => {
+    if (source.kind !== "replay" || typeof location === "undefined") return 1;
+    const v = Number(new URLSearchParams(location.search).get("speed") ?? 1);
+    return Number.isFinite(v) ? Math.min(4, Math.max(0.5, v)) : 1;
+  });
+  return { state, phase: settled ? phase : phase === "done" || phase === "failed" ? "running" : phase, error, expId, photo, elapsed, clock: elapsed * clockScale, reduced, allEvents: events };
 }
