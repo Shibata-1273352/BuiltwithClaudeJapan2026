@@ -3,6 +3,7 @@
  * and presenter use the same function, so they always show the same thing. Order-independent
  * (events are keyed by type; lists are kept in seq order) and idempotent (a seq is applied once).
  */
+import { layerOf } from "../thread-layer";
 import type { Sketch } from "../graph-sketch";
 import type { GuideNote } from "@tsumugi/core";
 import type { EventType } from "../dag/event-types";
@@ -139,9 +140,11 @@ export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
     case "names":
       n.names = d;
       break;
-    case "threads":
-      n.threads = ev.data as ThreadRow[];
+    case "threads": {
+      const pred = new Map(n.claims.map((c) => [c.id, c.predicate]));
+      n.threads = (ev.data as ThreadRow[]).map((t) => (t.claimId.startsWith("cl:exist:") ? t : { ...t, layer: pred.has(t.claimId) ? layerOf(pred.get(t.claimId)) : t.layer }));
       break;
+    }
     case "narrative":
       n.narrative = d as LiveState["narrative"];
       break;

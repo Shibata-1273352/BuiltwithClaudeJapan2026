@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -46,7 +47,12 @@ async function River({ searchParams }: { searchParams: Promise<{ entity?: string
   const nameOf = (id: string) => E.get(id)?.name[lang] ?? id;
   return (
     <>
-      <BackLink className="-ml-1 self-start" />
+      <nav className="-ml-1 flex items-center gap-6 self-start" aria-label="TSUMUGI">
+        <BackLink />
+        <Link href="/" className="inline-flex min-h-11 items-center font-serif text-small tracking-[0.3em] text-paper/80 hover:text-paper" data-testid="home-link">
+            TSUMUGI
+          </Link>
+      </nav>
       <h1 className="font-serif text-display">{l.title}</h1>
       <nav className="flex flex-wrap gap-2 text-small" data-testid="time-sites">
         {sites().map((id) => (

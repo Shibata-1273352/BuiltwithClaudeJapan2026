@@ -2,6 +2,7 @@
  * Threads (REQUIREMENTS.md 3, 4.6): one per accepted claim and one per derived existence claim.
  * Code decides the display state; Claude never does.
  */
+import { layerOf } from "../thread-layer";
 import { absenceReason, DISPUTED_WHAT, displayState, type CheckedClaim, type DisplayState, type Entities } from "@tsumugi/core";
 import type { Retrieved } from "./retrieve";
 
@@ -78,7 +79,7 @@ export function claimThreads(claims: CheckedClaim[], E: Entities, _targetId: str
   return claims
     .filter((c) => c.status !== "rejected")
     .map((c) => {
-      const layer: Layer = c.predicate === "named_as" ? "koto" : c.predicate === "destroyed_in" || c.predicate === "rebuilt_in" ? "toki" : "koto";
+      const layer: Layer = layerOf(c.predicate);
       const subj = E.get(c.subject);
       const state = displayState({ derivation: "direct", relations: [c.relation] });
       const src = byPassage.get(c.passage_id);

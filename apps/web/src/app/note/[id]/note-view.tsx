@@ -4,6 +4,7 @@
  * 旅ノート (FR-42, screen 8): the photo and its cut-outs, the story, and for each sentence the claims
  * it cites with the original text, a reference translation and the source ticket (切符).
  */
+import Link from "next/link";
 import { BackLink } from "../../ui/back-link";
 import { PostcardButton } from "../../postcard-button";
 import { useEffect, useState } from "react";
@@ -154,7 +155,12 @@ export function NoteView({ note }: { note: Note }) {
     <article className="flex flex-col gap-14" data-testid="travel-note" lang={lang}>
       <header className="flex flex-wrap items-end justify-between gap-6 border-b border-rule pb-6">
         <div>
-          <BackLink className="-ml-1 mb-2" />
+          <nav className="-ml-1 mb-2 flex items-center gap-6" aria-label="TSUMUGI">
+            <BackLink />
+            <Link href="/" className="inline-flex min-h-11 items-center font-serif text-small tracking-[0.3em] text-paper/80 hover:text-paper" data-testid="home-link">
+            TSUMUGI
+          </Link>
+          </nav>
           <p className="label">
             {t.title}
             {path.length > 1 ? (lang === "en" ? ` / ${path.slice(0, -1).join(" / ")}` : ` ／ ${path.slice(0, -1).join(" ／ ")}`) : ""}

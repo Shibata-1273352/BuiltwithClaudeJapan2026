@@ -130,6 +130,23 @@ html[data-present] .stage-grid[data-beat="broken"] [data-testid="claude-searched
     transition: none;
   }
 }
+/* 組紐: the strands draw once */
+.braid-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: braid-draw 700ms ease-out forwards;
+}
+@keyframes braid-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .braid-draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
 html[data-present] .present-hide {
   display: none !important;
 }
