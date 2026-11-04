@@ -9,7 +9,7 @@ import { hasPrintRegions, NamesLoom } from "./names-loom";
 import { plainLabel } from "./text-column";
 import { MuteToggle } from "./mute-toggle";
 import Link from "next/link";
-import { domMax, LazyMotion, LayoutGroup, MotionConfig } from "motion/react";
+import { AnimatePresence, domMax, LazyMotion, LayoutGroup, MotionConfig } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sourceCards } from "@/lib/live/state";
 import { ExplorationView } from "../exploration-view";
@@ -38,6 +38,7 @@ import { dict, LangToggle, useDict, useLang } from "../i18n";
 const T = dict({
   ja: {
     replayFallback: "記録を再生する（録画であることを表示します）",
+    restart: "最初から再生",
     home: "はじめに戻る",
     homeAria: "TSUMUGI はじめに戻る",
     similar: "提灯から提灯へ・似た図像",
@@ -61,6 +62,7 @@ const T = dict({
   },
   en: {
     replayFallback: "Play the recording (shown as a recording)",
+    restart: "Play from the start",
     home: "Back to the start",
     homeAria: "TSUMUGI, back to the start",
     similar: "Lantern to lantern · a similar picture",
@@ -90,17 +92,24 @@ function usePresent() {
   useEffect(() => {
     const html = document.documentElement;
     if (new URLSearchParams(location.search).get("present") === "1") html.dataset.present = "1";
+    const remember = () => {
+      try {
+        if (html.dataset.present) sessionStorage.setItem("tsumugi_present", "1");
+        else sessionStorage.removeItem("tsumugi_present");
+      } catch {}
+    };
+    remember();
     const on = (e: KeyboardEvent) => {
       if (e.key !== "p" && e.key !== "P") return;
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (html.dataset.present) delete html.dataset.present;
       else html.dataset.present = "1";
+      remember();
     };
     window.addEventListener("keydown", on);
     return () => {
       window.removeEventListener("keydown", on);
-      delete html.dataset.present;
     };
   }, []);
 }
@@ -133,6 +142,16 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const [holdBroken] = useState(() => typeof location !== "undefined" && new URLSearchParams(location.search).get("hold") === "broken");
   const [scrubbedOnce, setScrubbedOnce] = useState(false);
   const timelineRef = useRef<RiverData | null>(null);
+  // ?y=: back from the print or the note, the stage returns to the year it was at
+  const [yFromUrl] = useState(() => (typeof location === "undefined" ? null : Number(new URLSearchParams(location.search).get("y")) || null));
+  useEffect(() => {
+    if (!yFromUrl || !s.timeline) return;
+    const t = setTimeout(() => {
+      setScrub(yFromUrl);
+      if (yearState(s.timeline as RiverData, yFromUrl).state === "absent") setScrubbedOnce(true);
+    }, 0);
+    return () => clearTimeout(t);
+  }, [yFromUrl, s.timeline]);
   useEffect(() => {
     timelineRef.current = (s.timeline as RiverData) ?? null;
   }, [s.timeline]);
@@ -182,6 +201,11 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   }, [s.timeline, scene]);
   const onScrub = useCallback((y: number) => {
     setScrub(y);
+    try {
+      const u = new URL(location.href);
+      u.searchParams.set("y", String(y));
+      history.replaceState(history.state, "", u);
+    } catch {}
     if (timelineRef.current && yearState(timelineRef.current, y).state === "absent") setScrubbedOnce(true);
     const d = Math.floor(y / 10);
     if (lastDecade.current !== d) {
@@ -286,6 +310,22 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       <ButtonLink key="space" variant="quiet" href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}${typeof document !== "undefined" && document.documentElement.dataset.present ? `${s.space.aligned ? "&" : "?"}3d=1` : ""}`} data-testid="space-link">
         {s.space.aligned ? t.intoPrint : t.space}
       </ButtonLink>
+    ) : null,
+    // a recording can be played again from the start (a retake, or a visitor watching twice)
+    replay && finished ? (
+      <Button
+        key="restart"
+        variant="quiet"
+        onClick={() => {
+          const u = new URL(location.href);
+          u.searchParams.delete("at");
+          u.searchParams.delete("y");
+          location.replace(u);
+        }}
+        data-testid="restart-replay"
+      >
+        {t.restart}
+      </Button>
     ) : null,
     into && !s.space?.aligned && finished ? (
       <ButtonLink key="into" variant="quiet" href={into}>
@@ -414,16 +454,17 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                   <YearAxis s={s} cards={cards} axisRef={axisRef} scrub={scrub} onScrub={finished && s.timeline ? onScrub : undefined} scrubLabel={ys?.label[lang]} />
                 </div>
                 <div className={`order-3 min-h-0 lg:order-none ${s.place === null ? "hidden" : ""}`}>
-                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} holdBroken={holdBroken && !scrubbedOnce} />
+                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} holdBroken={holdBroken && !scrubbedOnce} onYear={finished && s.timeline ? onScrub : undefined} />
                 </div>
-                {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
+                <AnimatePresence>
+                {panel === "backstage" && <Backstage key="backstage" s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
-                  <StagePanel title={t.timeTitle(s.place?.path[0]?.name[lang] ?? "")} onClose={() => setPanel(null)} testid="time-panel" wide>
+                  <StagePanel key="time" title={t.timeTitle(s.place?.path[0]?.name[lang] ?? "")} onClose={() => setPanel(null)} testid="time-panel" wide>
                     <TimeTurn data={s.timeline as RiverData} sceneId={s.space?.scene_id ?? null} scene={scene as never} photo={photoUrl} cards={cards} readings={s.see?.elements ?? []} />
                   </StagePanel>
                 )}
                 {panel === "names" && s.names != null && (
-                  <StagePanel title={t.namesTitle} onClose={() => setPanel(null)} testid="names-panel" wide>
+                  <StagePanel key="names" title={t.namesTitle} onClose={() => setPanel(null)} testid="names-panel" wide>
                     {hasPrintRegions((scene as { alignment?: { artifact?: string } } | null)?.alignment?.artifact) ? (
                       <NamesLoom names={s.names as NamesData} artifact={(scene as { alignment: { artifact: string } }).alignment.artifact} />
                     ) : (
@@ -431,6 +472,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     )}
                   </StagePanel>
                 )}
+                </AnimatePresence>
                 <RopeLayer stageRef={stageRef} anchors={anchors} axisRef={axisRef} specs={specs} since={elapsed} hot={hot} reduced={reduced} pluckRef={pluckRef} />
               </div>
             )}

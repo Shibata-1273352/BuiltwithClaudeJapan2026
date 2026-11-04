@@ -201,7 +201,9 @@ export function useExploration(source: Source) {
   }, [source]);
 
   // a clock for timers and beats (10 Hz is enough; stops when everything has been shown)
-  const schedule = useMemo(() => scheduleBeats(arrivals, { reduced }), [arrivals, reduced]);
+  // coming back to a finished run (Back from the print or the note): its end at once, no beats replayed
+  const atOnce = source.kind === "attach" || (source.kind === "replay" && Boolean(source.instant));
+  const schedule = useMemo(() => scheduleBeats(arrivals, { reduced: reduced || atOnce }), [arrivals, reduced, atOnce]);
   const lastBeat = useMemo(() => Math.max(0, ...schedule.values()), [schedule]);
   const elapsed = Math.max(0, now - t0State);
   useEffect(() => {

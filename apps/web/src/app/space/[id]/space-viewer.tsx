@@ -12,7 +12,7 @@ const L = {
     inside: "絵の中",
     print: "歌川広重《名所江戸百景 浅草金龍山》1856",
     how: "奥行きは推定",
-    back: "今へ戻る",
+    back: "絵から出る",
     state: { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" },
     title: "間（ま）",
     sub: "写真を SAM 3 と深度で層に分け、広重の絵と重ねる",
@@ -36,7 +36,7 @@ const L = {
     inside: "Inside the print",
     print: "Utagawa Hiroshige, Kinryūzan Temple in Asakusa (1856)",
     how: "depth: an estimate",
-    back: "Back to now",
+    back: "Step out of the print",
     state: { present: "stood", absent: "absent", unknown: "to be checked", withheld: "withheld" },
     title: "Ma — the space between",
     sub: "The photo split into layers by SAM 3 and depth, laid over Hiroshige's print",
@@ -345,7 +345,7 @@ export function SpaceViewer({
       setInside(true);
       setYear(1856);
       setMoving(performance.now());
-    }, 1800);
+    }, 700);
     return () => clearTimeout(t);
   }, [autoEnter, align]);
 

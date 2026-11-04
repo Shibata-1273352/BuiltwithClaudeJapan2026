@@ -43,7 +43,7 @@ async function Scene({ params, searchParams }: { params: Promise<{ id: string }>
 export default function SpacePage(props: PageProps<"/space/[id]">) {
   return (
     <main className="flex flex-1 flex-col">
-      <Suspense fallback={<p className="p-8 text-muted">読み込み中…</p>}>
+      <Suspense fallback={<div className="flex-1" />}>
         <Scene params={props.params} searchParams={props.searchParams as Promise<{ enter?: string; "2d"?: string; "3d"?: string }>} />
       </Suspense>
     </main>

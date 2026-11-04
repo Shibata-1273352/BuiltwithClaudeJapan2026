@@ -398,9 +398,9 @@ export function TimeTurn({
           ))}
         </div>
         {events.filter((e, i) => i === 0 || e.year - events[i - 1].year >= 8).map((e) => (
-          <span key={e.id} className="absolute top-11 -translate-x-1/2 text-caption whitespace-nowrap text-muted tabular-nums" style={{ left: pos(e.year) }}>
+          <button key={e.id} type="button" onClick={() => setYear(e.year)} className="absolute top-9 min-h-11 -translate-x-1/2 px-1 text-caption whitespace-nowrap text-muted tabular-nums hover:text-paper" style={{ left: pos(e.year) }} data-testid="river-year">
             {e.year}
-          </span>
+          </button>
         ))}
         {writers.map((w) => (
           <span key={w.source} className="absolute top-5 size-2 -translate-x-1/2 rounded-sm bg-koto" style={{ left: pos(w.year) }} title={`${w.title} ${w.year}`} />
