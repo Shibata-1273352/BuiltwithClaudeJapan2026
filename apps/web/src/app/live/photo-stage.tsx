@@ -18,7 +18,8 @@ type Scene = {
   alignment?: { ok: boolean; overlay?: string; artifact?: string };
 };
 
-const MASK_COLOR: Record<string, string> = { lantern: "var(--lantern)", lantern_base: "var(--thread-toki)", gate: "var(--thread-ba)" };
+// an object's outline is the photo anchor (lantern), not a thread: no thread colour here
+const MASK_COLOR: Record<string, string> = {};
 
 export function useScene(sceneId: string | undefined) {
   const [scene, setScene] = useState<{ id: string; data: Scene } | null>(null);
@@ -203,7 +204,7 @@ export function PhotoStage({
               top: `${y1 * 100}%`,
               width: `${(x2 - x1) * 100}%`,
               height: `${(y2 - y1) * 100}%`,
-              background: MASK_COLOR[k] ?? "var(--thread-koto)",
+              background: MASK_COLOR[k] ?? "var(--lantern)",
               WebkitMaskImage: url,
               maskImage: url,
               WebkitMaskSize: "100% 100%",

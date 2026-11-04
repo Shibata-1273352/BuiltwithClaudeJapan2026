@@ -224,19 +224,22 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
     // ink: the photo, through the source's year, to its evidence card
     if (mainObj && s.at.threads !== undefined)
       cards
-        .filter((c) => c.state)
+        .filter((c) => c.plies.length)
         .forEach((c, i) =>
-          out.push({
-            id: `ink:${c.sourceId}`,
-            from: `obj:${mainObj.key}`,
-            to: `card:${c.sourceId}`,
-            kind: "ink",
-            color: LAYER_COLOR[c.layer ?? "koto"],
-            year: c.year,
-            cut: c.state === "absent" && !(holdBroken && !scrubbedOnce),
-            dashed: c.state === "pending",
-            at: s.at.threads! + i * 140,
-          }),
+          c.plies.forEach((p, k) =>
+            out.push({
+              id: `ink:${c.sourceId}:${p.layer}`,
+              from: `obj:${mainObj.key}`,
+              to: `card:${c.sourceId}`,
+              kind: "ink",
+              color: LAYER_COLOR[p.layer],
+              year: c.year,
+              cut: p.state === "absent" && !(holdBroken && !scrubbedOnce),
+              dashed: p.state === "pending",
+              offset: (k - (c.plies.length - 1) / 2) * 3,
+              at: s.at.threads! + i * 140 + k * 60,
+            }),
+          ),
         );
     // ink: an answer to each source it cites (checked by code), through the source's year
     asks.forEach((a, i) => {

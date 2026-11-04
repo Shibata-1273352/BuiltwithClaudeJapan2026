@@ -353,7 +353,7 @@ export function ExplorationView({ jpeg, useLocation = false, replay, attach }: {
   return (
     <section className="flex w-full flex-col gap-6" data-testid="exploration">
       {replay && (
-        <p role="status" className="sticky top-0 z-10 -mx-4 -mt-4 rounded-t-lg bg-ba px-4 py-2 text-small font-bold text-paper" data-testid="replay-banner">
+        <p role="status" className="sticky top-0 z-10 -mx-4 -mt-4 border-l-2 border-lantern bg-night px-4 py-2 text-small font-bold text-paper" data-testid="replay-banner">
           {t.replayBanner(new Date(replay.recordedAt).toLocaleString(t.dateLocale, { timeZone: "Asia/Tokyo" }))}
         </p>
       )}

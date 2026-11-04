@@ -210,15 +210,19 @@ export type SourceCard = {
   /** the strongest thread state for this source (a broken thread wins) and its layer */
   state: string | null;
   layer: ThreadRow["layer"] | null;
+  /** one ply per question this source answers (時・場・言・間 order), each with its strongest state */
+  plies: { layer: ThreadRow["layer"]; state: string }[];
   firstSeq: number;
 };
+
+const PLY_ORDER: ThreadRow["layer"][] = ["toki", "ba", "koto", "ma"];
 
 /** One card per source, in the order the sources were found (6.2 evidence column). */
 export function sourceCards(s: LiveState): SourceCard[] {
   const by = new Map<string, SourceCard>();
   for (const c of s.candidates) {
     if (by.has(c.sourceId)) continue;
-    by.set(c.sourceId, { sourceId: c.sourceId, title: c.sourceTitle, lang: c.lang, year: c.year ?? null, yearKind: c.yearKind ?? (c.year ? "source_time" : null), excerpt: c.text, accepted: 0, downgraded: 0, rejected: 0, existence: null, threads: [], state: null, layer: null, firstSeq: c.seq });
+    by.set(c.sourceId, { sourceId: c.sourceId, title: c.sourceTitle, lang: c.lang, year: c.year ?? null, yearKind: c.yearKind ?? (c.year ? "source_time" : null), excerpt: c.text, accepted: 0, downgraded: 0, rejected: 0, existence: null, threads: [], state: null, layer: null, plies: [], firstSeq: c.seq });
   }
   for (const cl of s.claims) {
     const card = cl.source_id ? by.get(cl.source_id) : undefined;
@@ -251,6 +255,10 @@ export function sourceCards(s: LiveState): SourceCard[] {
       card.state = t.state;
       card.layer = t.layer;
     }
+    const ply = card.plies.find((p) => p.layer === t.layer);
+    if (!ply) card.plies.push({ layer: t.layer, state: t.state });
+    else if ((STATE_RANK[t.state] ?? 0) > (STATE_RANK[ply.state] ?? 0)) ply.state = t.state;
   }
+  for (const card of by.values()) card.plies.sort((a, b) => PLY_ORDER.indexOf(a.layer) - PLY_ORDER.indexOf(b.layer));
   return [...by.values()].sort((a, b) => a.firstSeq - b.firstSeq);
 }

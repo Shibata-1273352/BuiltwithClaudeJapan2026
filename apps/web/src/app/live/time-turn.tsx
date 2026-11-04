@@ -332,9 +332,8 @@ export function TimeTurn({
             <div className="mt-2 grid grid-cols-[1.5rem_1fr] gap-x-3">
               {/* two threads, one per language, meeting in one knot (musubi) */}
               <svg viewBox="0 0 24 120" className="row-span-2 h-full w-6" aria-hidden preserveAspectRatio="none">
-                <m.path d="M4 8 C 4 50, 12 56, 12 64" stroke="var(--thread-koto)" strokeWidth="2" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6 }} />
-                <m.path d="M20 112 C 20 74, 12 70, 12 64" stroke="var(--thread-koto)" strokeWidth="2" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6 }} />
-                <m.circle cx="12" cy="64" r="3.5" fill="var(--thread-koto)" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.55, duration: 0.15 }} />
+                <m.path d="M4 8 C 4 40, 20 50, 16 60 C 12 70, 4 62, 8 56 C 12 50, 20 58, 12 66" stroke="var(--thread-toki)" strokeWidth="2" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6 }} />
+                <m.path d="M20 112 C 20 84, 4 76, 8 68 C 12 60, 20 66, 16 72 C 12 78, 4 70, 12 62" stroke="var(--thread-toki)" strokeWidth="2" strokeOpacity="0.75" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6, delay: 0.06 }} />
               </svg>
               <p className="font-serif text-body" lang="ja">
                 「{knot.ja.text}」<span className="ml-1 text-caption text-muted">— {knot.ja.title}</span>

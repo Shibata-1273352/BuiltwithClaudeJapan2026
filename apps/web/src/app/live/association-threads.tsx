@@ -30,7 +30,7 @@ export function AssociationThreads({ s }: { s: LiveState }) {
                   <span key={p.id} className="inline-flex items-center gap-1">
                     <span className={p.label === "Evidence" ? "text-paper" : ""}>{p.text}</span>
                     {j < arr.length - 1 && (
-                      <svg width="18" height="6" aria-hidden className="text-ma">
+                      <svg width="18" height="6" aria-hidden className="text-muted">
                         <path d="M0 3 H18" stroke="currentColor" strokeDasharray="2 3" />
                       </svg>
                     )}
