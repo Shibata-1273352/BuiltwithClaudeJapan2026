@@ -43,7 +43,7 @@ export function LoomLegend() {
   return (
     <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-muted" data-testid="pencil-legend">
       {l.q.map((q) => (
-        <span key={q.k} className="inline-flex items-center gap-1.5">
+        <span key={q.k} className="present-hide inline-flex items-center gap-1.5">
           <svg width="14" height="4" aria-hidden>
             <path d="M0 2 H14" stroke={q.c} strokeWidth="2" />
           </svg>
@@ -56,13 +56,13 @@ export function LoomLegend() {
         </svg>
         {l.ink} · {l.cut}
       </span>
-      <span className="inline-flex items-center gap-1.5">
+      <span className="present-hide inline-flex items-center gap-1.5">
         <svg width="20" height="4" aria-hidden>
           <path d="M0 2 H20" stroke="var(--paper)" strokeOpacity="0.55" strokeWidth="1" />
         </svg>
         <span className="text-paper">{l.guide}</span> {l.guideMeans}
       </span>
-      <span className="inline-flex items-center gap-1.5">
+      <span className="present-hide inline-flex items-center gap-1.5">
         <Pencil>{l.pencil}</Pencil> {l.pencilMeans}
       </span>
       <span>{l.tail}</span>

@@ -13,6 +13,23 @@ const L = {
     how: "版画の奥行きを推定して開いています（推定）。ポインタで覗き込めます。",
     back: "今へ戻る",
     state: { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" },
+    title: "間（ま）",
+    sub: "写真を SAM 3 と深度で層に分け、広重の絵と重ねる",
+    enter: "絵の中へ ── 広重 1856",
+    flat: "平面に戻す",
+    split: "層に割る",
+    people: "人の層",
+    peopleAria: "人の層の濃さ",
+    peopleNote: "人を薄くすると、その下は周囲から補った背景です（推定）。",
+    time: "時をめくる",
+    yearAria: "年を選ぶ",
+    overlay: "重ねる ── 歌川広重《浅草金龍山》1856",
+    overlayAria: "広重の絵を重ねる割合",
+    auto: "1866年の焼失より前は、広重が描いた門の時代として自動で重ねています。",
+    anchor: "大提灯の下端と左端で位置を合わせています。",
+    layers: "層の一覧",
+    layer: { foreground: "前景", midground: "中景", background: "背景" } as Record<string, string>,
+    name: { lantern: "大提灯", lantern_base: "提灯の金具", gate: "門", people: "人" } as Record<string, string>,
   },
   en: {
     inside: "Inside the print",
@@ -20,6 +37,23 @@ const L = {
     how: "The print opens by its estimated depth (an estimate). Move the pointer to look around.",
     back: "Back to now",
     state: { present: "stood", absent: "absent", unknown: "to be checked", withheld: "withheld" },
+    title: "Ma — the space between",
+    sub: "The photo split into layers by SAM 3 and depth, laid over Hiroshige's print",
+    enter: "Into the print — Hiroshige 1856",
+    flat: "Flatten",
+    split: "Split into layers",
+    people: "People layer",
+    peopleAria: "Opacity of the people layer",
+    peopleNote: "Under the people, the background is filled in from around them (an estimate).",
+    time: "Turn the years",
+    yearAria: "Choose a year",
+    overlay: "Lay over — Utagawa Hiroshige, Kinryūzan Temple in Asakusa (1856)",
+    overlayAria: "How much of Hiroshige's print to lay over",
+    auto: "Before the 1866 fire, the gate Hiroshige drew stood here, so the print is laid over automatically.",
+    anchor: "Aligned at the bottom and left edge of the great lantern.",
+    layers: "Layers",
+    layer: { foreground: "foreground", midground: "midground", background: "background" } as Record<string, string>,
+    name: { lantern: "Great lantern", lantern_base: "Lantern base", gate: "Gate", people: "People" } as Record<string, string>,
   },
 } as const;
 const LAYER_JA: Record<string, string> = { lantern: "大提灯", lantern_base: "提灯の金具", gate: "門", people: "人" };
@@ -224,7 +258,6 @@ function Flat2D({ photo, art, rect, overlay, reason, inside = false, onTry3d }: 
 /** Layers that belong to the permanent gate; they follow the time slider (FR-56). */
 const GATE_LAYERS = new Set(["lantern", "lantern_base", "gate"]);
 const GATE_OPACITY = { present: 1, absent: 0.06, unknown: 0.35, withheld: 0.35 } as const;
-const STATE_JA = { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" } as const;
 
 export function SpaceViewer({
   id,
@@ -418,18 +451,18 @@ export function SpaceViewer({
       {!immersive && (
       <aside className="flex w-full flex-col gap-7 px-6 py-10 lg:w-[24rem] lg:pr-10">
         <BackLink className="-ml-1 mb-1" />
-        <h1 className="font-serif text-title">間（ま）</h1>
-        <p className="-mt-4 text-caption text-muted">写真を SAM 3 と深度で層に分け、広重の絵と重ねる</p>
+        <h1 className="font-serif text-title">{l.title}</h1>
+        <p className="-mt-4 text-caption text-muted">{l.sub}</p>
         {/* 3D-only controls are hidden in the 2D view (FR-37) */}
         {!flat && (
           <div className="flex flex-wrap gap-2">
             {align && (
               <Button variant="primary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={() => go(!inside)}>
-                {inside ? "今へ戻る" : "絵の中へ ── 広重 1856"}
+                {inside ? l.back : l.enter}
               </Button>
             )}
             <Button variant="quiet" onClick={() => setSplit(split ? 0 : performance.now())}>
-              {split ? "平面に戻す" : "層に割る"}
+              {split ? l.flat : l.split}
             </Button>
           </div>
         )}
@@ -437,7 +470,7 @@ export function SpaceViewer({
         {hasPeople && !flat && (
           <label className="flex flex-col gap-2" data-testid="space-people">
             <span className="flex items-baseline justify-between">
-              <span>人の層</span>
+              <span>{l.people}</span>
               <span className="text-small text-muted tabular-nums">{Math.round(people * 100)}%</span>
             </span>
             <input
@@ -448,17 +481,17 @@ export function SpaceViewer({
               value={people}
               onChange={(e) => setPeople(Number(e.target.value))}
               className="min-h-11 accent-[var(--thread-ma)]"
-              aria-label="人の層の濃さ"
+              aria-label={l.peopleAria}
               data-testid="people-slider"
             />
-            <span className="text-caption text-muted">人を薄くすると、その下は周囲から補った背景です（推定）。</span>
+            <span className="text-caption text-muted">{l.peopleNote}</span>
           </label>
         )}
 
         {timeline && ys && (
           <label className="flex flex-col gap-2" data-testid="space-time">
             <span className="flex items-baseline justify-between">
-              <span className="label">時をめくる</span>
+              <span className="label">{l.time}</span>
               <span className="font-serif text-title tabular-nums">{year}</span>
             </span>
             <input
@@ -469,7 +502,7 @@ export function SpaceViewer({
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
               className="min-h-11 accent-[var(--thread-toki)]"
-              aria-label="年を選ぶ"
+              aria-label={l.yearAria}
               data-testid="space-year"
             />
             <span className="flex flex-wrap gap-2">
@@ -480,10 +513,10 @@ export function SpaceViewer({
               ))}
             </span>
             <span className="font-serif text-lead" data-testid="space-year-state" data-state={ys.state}>
-              {ys.label.ja}
+              {ys.label[lang]}
               <span className="ml-2 align-middle font-sans">
                 <Tag tone={ys.state === "present" ? "toki" : "muted"} dashed={ys.state !== "present"}>
-                  {STATE_JA[ys.state]}
+                  {l.state[ys.state]}
                 </Tag>
               </span>
             </span>
@@ -492,7 +525,7 @@ export function SpaceViewer({
 
         {align && (
           <label className="flex flex-col gap-2">
-            <span className="label">重ねる ── 歌川広重《浅草金龍山》1856</span>
+            <span className="label">{l.overlay}</span>
             <input
               type="range"
               min={0}
@@ -501,26 +534,26 @@ export function SpaceViewer({
               value={overlay}
               onChange={(e) => setOverlay(Number(e.target.value))}
               className="min-h-11 accent-[var(--thread-toki)]"
-              aria-label="広重の絵を重ねる割合"
+              aria-label={l.overlayAria}
             />
             <span className="text-small text-muted">
-              {overlayBase > overlay ? "1866年の焼失より前は、広重が描いた門の時代として自動で重ねています。" : ""}
-              大提灯の下端と左端で位置を合わせています。
+              {overlayBase > overlay ? l.auto : ""}
+              {l.anchor}
             </span>
           </label>
         )}
 
         {/* 6.4: same content as a list */}
         <section>
-          <h2 className="label mb-2">層の一覧</h2>
+          <h2 className="label mb-2">{l.layers}</h2>
           <ul className="flex flex-col gap-1 text-small">
             {elements
               .slice()
               .reverse()
               .map(([key, el]) => (
                 <li key={key} className="flex justify-between gap-4">
-                  <span>{LAYER_JA[key] ?? key}</span>
-                  <span className="text-muted">{LAYER_LABEL[el.layer]}</span>
+                  <span>{l.name[key] ?? LAYER_JA[key] ?? key}</span>
+                  <span className="text-muted">{l.layer[el.layer] ?? LAYER_LABEL[el.layer]}</span>
                 </li>
               ))}
           </ul>

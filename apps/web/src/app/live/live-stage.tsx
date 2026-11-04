@@ -107,7 +107,7 @@ function usePresent() {
 
 
 export function LiveStage({ source, demoReplay, onExit }: { source: Source; demoReplay?: string | null; onExit?: () => void }) {
-  const { state: s, phase, error, expId, photo, elapsed, reduced } = useExploration(source);
+  const { state: s, phase, error, expId, photo, elapsed, clock, reduced } = useExploration(source);
   const [view, setView] = useState<"stage" | "list">("stage");
   const [hot, setHot] = useState<string | null>(null);
   const [overlayOn, setOverlayOn] = useState(false);
@@ -129,6 +129,13 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const pluckRef = useRef<(objKey: string) => number>(() => 0);
   const [selectedObj, setSelectedObj] = useState<string | null>(null);
   const [scrub, setScrub] = useState<number | null>(null);
+  // ?hold=broken (recording the video): 1878 is revealed when the years are turned, not before
+  const [holdBroken] = useState(() => typeof location !== "undefined" && new URLSearchParams(location.search).get("hold") === "broken");
+  const [scrubbedOnce, setScrubbedOnce] = useState(false);
+  const timelineRef = useRef<RiverData | null>(null);
+  useEffect(() => {
+    timelineRef.current = (s.timeline as RiverData) ?? null;
+  }, [s.timeline]);
   const lang = useLang();
   const t = useDict(T);
   const lastDecade = useRef<number | null>(null);
@@ -175,6 +182,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   }, [s.timeline, scene]);
   const onScrub = useCallback((y: number) => {
     setScrub(y);
+    if (timelineRef.current && yearState(timelineRef.current, y).state === "absent") setScrubbedOnce(true);
     const d = Math.floor(y / 10);
     if (lastDecade.current !== d) {
       lastDecade.current = d;
@@ -201,7 +209,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
             kind: "ink",
             color: LAYER_COLOR[c.layer ?? "koto"],
             year: c.year,
-            cut: c.state === "absent",
+            cut: c.state === "absent" && !(holdBroken && !scrubbedOnce),
             dashed: c.state === "pending",
             at: s.at.threads! + i * 140,
           }),
@@ -215,7 +223,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       });
     });
     return out;
-  }, [s.guide, s.at.guide, s.at.threads, objects, mainObj, cards, asks]);
+  }, [s.guide, s.at.guide, s.at.threads, objects, mainObj, cards, asks, holdBroken, scrubbedOnce]);
   const finished = phase === "done";
   const runLang = s.narrative?.lang;
   const [story, setStory] = useState<{ lang: "ja" | "en"; sentences: { text: string; claim_ids: string[]; assertion_type: string }[] } | null>(null);
@@ -275,7 +283,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       </Button>
     ) : null,
     finished && s.space?.ok && s.space.url && (s.space.elements?.length ?? 0) > 0 ? (
-      <ButtonLink key="space" variant="quiet" href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}`} data-testid="space-link">
+      <ButtonLink key="space" variant="quiet" href={`${s.space.url}${s.space.aligned ? "?enter=1" : ""}${typeof document !== "undefined" && document.documentElement.dataset.present ? `${s.space.aligned ? "&" : "?"}3d=1` : ""}`} data-testid="space-link">
         {s.space.aligned ? t.intoPrint : t.space}
       </ButtonLink>
     ) : null,
@@ -307,7 +315,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <Link href="/" onClick={onExit} className="font-serif text-lead tracking-[0.3em]" aria-label={t.homeAria}>
                   TSUMUGI
                 </Link>
-                <StepRail s={s} elapsed={elapsed} finished={finished} />
+                <StepRail s={s} elapsed={clock} finished={finished} />
               </div>
               <div className="flex items-baseline gap-1">
                 <Button variant="quiet" onClick={() => toggle("backstage")} aria-expanded={panel === "backstage"} data-testid="backstage-toggle" disabled={s.calls.length === 0}>
@@ -366,6 +374,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     actions={actions}
                     guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} onAsk={finished && expId && s.place ? onAsk : undefined} />}
                     story={storyShown}
+                    holdBroken={holdBroken && scrub === null && !scrubbedOnce}
                     world={finished && s.place?.entity ? <WorldCard entity={s.place.entity} sourceIds={sourceIds} titles={titles} /> : null}
                     guideFocus={
                       <>
@@ -405,7 +414,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                   <YearAxis s={s} cards={cards} axisRef={axisRef} scrub={scrub} onScrub={finished && s.timeline ? onScrub : undefined} scrubLabel={ys?.label[lang]} />
                 </div>
                 <div className={`order-3 min-h-0 lg:order-none ${s.place === null ? "hidden" : ""}`}>
-                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} />
+                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} holdBroken={holdBroken && !scrubbedOnce} />
                 </div>
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (
@@ -427,7 +436,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
             )}
 
             <footer className="flex flex-wrap items-end justify-between gap-4 border-t border-rule pt-4">
-              <ResultStrip s={s} elapsed={elapsed} />
+              <ResultStrip s={s} elapsed={clock} />
               <LoomLegend />
             </footer>
           </main>

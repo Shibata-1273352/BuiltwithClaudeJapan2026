@@ -9,6 +9,11 @@ export function SampleStage({ demoReplay }: { demoReplay: string | null }) {
   return <LiveStage source={source} demoReplay={demoReplay} />;
 }
 
+export function AttachStage({ explorationId, photo, demoReplay }: { explorationId: string; photo: string; demoReplay: string | null }) {
+  const [source] = useState<Source>(() => ({ kind: "attach", explorationId, photo }));
+  return <LiveStage source={source} demoReplay={demoReplay} />;
+}
+
 export function UploadStage({ jpeg, useLocation, onExit }: { jpeg: Blob; useLocation: boolean; onExit: () => void }) {
   const [source] = useState<Source>(() => ({ kind: "upload", jpeg, useLocation }));
   return <LiveStage source={source} onExit={onExit} />;

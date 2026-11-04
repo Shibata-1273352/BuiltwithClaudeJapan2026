@@ -24,7 +24,7 @@ try {
       { name: "tsumugi_lang", value: lang, domain: u.hostname, path: "/" },
     ]);
     const page = await ctx.newPage();
-    await page.goto(`${base}/replay/${id}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${base}/replay/${id}?hold=broken`, { waitUntil: "domcontentloaded" }); // the hero does not give away 1878
     await page.getByTestId("note-link").waitFor({ timeout: 120_000 });
     await page.getByTestId("stage-overlay").waitFor({ state: "detached", timeout: 12_000 }).catch(() => {});
     await page.waitForTimeout(1200);

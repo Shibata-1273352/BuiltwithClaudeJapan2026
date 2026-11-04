@@ -30,6 +30,8 @@ const L = dict({
     ask: "聞く",
     asking: "Claude が資料を読んでいます",
     none: "今回の資料には書かれていません。",
+    noCite: "（引用なし）",
+    quotes: "引いた原文（コードが今回の資料にあることを確かめた）",
     refused: "この質問には答えられません。",
     error: "答えを受け取れませんでした。",
     limit: "質問の上限に達しました（1時間に10問）。",
@@ -42,6 +44,8 @@ const L = dict({
     ask: "Ask",
     asking: "Claude is reading the sources",
     none: "This is not in the sources.",
+    noCite: "(no citation)",
+    quotes: "The original words it cites (code checked they are in this run's sources)",
     refused: "This question cannot be answered.",
     error: "No answer came back.",
     limit: "Question limit reached (10 an hour).",
@@ -91,23 +95,30 @@ export function AskPanel({ items, onAsk, register, disabled }: { items: AskItem[
                 {it.segments!.map((sg, j) => (
                   <span key={j} className={sg.cites.length ? "text-paper" : "text-paper/60"}>
                     {sg.text}
-                    {sg.cites.length > 0 && <Cites cites={sg.cites} order={orderOf(it.segments!)} />}
+                    {sg.cites.length > 0 ? <Cites cites={sg.cites} order={orderOf(it.segments!)} /> : sg.text.trim() ? <span className="ml-1 font-sans text-caption text-muted">{l.noCite}</span> : null}
                   </span>
                 ))}
               </p>
             )}
             {it.status === "done" && it.ok && (
-              <ol className="mt-1 flex flex-col text-caption text-muted">
-                {[...orderOf(it.segments!).entries()].map(([sid, n]) => {
-                  const c = it.segments!.flatMap((x) => x.cites).find((x) => x.sourceId === sid)!;
-                  return (
-                    <li key={sid}>
-                      {n}. {c.title}
-                      {c.year ? ` (${c.year})` : ""}
-                    </li>
-                  );
-                })}
-              </ol>
+              <div className="mt-2" data-testid="ask-quotes">
+                <p className="text-caption text-muted">{l.quotes}</p>
+                <ol className="mt-1 flex flex-col gap-1.5">
+                  {[...orderOf(it.segments!).entries()].map(([sid, n]) => {
+                    const c = it.segments!.flatMap((x) => x.cites).find((x) => x.sourceId === sid)!;
+                    return (
+                      <li key={sid} className="text-small">
+                        <span className="text-caption text-muted tabular-nums">{n}. </span>
+                        <span className="font-serif text-paper/85">“{c.quote.length > 140 ? `${c.quote.slice(0, 140)}…` : c.quote}”</span>
+                        <span className="ml-1 text-caption text-muted">
+                          — {c.title}
+                          {c.year ? ` (${c.year})` : ""}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
             )}
             {it.status === "done" && it.elapsedMs !== undefined && <p className="mt-1 text-caption text-muted tabular-nums">Claude · {l.meta((it.elapsedMs / 1000).toFixed(1), (it.costUsd ?? 0).toFixed(3))}</p>}
           </m.div>

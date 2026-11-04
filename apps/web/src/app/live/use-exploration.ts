@@ -12,7 +12,9 @@ import { fold, type LiveEvent, type LiveState } from "@/lib/live/state";
 export type Source =
   | { kind: "upload"; jpeg: Blob; useLocation: boolean }
   | { kind: "sample"; name?: string }
-  | { kind: "replay"; explorationId: string; photo: string; recordedAt: string };
+  | { kind: "replay"; explorationId: string; photo: string; recordedAt: string; instant?: boolean }
+  /** back to a run of this session (the visitor went to the note or the print and came back): no new run */
+  | { kind: "attach"; explorationId: string; photo: string };
 
 export type Phase = "starting" | "running" | "done" | "failed" | "refused";
 
@@ -69,8 +71,8 @@ function usePrefersReducedMotion(): boolean {
 export function useExploration(source: Source) {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [arrivals, setArrivals] = useState<Arrival[]>([]);
-  const [expId, setExpId] = useState<string | null>(source.kind === "replay" ? source.explorationId : null);
-  const [photo, setPhoto] = useState<string | null>(source.kind === "replay" ? source.photo : null);
+  const [expId, setExpId] = useState<string | null>(source.kind === "replay" || source.kind === "attach" ? source.explorationId : null);
+  const [photo, setPhoto] = useState<string | null>(source.kind === "replay" || source.kind === "attach" ? source.photo : null);
   const [phase, setPhase] = useState<Phase>("starting");
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(0);
@@ -101,7 +103,7 @@ export function useExploration(source: Source) {
       es = new EventSource(url);
       lastAt = performance.now();
       watchdog = setInterval(() => {
-        if (performance.now() - lastAt > STALL_MS) stalled();
+        if (performance.now() - lastAt > (source.kind === "replay" ? STALL_MS : STALL_MS * 2)) stalled();
       }, 2000);
       // a closed stream (the server went away and the browser gave up reconnecting)
       es.onerror = () => {
@@ -115,6 +117,13 @@ export function useExploration(source: Source) {
         setArrivals((p) => (p.some((x) => x.seq === ev.seq) ? p : [...p, { seq: ev.seq, type: ev.type, at }]));
         if (e.type === "done") {
           setPhase("done");
+          if (source.kind === "replay" && !source.instant) {
+            try {
+              const u = new URL(location.href);
+              u.searchParams.set("at", "end");
+              history.replaceState(history.state, "", u);
+            } catch {}
+          }
           es?.close();
           if (watchdog) clearInterval(watchdog);
         }
@@ -126,12 +135,19 @@ export function useExploration(source: Source) {
       };
       for (const t of EVENT_TYPES) es.addEventListener(t, on);
     };
-    if (source.kind !== "replay") void fetch("/api/warm", { method: "POST" }).catch(() => {}); // models load while the photo is sent
+    if (source.kind === "sample" || source.kind === "upload") void fetch("/api/warm", { method: "POST" }).catch(() => {}); // models load while the photo is sent
     (async () => {
       if (source.kind === "replay") {
         mark();
         setPhase("running");
-        listen(`/api/explorations/${source.explorationId}/events?pace=replay`);
+        const speed = new URLSearchParams(location.search).get("speed");
+        listen(`/api/explorations/${source.explorationId}/events?pace=replay${source.instant ? "&instant=1" : ""}${speed ? `&speed=${encodeURIComponent(speed)}` : ""}`);
+        return;
+      }
+      if (source.kind === "attach") {
+        mark();
+        setPhase("running");
+        listen(`/api/explorations/${source.explorationId}/events`);
         return;
       }
       let start: Response;
@@ -167,6 +183,10 @@ export function useExploration(source: Source) {
       const j = (await start.json()) as { exploration_id: string; events: string; photo?: string };
       if (j.photo) setPhoto(j.photo);
       setExpId(j.exploration_id);
+      // the address now names this run: Back from the note or the print returns to it, not to a new run
+      try {
+        history.replaceState(history.state, "", `/live?run=${j.exploration_id}`);
+      } catch {}
       mark();
       setPhase("running");
       listen(j.events);
@@ -194,5 +214,10 @@ export function useExploration(source: Source) {
   const shownAt = (seq: number) => schedule.get(seq) ?? 0;
   const state: LiveState = useMemo(() => fold(visible, shownAt), [visible]); // eslint-disable-line react-hooks/exhaustive-deps
   const settled = (phase === "done" || phase === "failed") && visible.length === events.length;
-  return { state, phase: settled ? phase : phase === "done" || phase === "failed" ? "running" : phase, error, expId, photo, elapsed, reduced, allEvents: events };
+  const [clockScale] = useState(() => {
+    if (source.kind !== "replay" || typeof location === "undefined") return 1;
+    const v = Number(new URLSearchParams(location.search).get("speed") ?? 1);
+    return Number.isFinite(v) ? Math.min(4, Math.max(0.5, v)) : 1;
+  });
+  return { state, phase: settled ? phase : phase === "done" || phase === "failed" ? "running" : phase, error, expId, photo, elapsed, clock: elapsed * clockScale, reduced, allEvents: events };
 }

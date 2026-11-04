@@ -98,6 +98,9 @@ html[data-present] .answer-col {
 html[data-present] .present-only {
   display: block;
 }
+html[data-present] .turn-pic {
+  height: min(46vh, 30rem);
+}
 html[data-present] .present-hide {
   display: none !important;
 }
