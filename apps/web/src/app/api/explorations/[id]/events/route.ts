@@ -50,7 +50,9 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
       };
       cleanup = close;
       controller.enqueue(enc.encode("retry: 2000\n\n"));
-      if (paced) {
+      if (paced && url.searchParams.get("instant") === "1") {
+        for (const e of eventsAfter(id, after)) send(e);
+      } else if (paced) {
         const speed = Math.min(4, Math.max(0.5, Number(url.searchParams.get("speed") ?? 1) || 1));
         for (const { at, event } of replaySchedule(eventsAfter(id, after), { speed })) timers.push(setTimeout(() => send(event), at));
       } else for (const e of eventsAfter(id, after)) send(e); // replay (also covers events emitted before subscribe)

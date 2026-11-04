@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { sourceTitles } from "@/lib/corpus/titles";
 import { entities } from "@/lib/entities-server";
 import { timeline, timelineData } from "@/lib/timeline-server";
+import { BackLink } from "../ui/back-link";
 import { TimeRiver } from "../time-river";
 
 export const metadata = { title: "TSUMUGI — 時をめくる" };
@@ -45,6 +46,7 @@ async function River({ searchParams }: { searchParams: Promise<{ entity?: string
   const nameOf = (id: string) => E.get(id)?.name[lang] ?? id;
   return (
     <>
+      <BackLink className="-ml-1 self-start" />
       <h1 className="font-serif text-display">{l.title}</h1>
       <nav className="flex flex-wrap gap-2 text-small" data-testid="time-sites">
         {sites().map((id) => (

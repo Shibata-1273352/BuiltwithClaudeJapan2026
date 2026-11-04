@@ -5,6 +5,7 @@
  * come from the stored calls (how-facts.ts); the evaluation figures from the latest report.
  */
 import Link from "next/link";
+import { BackLink } from "../ui/back-link";
 import type { StageFact } from "@/lib/how-facts";
 import type { LandingFacts } from "@/lib/landing-facts";
 import { dict, LangToggle, useDict } from "../i18n";
@@ -112,10 +113,13 @@ export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; r
   const t = useDict(T);
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-5 py-10" data-testid="how">
-      <header className="flex items-baseline justify-between">
-        <Link href="/" className="font-serif text-lead tracking-[0.3em]">
-          {t.back}
-        </Link>
+      <header className="flex items-center justify-between gap-6">
+        <div className="flex items-center gap-6">
+          <BackLink />
+          <Link href="/" className="font-serif text-lead tracking-[0.3em]">
+            {t.back}
+          </Link>
+        </div>
         <LangToggle />
       </header>
       <div>

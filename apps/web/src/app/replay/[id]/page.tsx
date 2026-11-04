@@ -34,7 +34,7 @@ async function Replay({ params, searchParams }: { params: Promise<{ id: string }
       </main>
     );
   }
-  return <ReplayStage explorationId={id} photo={photo} recordedAt={row.created_at} />;
+  return <ReplayStage explorationId={id} photo={photo} recordedAt={row.created_at} instant={sp.at === "end"} />;
 }
 
 export default function ReplayPage({ params, searchParams }: PageProps<"/replay/[id]">) {
