@@ -143,6 +143,13 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   // ?hold=broken (recording the video): 1878 is revealed when the years are turned, not before
   const [holdBroken] = useState(() => typeof location !== "undefined" && new URLSearchParams(location.search).get("hold") === "broken");
   const [scrubbedOnce, setScrubbedOnce] = useState(false);
+  // ?hold=broken: the discovery comes when the years have come to rest in an absent year, not on the way
+  const [rested, setRested] = useState(false);
+  useEffect(() => {
+    if (!holdBroken || !scrubbedOnce || rested) return;
+    const t = setTimeout(() => setRested(true), 450);
+    return () => clearTimeout(t);
+  }, [holdBroken, scrubbedOnce, rested, scrub]);
   const timelineRef = useRef<RiverData | null>(null);
   // ?y=: back from the print or the note, the stage returns to the year it was at
   const [yFromUrl] = useState(() => (typeof location === "undefined" ? null : Number(new URLSearchParams(location.search).get("y")) || null));
@@ -421,7 +428,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     actions={actions}
                     guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} onAsk={finished && expId && s.place ? onAsk : undefined} />}
                     story={storyShown}
-                    holdBroken={holdBroken && scrub === null && !scrubbedOnce}
+                    holdBroken={holdBroken && !rested}
                     world={finished && s.place?.entity ? <WorldCard entity={s.place.entity} sourceIds={sourceIds} titles={titles} /> : null}
                     guideFocus={
                       <>

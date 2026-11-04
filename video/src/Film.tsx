@@ -74,38 +74,51 @@ const FadeText = ({ len, children, style }: { len: number; children: React.React
   return <div style={{ position: "absolute", fontFamily: serif, color: PAPER, opacity, ...style }}>{children}</div>;
 };
 
-/** TSUMUGI, stitched by the four threads over the lit lantern; the line follows when the silk has landed. */
-const TITLE_LAST = 47;
+/**
+ * The face of the film. TSUMUGI is stitched by the four threads over the lit lantern, a light runs along
+ * the silk, a gold thread is drawn under it and the line settles; then it holds, long enough to be read.
+ */
+const TITLE_LAST = 96;
 const TitleSilk = ({ frame }: { frame: number }) => (
   <Img src={staticFile(`title/f${String(Math.min(frame, TITLE_LAST)).padStart(4, "0")}.png`)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
 );
 
 const Title = () => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps } = useVideoConfig();
   const t = frame / fps;
-  const len = (timeline.opening.title[1] - timeline.opening.title[0]) as number;
-  const out = interpolate(t, [len - 0.4, len], [1, 0], clamp);
+  const [from, to] = timeline.opening.title;
+  const land = timeline.opening.titleLand;
+  const len = to - from;
+  // the words leave first, on the dark; only then does the lantern come back, so they never cross it
+  const words = interpolate(t, [len - 1.0, len - 0.5], [1, 0], { ...clamp, easing: Easing.inOut(Easing.quad) });
+  const shade = interpolate(t, [len - 0.6, len], [1, 0], { ...clamp, easing: Easing.inOut(Easing.quad) });
+  const thread = interpolate(t, [land + 0.3, land + 1.1], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
   return (
-    <AbsoluteFill style={{ opacity: out }} data-frames={durationInFrames}>
-      <AbsoluteFill style={{ background: "rgba(4,5,10,.84)", backdropFilter: "blur(16px)", opacity: interpolate(t, [0, 0.5], [0, 1], clamp) }} />
-      <TitleSilk frame={frame} />
+    <AbsoluteFill>
+      <AbsoluteFill style={{ background: "rgba(4,5,10,.84)", backdropFilter: "blur(16px)", opacity: interpolate(t, [0, 0.5], [0, 1], clamp) * shade }} />
+      <AbsoluteFill style={{ opacity: words }}>
+      <div style={{ position: "absolute", inset: 0, filter: "saturate(1.15) brightness(1.2)" }}>
+        <TitleSilk frame={frame} />
+      </div>
+      <div style={{ position: "absolute", top: 572, left: 960 - 280 * thread, width: 560 * thread, height: 1, background: GOLD, opacity: 0.8 }} />
       <div
         style={{
           position: "absolute",
-          top: 590,
+          top: 600,
           width: "100%",
           textAlign: "center",
           color: PAPER,
           fontFamily: serif,
-          fontSize: 36,
-          letterSpacing: "0.1em",
+          fontSize: 38,
+          letterSpacing: "0.12em",
           fontFeatureSettings: '"palt"',
-          opacity: interpolate(t, [1.25, 1.65], [0, 1], clamp),
+          opacity: interpolate(t, [land + 0.8, land + 1.4], [0, 1], clamp),
         }}
       >
         写真一枚から、言葉と時代を越えて、根拠をたどる。
       </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

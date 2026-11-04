@@ -40,6 +40,7 @@ const EVENT: Record<string, { ja: string; en: string }> = {
 const L = dict({
   ja: {
     play: "時を流す",
+    eventYear: (y: number, what: string) => `${y}年に${what}`,
     stop: "止める",
     river: "時の川（つまんで動かす）",
     now: "いま",
@@ -57,6 +58,7 @@ const L = dict({
   },
   en: {
     play: "Let the years flow",
+    eventYear: (y: number, what: string) => `${what.trim()} in ${y}`,
     stop: "Stop",
     river: "River of time (drag it)",
     now: "now",
@@ -349,6 +351,12 @@ export function TimeTurn({
             {playing ? l.stop : l.play}
           </Button>
         </div>
+        {/* the panel stops where the judgment is settled, a year after a rebuild: the event's own year stays in view */}
+        {atEvent && atEvent.year !== year && EVENT[atEvent.event] && (
+          <p className="-mt-3 text-small text-paper/80 tabular-nums" data-testid="time-event-year">
+            {l.eventYear(atEvent.year, EVENT[atEvent.event][lang])}
+          </p>
+        )}
         <p className="font-serif text-title leading-snug" data-testid="time-label">
           {plainLabel(ys.label[lang], lang, data.name?.en).replace(/^\d{3,4}年：|^\d{3,4}: /, "")}
         </p>

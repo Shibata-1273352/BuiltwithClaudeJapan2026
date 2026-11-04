@@ -72,6 +72,15 @@ html[data-present] {
   }
 }
 
+/* who decided is the point of the stage: the marks read at the size of the video */
+html[data-present] [data-by] > span:first-child {
+  font-size: var(--text-small);
+  border-color: var(--paper);
+}
+html[data-present] [data-by="claude"] > span:first-child {
+  border-color: var(--lantern);
+}
+
 /* the quiet actions stay on one line in presenter mode (the video) */
 html[data-present] .quiet-row > * {
   font-size: var(--text-small);

@@ -3,7 +3,7 @@
  "width": 1920,
  "height": 1080,
  "opening": {
-  "duration": 21.0,
+  "duration": 23.5,
   "lettersIn": 2.2,
   "spinEnd": 2.4,
   "lettersFrames": 96,
@@ -39,24 +39,29 @@
    7.2
   ],
   "firstWord": 8.5,
-  "cue": 11.0,
+  "cue": 13.5,
   "title": [
    8.5,
-   11.0
+   13.5
+  ],
+  "titleLand": 1.45,
+  "titleSheen": [
+   1.45,
+   3.1
   ]
  },
  "knot": 15.0,
  "scenes": [
   {
    "id": "mystery",
-   "start": 11.0,
-   "end": 21.0,
+   "start": 13.5,
+   "end": 23.5,
    "segments": []
   },
   {
    "id": "wall",
-   "start": 21.0,
-   "end": 35.0,
+   "start": 23.5,
+   "end": 37.5,
    "segments": [
     {
      "src": "takes/wall.mp4",
@@ -74,8 +79,8 @@
   },
   {
    "id": "enter",
-   "start": 35.0,
-   "end": 37.5,
+   "start": 37.5,
+   "end": 40.0,
    "segments": [
     {
      "still": "takes/empty.png",
@@ -86,8 +91,8 @@
   },
   {
    "id": "read",
-   "start": 37.5,
-   "end": 66.7,
+   "start": 40.0,
+   "end": 69.2,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -100,8 +105,8 @@
   },
   {
    "id": "print",
-   "start": 66.7,
-   "end": 76.45,
+   "start": 69.2,
+   "end": 78.95,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -114,8 +119,8 @@
   },
   {
    "id": "absence",
-   "start": 76.45,
-   "end": 85.85000000000001,
+   "start": 78.95,
+   "end": 88.35000000000001,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -133,8 +138,8 @@
   },
   {
    "id": "check",
-   "start": 85.85000000000001,
-   "end": 92.85000000000001,
+   "start": 88.35000000000001,
+   "end": 95.35000000000001,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -156,8 +161,8 @@
   },
   {
    "id": "burn",
-   "start": 92.85000000000001,
-   "end": 100.15,
+   "start": 95.35000000000001,
+   "end": 102.65,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -179,8 +184,8 @@
   },
   {
    "id": "gift",
-   "start": 100.15,
-   "end": 113.55000000000001,
+   "start": 102.65,
+   "end": 116.05000000000001,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -193,8 +198,8 @@
   },
   {
    "id": "knot",
-   "start": 113.55000000000001,
-   "end": 116.55000000000001,
+   "start": 116.05000000000001,
+   "end": 119.05000000000001,
    "segments": [
     {
      "seq": "knot",
@@ -205,20 +210,20 @@
   },
   {
    "id": "reveal",
-   "start": 116.55000000000001,
-   "end": 126.55000000000001,
+   "start": 119.05000000000001,
+   "end": 129.05,
    "segments": []
   },
   {
    "id": "reach",
-   "start": 126.55000000000001,
-   "end": 132.55,
+   "start": 129.05,
+   "end": 135.05,
    "segments": []
   },
   {
    "id": "other",
-   "start": 132.55,
-   "end": 140.55,
+   "start": 135.05,
+   "end": 143.05,
    "segments": [
     {
      "src": "takes/other.mp4",
@@ -231,14 +236,14 @@
   },
   {
    "id": "close",
-   "start": 140.55,
-   "end": 152.55,
+   "start": 143.05,
+   "end": 155.05,
    "segments": []
   },
   {
    "id": "concept",
-   "start": 152.55,
-   "end": 157.55,
+   "start": 155.05,
+   "end": 160.05,
    "segments": [
     {
      "still": "concept.png",
@@ -254,12 +259,12 @@
   },
   {
    "id": "credit",
-   "start": 157.55,
-   "end": 163.55,
+   "start": 160.05,
+   "end": 166.05,
    "segments": []
   }
  ],
- "end": 163.55,
+ "end": 166.05,
  "bridges": {
   "enter": {
    "rect": [

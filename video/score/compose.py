@@ -116,8 +116,14 @@ def opening(tl):
 
     # the lantern lights: the first full chord of the film, and a solo line leaning into A
     a = o["lanternIn"][0]
-    strings(m, a - 0.25, 4.0, ["D2", "A2", "D3", "A3", "F#4", "A4", "E5"], gain=0.33, attack=1.2, release=1.3)
+    strings(m, a - 0.25, 7.0, ["D2", "A2", "D3", "A3", "F#4", "A4", "E5"], gain=0.33, attack=1.2, release=1.3)
     solo(m, a + 0.7, 0.62, 1.3, 0.75)
+
+    # the title: a soft note as each letter is stitched, the theme, then one high line as the light crosses
+    t0 = o["title"][0]
+    for i, note in enumerate(("E4", "A4", "G4", "D4", "E4", "A4", "D5")):
+        m.add(string(midi(note), gain=0.13, seed=30 + i), t0 + 0.42 + 0.7 * i / 6, send=0.5, pan=-0.3 + 0.1 * i, label="title" if i == 0 else None)
+    m.add(sampled(VIOLINS, midi("A5"), 2.4, gain=0.07, attack=0.7, release=1.0, offset=0.3), t0 + o["titleSheen"][0], send=0.7)
 
     # the held breath before the strike, and the fall to near silence before the first word
     duck = [(0, 1), (s - 0.3, 1), (s - 0.2, 0.3), (s - 0.01, 0.3), (s, 1), (s + 0.6, 1), (s + 1.1, 0.82), (a - 0.3, 0.82), (a + 0.8, 1), (end - 1.0, 1), (end, 0.32)]

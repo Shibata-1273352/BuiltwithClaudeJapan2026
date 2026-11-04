@@ -188,7 +188,10 @@ export function TextColumn({
   const readings = (s.see?.elements ?? s.seeProgress?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
   const showBroken = broken.length > 0 && since("threads") > 1800 && !holdBroken;
-  const foundTitles = [...new Set((s.gap?.candidates ?? []).map((c) => c.sourceTitle).filter(Boolean))].slice(0, 2);
+  // the sources that search brought the most passages from, not the first it happened to list
+  const foundCount = new Map<string, number>();
+  for (const c of s.gap?.candidates ?? []) if (c.sourceTitle) foundCount.set(c.sourceTitle, (foundCount.get(c.sourceTitle) ?? 0) + 1);
+  const foundTitles = [...foundCount.entries()].sort((a, b) => b[1] - a[1]).map(([title]) => title).slice(0, 2);
   const brokenYearNum = (() => {
     const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
     const row = s.existence?.rows.find((r) => r.source === src);
