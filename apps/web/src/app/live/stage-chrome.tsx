@@ -29,7 +29,7 @@ export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: numb
         return (
           <li
             key={st.key}
-            className={`flex items-baseline gap-1.5 border-b-2 pb-1 transition-colors ${status === "running" ? "border-lantern text-paper" : status === "done" ? "border-transparent text-paper/60" : "border-transparent text-muted/70"}`}
+            className={`flex items-baseline gap-1.5 border-b-2 pb-1 transition-colors ${status === "running" ? "border-lantern text-paper" : status === "done" ? "present-hide border-transparent text-paper/60" : "present-hide border-transparent text-muted/70"}`}
             aria-current={status === "running" ? "step" : undefined}
           >
             <span className="text-caption text-muted tabular-nums">{st.parallel ? "∥" : String(i + 1).padStart(2, "0")}</span>
@@ -83,7 +83,7 @@ export function LiveChips({ s, finished, replay, note }: { s: LiveState; finishe
               className={`inline-flex items-baseline gap-2 ${w.who === "claude" ? "text-paper" : "text-muted"}`}
             >
               <span className={`text-caption font-medium ${w.who === "claude" ? "text-lantern" : "text-muted"}`}>{w.who === "claude" ? claude : WHO_LABEL[lang][w.who]}</span>
-              {w[lang]}
+              <span className="present-hide">{w[lang]}</span>
             </m.span>
           );
         })}

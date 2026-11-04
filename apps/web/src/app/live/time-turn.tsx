@@ -271,7 +271,7 @@ export function TimeTurn({ data, sceneId, scene, photo, cards }: { data: Timelin
             </m.figure>
           )}
         </AnimatePresence>
-        <div>
+        <div className="present-hide">
           <p className="label">{l.events}</p>
           <ol className="mt-2 flex flex-col gap-1 text-small">
             {events.map((e) => (

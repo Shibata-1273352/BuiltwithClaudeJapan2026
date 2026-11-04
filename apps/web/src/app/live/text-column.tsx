@@ -5,6 +5,7 @@
  * the photo, Claude's judgment of what is missing (labelled as Claude's), the broken thread, and
  * finally the story, sentence by sentence, each citing its sources.
  */
+import { By } from "../ui/by";
 import { interimSince } from "@/lib/time-river";
 import { FirstAnswer } from "./first-answer";
 import { AnimatePresence, m } from "motion/react";
@@ -230,9 +231,9 @@ export function TextColumn({
         <FirstAnswer s={s} />
         {/* after the story, Claude's judgment stays as one line: what it found missing, what it searched for */}
         {showStory && s.gap?.gaps && s.gap.gaps.length > 0 && (
-          <p className="border-l-2 border-lantern pl-4 text-caption text-muted" data-testid="claude-searched">
-            {t.searched(s.gap.found ?? 0)}
-            <span className="text-paper">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-muted" data-testid="claude-searched">
+            <By who="claude" did={{ ja: `足りないものを探し直した（+${s.gap.found ?? 0} 節）`, en: `searched again for what was missing (+${s.gap.found ?? 0})` }} />
+            <span className="present-hide text-paper">
               {s.gap.gaps
                 .flatMap((g) => g.terms)
                 .slice(0, 4)
@@ -258,7 +259,9 @@ export function TextColumn({
               {interim && <p className="present-hide mt-1 text-small text-paper/75">{t.interim(interim)}</p>}
               <p className="present-hide mt-2 font-serif text-body text-paper/80">{plainLabel(broken[0].label[ui], ui, placeName?.en)}</p>
               <p className="present-hide mt-1 text-caption text-muted">{t.byCode}</p>
-              <p className="present-only mt-1 text-caption text-muted">{t.byCodeShort}</p>
+              <p className="present-only mt-1">
+                <By who="code" did={{ ja: "年表で判定（Claude には判定させない）", en: "timeline — not Claude" }} />
+              </p>
             </m.div>
           )}
         </AnimatePresence>

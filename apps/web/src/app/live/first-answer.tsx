@@ -6,6 +6,7 @@
  * the photo (streamed); the second is code, from the reviewed timeline (sinceWhen). Each says who
  * answered. At a place with no timeline, the second says so.
  */
+import { By } from "../ui/by";
 import { AnimatePresence, m } from "motion/react";
 import type { LiveState } from "@/lib/live/state";
 import { sinceWhen, type TimelineData } from "@/lib/time-river";
@@ -62,7 +63,9 @@ export function FirstAnswer({ s }: { s: LiveState }) {
                 {main.reading && <span className="font-serif text-small text-muted italic">{main.reading}</span>}
               </p>
               {main.meaning && <p className="font-serif text-body text-paper/90">{main.meaning[lang]}</p>}
-              <p className="mt-0.5 text-caption text-lantern">{l.byClaude}</p>
+              <p className="mt-1">
+                <By who="claude" did={{ ja: "写真から読んだ", en: "read the photo" }} />
+              </p>
             </m.div>
           ) : s.see ? (
             <p key="n1" className="mt-1 text-small text-muted">
@@ -82,7 +85,9 @@ export function FirstAnswer({ s }: { s: LiveState }) {
             <m.div key="a2" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-1" data-testid="since-when">
               <p className="font-serif text-title leading-tight tabular-nums">{since.since}</p>
               <p className="present-hide mt-0.5 font-serif text-small text-paper/85">{since.label[lang]}</p>
-              <p className="mt-0.5 text-caption text-muted">{l.byCode}</p>
+              <p className="mt-1">
+                <By who="code" did={{ ja: "年表で判定", en: "timeline" }} />
+              </p>
             </m.div>
           ) : placeKnown && (s.place === null || tl) ? (
             <p key="n2" className="mt-1 text-small text-muted">

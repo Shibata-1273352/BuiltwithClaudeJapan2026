@@ -335,7 +335,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 replay={replay}
                 note={
                   replay ? (
-                    <span className="text-caption text-muted" data-testid="replay-banner">
+                    <span className="present-hide text-caption text-muted" data-testid="replay-banner">
                       {t.recorded(source.recordedAt.slice(5, 16).replace("-", "/").replace("T", " "))}
                     </span>
                   ) : null

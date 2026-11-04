@@ -235,7 +235,7 @@ export function PhotoStage({
       {/* turning the years: in an absent year the present fades to a night, and the structure is only a ghost */}
       <div aria-hidden className={`pointer-events-none absolute inset-0 bg-night transition-opacity duration-700 ${absent ? "opacity-75" : "opacity-0"}`} data-testid="stage-plate" data-absent={absent ? "1" : "0"} />
       {absent && absentLine && (
-        <m.p key={absentLine} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="pointer-events-none absolute inset-x-6 bottom-6 z-30 text-center font-serif text-title text-paper" data-testid="absent-line">
+        <m.p key={absentLine} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="present-hide pointer-events-none absolute inset-x-6 bottom-6 z-30 text-center font-serif text-title text-paper" data-testid="absent-line">
           {absentLine}
         </m.p>
       )}
