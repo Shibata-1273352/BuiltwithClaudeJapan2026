@@ -199,13 +199,21 @@ def film(tl):
     strings(m, start("gift"), 6, ["D2", "A2", "D3"], gain=0.15, attack=2.0, release=1.4)
     strings(m, start("gift", 6), 6, ["G2", "D3", "B3", "E4"], gain=0.16, attack=1.8, release=1.2)
 
+    # each step of the run lights on a note of the theme
+    for (label, at), note in zip(tl["steps"], ("E5", "A4", "G4")):
+        m.add(string(midi(note), gain=0.3, seed=22), start("read") + at, send=0.5, label="step")
+
     # the answer: after the room, the gold note comes home
     r = start("reveal")
     solo(m, r + 0.2, 1.0, 3.2, 0.9)
     strings(m, r + 1.0, 8, ["D3", "A3", "F#4"], gain=0.13, attack=1.8, release=1.4)
 
+    # one plucked note as each name is underlined, from the same timeline as the picture
+    for at, note in zip(tl["nameLines"], ("D5", "A5")):
+        m.add(string(midi(note), gain=0.3, seed=21), r + at, send=0.5, label="name")
+
     # 急: the chords open, the phrase returns whole over a plagal close
-    strings(m, start("reach"), 5.5, ["D2", "A2", "D3", "A3", "E4"], gain=0.14, attack=1.4, release=1.2)
+    strings(m, start("reach"), 13.5, ["D2", "A2", "D3", "A3", "E4"], gain=0.14, attack=1.4, release=1.2)
     gaps = [2.2, 2.4, 2.5, 3.2]
     t = start("close", 0.8)
     for chord, gap in zip(

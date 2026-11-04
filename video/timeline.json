@@ -59,8 +59,15 @@
    "end": 35.0,
    "segments": [
     {
-     "still": "s/1-landing.png",
-     "dur": 14,
+     "src": "takes/wall.mp4",
+     "from": 0,
+     "to": 13.2,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "still": "takes/empty.png",
+     "dur": 0.8,
      "cam": null
     }
    ]
@@ -84,8 +91,8 @@
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 0.3,
-     "to": 29.5,
+     "from": 0.9,
+     "to": 30.1,
      "rate": 1,
      "cam": null
     }
@@ -98,8 +105,8 @@
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 34.85,
-     "to": 44.6,
+     "from": 35.45,
+     "to": 45.2,
      "rate": 1,
      "cam": null
     }
@@ -112,8 +119,8 @@
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 47.0,
-     "to": 54.4,
+     "from": 47.2,
+     "to": 54.6,
      "rate": 1,
      "cam": null
     },
@@ -131,8 +138,8 @@
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 54.4,
-     "to": 58.9,
+     "from": 54.6,
+     "to": 59.1,
      "rate": 1,
      "cam": null
     },
@@ -140,9 +147,9 @@
      "still": "s/check-2x.png",
      "dur": 2.5,
      "cam": [
-      0.46,
-      0.3,
-      1.55
+      0.665,
+      0.5,
+      1.5
      ]
     }
    ]
@@ -154,8 +161,8 @@
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 61.3,
-     "to": 65.0,
+     "from": 61.5,
+     "to": 65.2,
      "rate": 1,
      "cam": null
     },
@@ -177,8 +184,8 @@
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 68.6,
-     "to": 82.0,
+     "from": 68.7,
+     "to": 82.1,
      "rate": 1,
      "cam": null
     }
@@ -200,67 +207,38 @@
    "id": "reveal",
    "start": 116.55000000000001,
    "end": 126.55000000000001,
-   "segments": [
-    {
-     "still": "lantern.jpg",
-     "dur": 3.2,
-     "cam": [
-      0.41,
-      0.57,
-      1.7,
-      1.7
-     ]
-    },
-    {
-     "still": "s/1961-2x.png",
-     "dur": 3.2,
-     "cam": [
-      0.5,
-      0.66,
-      3.0,
-      3.0
-     ]
-    },
-    {
-     "still": "s/1961-2x.png",
-     "dur": 3.6,
-     "cam": [
-      0.82,
-      0.66,
-      2.5,
-      2.5
-     ]
-    }
-   ]
+   "segments": []
   },
   {
    "id": "reach",
    "start": 126.55000000000001,
    "end": 132.55,
+   "segments": []
+  },
+  {
+   "id": "other",
+   "start": 132.55,
+   "end": 140.55,
    "segments": [
     {
-     "still": "s/1-landing.png",
-     "dur": 6,
+     "src": "takes/other.mp4",
+     "from": 16,
+     "to": 24,
+     "rate": 1,
      "cam": null
     }
    ]
   },
   {
    "id": "close",
-   "start": 132.55,
-   "end": 144.55,
-   "segments": [
-    {
-     "still": "s/postcard.png",
-     "dur": 12,
-     "cam": null
-    }
-   ]
+   "start": 140.55,
+   "end": 152.55,
+   "segments": []
   },
   {
    "id": "concept",
-   "start": 144.55,
-   "end": 149.55,
+   "start": 152.55,
+   "end": 157.55,
    "segments": [
     {
      "still": "concept.png",
@@ -276,12 +254,12 @@
   },
   {
    "id": "credit",
-   "start": 149.55,
-   "end": 155.55,
+   "start": 157.55,
+   "end": 163.55,
    "segments": []
   }
  ],
- "end": 155.55,
+ "end": 163.55,
  "bridges": {
   "enter": {
    "rect": [
@@ -304,22 +282,26 @@
  },
  "steps": [
   [
-   "写真を読む",
-   0.3
+   "read",
+   0.0
   ],
   [
-   "日英の資料を探す",
-   5.1
+   "sources",
+   9.53
   ],
   [
-   "出典と年代をつなぐ",
-   10.4
+   "weave",
+   20.77
   ]
  ],
  "notes": {
   "mystery": "写真を夕景に調整",
   "print": "映像用の表示",
-  "concept": "生成AIによるコンセプト画像"
+  "concept": "生成AIによるコンセプト画像",
+  "reach": "模式図"
  },
- "runDone": 28.0
+ "nameLines": [
+  3.8,
+  4.9
+ ]
 }

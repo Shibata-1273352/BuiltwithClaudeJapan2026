@@ -1,4 +1,4 @@
-import { AbsoluteFill, Img, interpolate, OffthreadVideo, Sequence, Series, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Easing, Img, interpolate, OffthreadVideo, Sequence, Series, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import guide from "../public/guide/index.json";
 import timeline from "../timeline.json";
 import { Opening } from "./Opening";
@@ -13,8 +13,12 @@ const fonts = `
 
 /** The app is framed, not full bleed: the space under it belongs to the words, so nothing is laid over the UI. */
 const FRAME = { left: 134, top: 14, width: 1652, height: 929 };
-const FRAMED = ["wall", "enter", "read", "absence", "check", "burn", "gift", "reach"];
+const FRAMED = ["wall", "enter", "read", "absence", "check", "burn", "gift", "other"];
+/** Scenes composed on the film's ground: the words stand under them, with no shade. */
+const ON_GROUND = [...FRAMED, "reveal", "close"];
 const GOLD = "#e2b65a";
+/** The film's own ground, darker than the app's night, so the app reads as a lit screen set on it. */
+const STAGE = "#04050a";
 const MUTED = "#b8bfd3";
 
 const seconds = (s: Segment) => s.dur ?? ((s.to as number) - (s.from as number)) / (s.rate ?? 1);
@@ -48,7 +52,7 @@ const Fade = ({ len, open, shut }: { len: number; open: boolean; shut: boolean }
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const opacity = interpolate(frame / fps, [0, 0.3, len - 0.3, len], [open ? 1 : 0, 0, 0, shut ? 1 : 0], clamp);
-  return <AbsoluteFill style={{ background: "#0e1426", opacity }} />;
+  return <AbsoluteFill style={{ background: STAGE, opacity }} />;
 };
 
 /** Bridge 1: the threads over the empty frame, gone as the real photo arrives, before any AI output. */
@@ -70,22 +74,159 @@ const FadeText = ({ len, children, style }: { len: number; children: React.React
   return <div style={{ position: "absolute", fontFamily: serif, color: PAPER, opacity, ...style }}>{children}</div>;
 };
 
-const Title = () => (
-  <AbsoluteFill style={{ background: "rgba(10,12,24,.42)", alignItems: "center", justifyContent: "center", color: PAPER, fontFamily: serif, gap: 26 }}>
-    <div style={{ fontSize: 96, letterSpacing: "0.34em", marginRight: "-0.34em" }}>TSUMUGI</div>
-    <div style={{ fontSize: 34, letterSpacing: "0.08em" }}>写真一枚から、言葉と時代を越えて、根拠をたどる。</div>
+/** TSUMUGI, stitched by the four threads over the lit lantern; the line follows when the silk has landed. */
+const TITLE_LAST = 47;
+const TitleSilk = ({ frame }: { frame: number }) => (
+  <Img src={staticFile(`title/f${String(Math.min(frame, TITLE_LAST)).padStart(4, "0")}.png`)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+);
+
+const Title = () => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+  const t = frame / fps;
+  const len = (timeline.opening.title[1] - timeline.opening.title[0]) as number;
+  const out = interpolate(t, [len - 0.4, len], [1, 0], clamp);
+  return (
+    <AbsoluteFill style={{ opacity: out }} data-frames={durationInFrames}>
+      <AbsoluteFill style={{ background: "rgba(4,5,10,.84)", backdropFilter: "blur(16px)", opacity: interpolate(t, [0, 0.5], [0, 1], clamp) }} />
+      <TitleSilk frame={frame} />
+      <div
+        style={{
+          position: "absolute",
+          top: 590,
+          width: "100%",
+          textAlign: "center",
+          color: PAPER,
+          fontFamily: serif,
+          fontSize: 36,
+          letterSpacing: "0.1em",
+          fontFeatureSettings: '"palt"',
+          opacity: interpolate(t, [1.25, 1.65], [0, 1], clamp),
+        }}
+      >
+        写真一枚から、言葉と時代を越えて、根拠をたどる。
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const Credit = () => (
+  <AbsoluteFill style={{ background: STAGE, color: PAPER, fontFamily: serif, fontFeatureSettings: '"palt"' }}>
+    <div style={{ position: "absolute", inset: 0, transform: "translateY(-176px) scale(.74)" }}>
+      <TitleSilk frame={TITLE_LAST} />
+    </div>
+    <div style={{ position: "absolute", top: 402, width: "100%", textAlign: "center", fontSize: 28, letterSpacing: "0.1em" }}>写真一枚から、言葉と時代を越えて、根拠をたどる。</div>
+    <div style={{ position: "absolute", top: 490, left: 900, width: 120, height: 1, background: "rgba(243,236,223,.3)" }} />
+    <div style={{ position: "absolute", top: 536, width: "100%", textAlign: "center", fontSize: 58, letterSpacing: "0.22em" }}>柴田 高志</div>
+    <div style={{ position: "absolute", top: 628, width: "100%", textAlign: "center", fontSize: 27, letterSpacing: "0.08em", color: MUTED }}>通信事業者 AI エンジニア</div>
+    <div style={{ position: "absolute", top: 810, width: "100%", textAlign: "center", fontSize: 23, letterSpacing: "0.06em", color: MUTED, lineHeight: 1.8 }}>
+      Built with Claude Japan 2026 ／ ハッカソン期間中に新規開発
+      <br />
+      音楽と糸の映像は Claude Code で制作
+    </div>
   </AbsoluteFill>
 );
 
-const Credit = () => (
-  <AbsoluteFill style={{ background: "#0e1426", alignItems: "center", justifyContent: "center", color: PAPER, fontFamily: serif }}>
-    <div style={{ fontSize: 72, letterSpacing: "0.3em", marginRight: "-0.3em" }}>TSUMUGI</div>
-    <div style={{ fontSize: 28, marginTop: 20, letterSpacing: "0.06em" }}>写真一枚から、言葉と時代を越えて、根拠をたどる。</div>
-    <div style={{ fontSize: 44, marginTop: 72, letterSpacing: "0.12em" }}>柴田 高志</div>
-    <div style={{ fontSize: 26, marginTop: 14, color: "#b8bfd3" }}>通信事業者 AI エンジニア</div>
-    <div style={{ fontSize: 22, marginTop: 64, color: "#b8bfd3" }}>Built with Claude Japan 2026 ／ 音楽は Claude がコードで作曲</div>
-  </AbsoluteFill>
-);
+/** A crop of a still in its own window: `box` is the crop in the image's pixels, shown `width` wide. */
+const Crop = ({ src, size, box, width, style }: { src: string; size: [number, number]; box: [number, number, number, number]; width: number; style?: React.CSSProperties }) => {
+  const k = width / box[2];
+  return (
+    <div style={{ position: "relative", width, height: box[3] * k, overflow: "hidden", ...style }}>
+      <Img src={staticFile(src)} style={{ position: "absolute", left: -box[0] * k, top: -box[1] * k, width: size[0] * k, height: size[1] * k, maxWidth: "none" }} />
+    </div>
+  );
+};
+
+const HAIRLINE = "0 0 0 1px rgba(243,236,223,.3), 0 14px 70px rgba(70,90,160,.2)";
+const caption = { fontFamily: serif, fontSize: 21, letterSpacing: "0.08em", color: MUTED, fontFeatureSettings: '"palt"' } as const;
+
+/** The plate and the two records, side by side. The app underlines the names in the records; the film does the same on the photo. */
+const PLATE: [number, number, number, number] = [350, 470, 680, 380];
+const RECORD: [number, number, number, number] = [2640, 1080, 1072, 660];
+const Reveal = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const t = frame / fps;
+  const ease = (a: number, b: number) => interpolate(t, [a, b], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const move = ease(2.5, 3.2);
+  const width = interpolate(move, [0, 1], [1300, 790]);
+  const left = interpolate(move, [0, 1], [310, 134]);
+  const top = interpolate(move, [0, 1], [80, 300]);
+  const k = width / PLATE[2];
+  const records = ease(2.9, 3.5); // the record crop already carries the app's own underlines
+  const RW = 826;
+  // the names, in the coordinates of each crop; the score plucks at the same moments
+  const [person, company] = timeline.nameLines;
+  const onPlate = [
+    { p: "M 109 194 L 382 204", at: company },
+    { p: "M 304 266 L 512 272", at: person },
+  ];
+  const line = (at: number) => ({ strokeDasharray: 1, strokeDashoffset: 1 - ease(at, at + 0.5) });
+  return (
+    <AbsoluteFill style={{ background: STAGE }}>
+      <div style={{ position: "absolute", left, top, width, borderRadius: 6, overflow: "hidden", boxShadow: HAIRLINE }}>
+        <Crop src="lantern.jpg" size={[1600, 1200]} box={PLATE} width={width} />
+        <svg viewBox={`0 0 ${PLATE[2]} ${PLATE[3]}`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+          {onPlate.map(({ p, at }) => (
+            <path key={p} d={p} pathLength={1} stroke={GOLD} strokeWidth={3.2 / k} fill="none" style={line(at)} />
+          ))}
+        </svg>
+      </div>
+      <div style={{ ...caption, position: "absolute", left: 138, top: 300 + PLATE[3] * (790 / PLATE[2]) + 14, opacity: records }}>同じ銘板の接写（別の写真、CC0）</div>
+      <div style={{ position: "absolute", left: 134, top: 300 + PLATE[3] * (790 / PLATE[2]) + 56, display: "flex", alignItems: "center", gap: 18, opacity: records }}>
+        <Img src={staticFile("s/plate-read.png")} style={{ width: 200, height: 95, borderRadius: 6, boxShadow: HAIRLINE }} />
+        <div style={caption}>Claude が読んだ写真の銘板</div>
+      </div>
+      <div style={{ position: "absolute", left: 960, top: 214, opacity: records }}>
+        <div style={{ position: "relative", width: RW, borderRadius: 6, overflow: "hidden", boxShadow: HAIRLINE }}>
+          <Crop src="s/1961-2x.png" size={[3840, 2160]} box={RECORD} width={RW} />
+        </div>
+        <div style={{ ...caption, marginTop: 14, marginLeft: 4 }}>記録の原文（アプリの実画面、拡大）</div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+/** Thousands of threads, and one: two stills from one seed, dissolving, under a slow push (a still, not the app). */
+const Reach = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const t = frame / fps;
+  const one = interpolate(t, [2.8, 3.9], [0, 1], { ...clamp, easing: Easing.inOut(Easing.quad) });
+  const fill = { position: "absolute", inset: 0, width: "100%", height: "100%" } as const;
+  const x = 960 + 0.26 / (1.6 / 1920);
+  return (
+    <AbsoluteFill style={{ background: STAGE, overflow: "hidden" }}>
+      <div style={{ ...fill, transform: `scale(${1 + 0.006 * t})`, transformOrigin: `${x}px 50%` }}>
+        <Img src={staticFile("warp/all.png")} style={{ ...fill, filter: "brightness(.72)" }} />
+        <Img src={staticFile("warp/one.png")} style={{ ...fill, opacity: one, filter: "brightness(.3)" }} />
+        <Img src={staticFile("warp/one.png")} style={{ ...fill, opacity: one, filter: "brightness(1.3)", clipPath: `inset(0 ${1920 - x - 7}px 0 ${x - 7}px)` }} />
+        <div style={{ position: "absolute", left: x - 26, top: 0, width: 52, height: "100%", opacity: one * 0.6, background: `linear-gradient(90deg, transparent, ${GOLD}55, transparent)`, mixBlendMode: "screen" }} />
+      </div>
+      <div style={{ position: "absolute", left: x + 30, top: 400, fontFamily: serif, color: PAPER, opacity: interpolate(t, [3.8, 4.3], [0, 1], clamp), textShadow: "0 0 14px #000" }}>
+        <div style={{ fontSize: 40, letterSpacing: "0.03em" }}>Kaminarimon Gate</div>
+        <div style={{ fontSize: 22, marginTop: 8, color: MUTED, fontFeatureSettings: '"palt"' }}>観光庁 多言語解説データベース</div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+/** The postcard as a card, the lantern's warmth far behind it. */
+const Close = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const rise = interpolate(frame / fps, [0, 0.8], [14, 0], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const height = 900;
+  return (
+    <AbsoluteFill style={{ background: STAGE, overflow: "hidden" }}>
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse 760px 620px at 50% 44%, rgba(224,110,60,.07), transparent)" }} />
+      <Img
+        src={staticFile("s/postcard-native.png")}
+        style={{ position: "absolute", left: 960 - (height * 9) / 32, top: 26 + rise, height, width: (height * 9) / 16, borderRadius: 6, boxShadow: "0 0 0 1px rgba(243,236,223,.3), 0 24px 90px rgba(0,0,0,.7)" }}
+      />
+    </AbsoluteFill>
+  );
+};
 
 /** Under the frame the words stand alone on the night; over a full-bleed shot a soft shade carries them. */
 const Subtitle = ({ text, inFrame }: { text: string; inFrame: boolean }) => (
@@ -110,71 +251,32 @@ const Subtitle = ({ text, inFrame }: { text: string; inFrame: boolean }) => (
   </AbsoluteFill>
 );
 
-/** The run as a thread down the left margin: it grows in real time, and each step lights as its recorded call starts. */
-const Progress = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const t = frame / fps;
-  const steps = timeline.steps as [string, number][];
-  const top = 44;
-  const span = 860;
-  const x = 62;
-  const at = (i: number) => top + (span * i) / steps.length;
-  const reach = interpolate(t, [steps[0][1], steps[1][1], steps[2][1], timeline.runDone], [at(0), at(1), at(2), top + span], clamp);
-  return (
-    <AbsoluteFill style={{ fontFamily: serif }}>
-      <div style={{ position: "absolute", left: x, top, width: 1, height: span, background: "rgba(184,191,211,.26)" }} />
-      <div style={{ position: "absolute", left: x - 0.5, top, width: 2, height: reach - top, background: GOLD, boxShadow: `0 0 8px ${GOLD}` }} />
-      {steps.map(([label, when], i) => {
-        const on = t >= when;
-        const active = on && (i === steps.length - 1 ? t < timeline.runDone : t < steps[i + 1][1]);
-        return (
-          <div key={label}>
-            <div
-              style={{
-                position: "absolute",
-                left: x - 6,
-                top: at(i) - 6,
-                width: 13,
-                height: 13,
-                borderRadius: 7,
-                background: on ? GOLD : "#0e1426",
-                border: `1px solid ${on ? GOLD : MUTED}`,
-                boxShadow: active ? `0 0 14px ${GOLD}` : "none",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                left: x + 16,
-                top: at(i) + 2,
-                writingMode: "vertical-rl",
-                fontSize: 26,
-                letterSpacing: "0.14em",
-                color: active ? PAPER : on ? MUTED : MUTED,
-                opacity: active ? 1 : on ? 0.75 : 0.38,
-                fontFeatureSettings: '"vpal"',
-              }}
-            >
-              {label}
-            </div>
-          </div>
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
+const COMPOSED: Record<string, React.ReactNode> = { reveal: <Reveal />, reach: <Reach />, close: <Close />, credit: <Credit /> };
 
 /** The film. App shots are one live run; the threads, the title and the print's framing are made for the film. */
 export const Film = () => {
   const { fps } = useVideoConfig();
   const f = (s: number) => Math.round(s * fps);
   const scene = (id: string) => timeline.scenes.find((s) => s.id === id)!;
-  const read = scene("read");
   const sceneAt = (t: number) => timeline.scenes.find((s) => s.start <= t && t < s.end)?.id ?? "";
-  const framed = { position: "absolute", ...FRAME, overflow: "hidden", outline: "1px solid rgba(184,191,211,.16)" } as const;
+  const framed = {
+    position: "absolute",
+    ...FRAME,
+    overflow: "hidden",
+    borderRadius: 6,
+    boxShadow: "0 0 0 1px rgba(243,236,223,.3), 0 14px 70px rgba(70,90,160,.28)",
+  } as const;
+  // what the frame shows, said under it: only once the threads have left it, and "enlarged" on a fixed crop
+  const labels = ["wall", "read", "absence", "check", "burn", "gift", "other"].flatMap((id) => {
+    let at = scene(id).start;
+    return (scene(id).segments as Segment[]).map((seg) => {
+      const from = at;
+      at += seconds(seg);
+      return { from: id === "read" ? from + 0.5 : from, to: at, text: id === "other" ? "アプリの実画面（別の写真：上野・根本中堂）" : seg.cam ? "アプリの実画面（拡大）" : "アプリの実画面" };
+    });
+  });
   return (
-    <AbsoluteFill style={{ background: "#0e1426" }}>
+    <AbsoluteFill style={{ background: STAGE }}>
       <style>{fonts}</style>
       <Sequence durationInFrames={f(timeline.opening.duration)}>
         <Opening />
@@ -183,11 +285,11 @@ export const Film = () => {
         <Title />
       </Sequence>
       {timeline.scenes
-        .filter((s) => s.segments.length || s.id === "credit")
+        .filter((s) => s.segments.length || s.id in COMPOSED)
         .map((s) => (
           <Sequence key={s.id} from={f(s.start)} durationInFrames={f(s.end - s.start)}>
-            {s.id === "credit" ? (
-              <Credit />
+            {s.id in COMPOSED ? (
+              COMPOSED[s.id]
             ) : (
               <div style={FRAMED.includes(s.id) ? framed : { position: "absolute", inset: 0 }}>
                 <Series>
@@ -201,7 +303,7 @@ export const Film = () => {
             )}
             <Fade
               len={s.end - s.start}
-              open={!["read", "check", "burn", "gift", "absence"].includes(s.id)}
+              open={!["read", "check", "burn", "gift"].includes(s.id)}
               shut={!["enter", "absence", "check", "burn"].includes(s.id)}
             />
           </Sequence>
@@ -211,9 +313,11 @@ export const Film = () => {
           <Bridge last={f(timeline.bridges.enter.duration)} />
         </div>
       </Sequence>
-      <Sequence from={f(read.start)} durationInFrames={f(read.end - read.start)}>
-        <Progress />
-      </Sequence>
+      {labels.map((l) => (
+        <Sequence key={l.from} from={f(l.from)} durationInFrames={f(l.to - l.from)}>
+          <div style={{ position: "absolute", right: 1920 - FRAME.left - FRAME.width + 4, top: FRAME.top + FRAME.height + 12, fontFamily: serif, fontSize: 19, letterSpacing: "0.08em", color: MUTED }}>{l.text}</div>
+        </Sequence>
+      ))}
       {Object.entries(timeline.notes).map(([id, note]) => (
         <Sequence key={id} from={f(scene(id).start)} durationInFrames={f(Math.min(4, scene(id).end - scene(id).start))}>
           <FadeText len={4} style={{ right: 28, bottom: 18, fontSize: 18, color: "#d9d3c7", textShadow: "0 0 6px #000" }}>
@@ -223,7 +327,7 @@ export const Film = () => {
       ))}
       {guide.map((g) => (
         <Sequence key={g.wav} from={f(g.start)} durationInFrames={f(g.seconds)}>
-          <Subtitle text={g.sub} inFrame={FRAMED.includes(sceneAt(g.start))} />
+          <Subtitle text={g.sub} inFrame={ON_GROUND.includes(sceneAt(g.start))} />
         </Sequence>
       ))}
     </AbsoluteFill>
