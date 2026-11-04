@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BackLink } from "../../ui/back-link";
 import { Button } from "../../ui/button";
 import { PrintDiorama } from "./diorama";
@@ -67,7 +68,7 @@ const debugOn = () => typeof location !== "undefined" && new URLSearchParams(loc
  */
 import { OrbitControls, useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, Suspense } from "react";
 import * as THREE from "three";
 import { yearState, type TimelineData } from "@/lib/time-river";
 import {
@@ -330,6 +331,17 @@ export function SpaceViewer({
   };
   // inside the print there is only the print: the panel closes (full screen), the way back stays
   const immersive = inside && !flat && !moving && opened > 0;
+  // came from the stage (?enter=1): only the print and the way back, from the first frame
+  const focus = autoEnter;
+  const router = useRouter();
+  const leaving = useRef(false);
+  const backToStage = () => (history.length > 1 ? router.back() : router.push("/"));
+  // 「絵から出る」 from the stage: the camera steps out of the print, then the stage comes back
+  const leave = () => {
+    if (flat || !focus) return focus ? backToStage() : go(false);
+    leaving.current = true;
+    go(false);
+  };
   const lang = useLang();
   const l = L[lang];
   const elements = Object.entries(scene.elements).sort((a, b) => LAYER_Z[a[1].layer] - LAYER_Z[b[1].layer]);
@@ -338,6 +350,11 @@ export function SpaceViewer({
     const t = setTimeout(() => setSplit(performance.now()), 400);
     return () => clearTimeout(t);
   }, []);
+  useEffect(() => {
+    if (!align) return;
+    useTexture.preload(`/api/cache/artifacts/${align.artifact}/image.jpg`);
+    useTexture.preload(`/api/cache/artifacts/${align.artifact}/depth.png`);
+  }, [align]);
   // 「提灯から提灯へ」→ この絵の中へ: arriving with ?enter=1 enters the aligned print after the split
   useEffect(() => {
     if (!autoEnter || !align) return;
@@ -351,7 +368,8 @@ export function SpaceViewer({
 
   return (
     <div className="flex flex-1 flex-col lg:flex-row">
-      <div className={`relative flex-1 ${immersive ? "h-dvh" : "h-[70vh] lg:h-auto"}`}>
+      {/* min-w-0: the canvas keeps its pixel width from the full-screen view; without it the panel is pushed off screen */}
+      <div className={`relative min-w-0 flex-1 overflow-hidden ${immersive || focus ? "h-dvh" : "h-[70vh] lg:h-auto"}`}>
         {flat ? (
           <Flat2D photo={file(scene.photo)} art={align ? `/api/cache/artifacts/${align.artifact}/image.jpg` : null} rect={align ? artifactRectInPhoto(align) : null} overlay={overlayEff} inside={inside} reason={force2d ? "指定により2D表示" : "この端末では3Dの動きが重いため、2D表示に切り替えました"} onTry3d={force2d ? undefined : () => {
             fpsLog.current = [];
@@ -361,6 +379,7 @@ export function SpaceViewer({
         ) : (
         <Canvas camera={{ position: [0, 0, CAMERA_Z], fov: 30 }} dpr={[1, 2]} gl={{ antialias: true }}>
           <color attach="background" args={["#0e1426"]} />
+          <Suspense fallback={null}>
           <LayerPlane url={file(scene.plate ?? scene.photo)} rect={{ x: 0, y: 0, ...world }} targetZ={0} split={split} reduced={reduced} opacity={photoOpacity} />
           {elements.map(([key, el], i) => (
             <LayerPlane
@@ -374,7 +393,9 @@ export function SpaceViewer({
               renderOrder={i + 1}
             />
           ))}
+          </Suspense>
           {align && artRect && artFrame && inside && opened > 0 && (
+            <Suspense fallback={null}>
             <PrintDiorama
               camera={artFrame}
               image={`/api/cache/artifacts/${align.artifact}/image.jpg`}
@@ -384,8 +405,10 @@ export function SpaceViewer({
               opened={opened}
               reduced={reduced}
             />
+            </Suspense>
           )}
           {align && artRect && overlayEff > 0 && !(inside && opened > 0) && (
+            <Suspense fallback={null}>
             <LayerPlane
               url={`/api/cache/artifacts/${align.artifact}/image.jpg`}
               rect={artRect}
@@ -395,6 +418,7 @@ export function SpaceViewer({
               opacity={overlayEff}
               renderOrder={100}
             />
+            </Suspense>
           )}
           <OrbitControls
             ref={controls as never}
@@ -406,18 +430,19 @@ export function SpaceViewer({
           <CameraRig moving={moving} inside={inside} frame={artFrame} reduced={reduced} controls={controls} onDone={() => {
               setMoving(0);
               setOpened(inside ? performance.now() : 0);
+              if (!inside && leaving.current) backToStage();
             }}
           />
           <AspectProbe onAspect={setAspect} />
           <Fps onFps={setFps} />
         </Canvas>
         )}
-        {immersive && (
+        {(immersive || focus) && (
           <LazyMotion features={domAnimation} strict>
           <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: reduced ? 0 : 1.2, duration: 0.6 }}
+            transition={{ delay: reduced || focus ? 0 : 1.2, duration: 0.6 }}
             className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-6 bg-gradient-to-b from-night/85 to-transparent px-6 pt-8 pb-24 lg:px-12 lg:pt-10"
             data-testid="space-inside"
           >
@@ -428,20 +453,26 @@ export function SpaceViewer({
                   TSUMUGI
                 </Link>
               </nav>
-              <p className="label mt-3">{l.inside}</p>
-              <p className="mt-2 font-serif text-title">{l.print}</p>
-              {ys && (
-                <p className="mt-2 flex flex-wrap items-center gap-3 font-serif text-body text-paper/85" data-testid="space-year-state" data-state={ys.state}>
-                  {ys.label[lang]}
-                </p>
+              {(immersive || (flat && inside)) && (
+                <>
+                  <p className="label mt-3">{l.inside}</p>
+                  <p className="mt-2 font-serif text-title">{l.print}</p>
+                  {ys && (
+                    <p className="mt-2 flex flex-wrap items-center gap-3 font-serif text-body text-paper/85" data-testid="space-year-state" data-state={ys.state}>
+                      {ys.label[lang]}
+                    </p>
+                  )}
+                  <p className="mt-2 text-caption text-muted">{l.how}</p>
+                </>
               )}
-              <p className="mt-2 text-caption text-muted">{l.how}</p>
             </div>
-            <div className="pointer-events-auto flex gap-3">
-              <Button variant="secondary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={() => go(false)}>
-                {l.back}
-              </Button>
-            </div>
+            {(immersive || (flat && inside)) && (
+              <div className="pointer-events-auto flex gap-3">
+                <Button variant="secondary" data-testid="enter-painting" disabled={Boolean(moving)} onClick={leave}>
+                  {l.back}
+                </Button>
+              </div>
+            )}
           </m.div>
           </LazyMotion>
         )}
@@ -452,7 +483,7 @@ export function SpaceViewer({
         )}
       </div>
 
-      {!immersive && (
+      {!immersive && !focus && (
       <aside className="flex w-full flex-col gap-7 px-6 py-10 lg:w-[24rem] lg:pr-10">
         <nav className="-ml-1 mb-1 flex items-center gap-6" aria-label="TSUMUGI">
           <BackLink />
