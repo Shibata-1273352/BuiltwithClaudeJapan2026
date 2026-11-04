@@ -4,7 +4,7 @@
  * uneven rate, so each keeps its timestamp and ffmpeg lays them onto a constant 30 fps.
  *
  *   npx tsx --env-file=.env scripts/record-takes.ts <baseUrl> <take> [--scene id]
- * takes: live (one real run, costs a Claude run), read, years, space, close
+ * takes: full (--source replay|live), live (one real run, costs a Claude run), read, years, space, close
  * Output: video/out/takes/<take>.mp4
  */
 import { execFileSync } from "node:child_process";
@@ -108,6 +108,61 @@ const takes: Record<string, () => Promise<void>> = {
     beat("knot");
     await hold(9000);
   },
+  /**
+   * The whole demonstration in one run: Claude works, into the print, back to the same run (it is
+   * not run again), the years, the check, the fire, the flow to the knot. `--source replay` rehearses
+   * the same steps on the recording, at no cost; `--source live` is one real run.
+   */
+  async full() {
+    const live = rest.includes("--source") && rest[rest.indexOf("--source") + 1] === "live";
+    await roll();
+    await page.goto(live ? `${base}/live?present=1&hold=broken` : `${R}?present=1&hold=broken`, { waitUntil: "domcontentloaded" });
+    beat("stage open");
+    await vis(page, "note-link").waitFor({ timeout: 150_000 });
+    beat("run done");
+    const run = live ? new URL(page.url()).searchParams.get("run") : replay;
+    console.log(`run ${run}`);
+    await hold(4000);
+    beat("into the print");
+    const space = await vis(page, "space-link").getAttribute("href");
+    await page.goto(`${base}${space}&film=1`, { waitUntil: "domcontentloaded" });
+    await hold(11_000);
+    beat("back to the run");
+    await page.goto(live ? `${base}/live?run=${run}&present=1&hold=broken` : `${R}?present=1&hold=broken&at=end`, { waitUntil: "domcontentloaded" });
+    await vis(page, "note-link").waitFor({ timeout: 60_000 });
+    await hold(1500);
+    beat("stage again");
+    if ((await vis(page, "broken-callout").count()) > 0) console.log("WARN: 1878 showed before the years were turned");
+    const handle = vis(page, "time-handle");
+    await handle.focus();
+    for (let i = 0; i < 14; i++) {
+      await page.keyboard.press("Shift+ArrowUp");
+      await hold(70);
+    }
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press("ArrowUp");
+      await hold(90);
+    }
+    beat("1878");
+    console.log(`1878 discovery shown: ${(await vis(page, "broken-callout").count()) > 0}`);
+    await hold(5000);
+    beat("check");
+    await vis(page, "backstage-toggle").click();
+    await hold(6000);
+    await page.keyboard.press("Escape");
+    await hold(800);
+    beat("1866");
+    await vis(page, "time-toggle").click();
+    await hold(1200);
+    const panel = page.getByTestId("time-panel");
+    await panel.getByRole("slider").fill("1866");
+    await hold(6000);
+    beat("flow");
+    await panel.getByRole("button", { name: "時を流す" }).click();
+    await panel.getByTestId("time-knot").waitFor({ timeout: 60_000 });
+    beat("knot");
+    await hold(6000);
+  },
   /** One check in 舞台裏. */
   async check() {
     await page.goto(`${R}?present=1&at=end`, { waitUntil: "domcontentloaded" });
@@ -121,7 +176,7 @@ const takes: Record<string, () => Promise<void>> = {
   },
   /** Into the print: nothing touches the pointer, the sway carries it. */
   async space() {
-    await page.goto(`${base}/space/${scene}?enter=1&present=1&3d=1`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${base}/space/${scene}?enter=1&present=1&3d=1&film=1`, { waitUntil: "domcontentloaded" });
     await roll();
     await hold(11_000);
   },
