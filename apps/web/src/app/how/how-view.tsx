@@ -6,8 +6,6 @@
  */
 import Link from "next/link";
 import { BackLink } from "../ui/back-link";
-import type { StageFact } from "@/lib/how-facts";
-import type { LandingFacts } from "@/lib/landing-facts";
 import { dict, LangToggle, useDict, useLang } from "../i18n";
 
 type Row = { stage: string; claude: string; code: string };
@@ -30,7 +28,6 @@ const T = dict({
       { stage: "時を照らす", claude: "あえて任せない（存在の判定は誤りが許されないため）", code: "書かれた年に、それが本当にあったかを年表で判定する。この段では Claude に判定させない（質問への答えは Claude が資料から書く）" },
       { stage: "紡ぐ", claude: "主張を引用しながら、この場所の物語を書く", code: "各文の引用をもう一度確かめ、根拠のない文は捨てる" },
       { stage: "糸を引く", claude: "質問に、今回の資料だけから答える（ネイティブの引用：search_result）", code: "引用が原文にあるかを照合する。なければ「書かれていません」と答える" },
-      { stage: "評価", claude: "同じ呼び出しを Batch API で一括実行する", code: "正解データと比べて採点し、画面の数字をそこから計算する" },
     ] as Row[],
     measuredTitle: "実測（保存された呼び出しから）",
     measuredNote: (runs: number, since: string) => `${since} 以降の ${runs} 回の探索から。時間は中央値、費用は平均。`,
@@ -48,10 +45,7 @@ const T = dict({
       ["サーバー側フォールバック", "ライブのデモが、一つのモデルの混雑で止まらない"],
       ["fast mode", "デモ本番だけ速く（費用は約2倍のため、普段は使わない）"],
       ["プロンプトキャッシュ", "毎回同じ指示文を再利用し、時間と費用を下げる"],
-      ["Batch API", "評価を一括・半額で回し、画面の数字はその結果から出す"],
     ],
-    evalTitle: "評価の数字",
-    evalLine: (f: LandingFacts) => `引用は原文からコードが切り出す（Claude は文の番号だけを指す）：${f.citationExactPct}%（${f.citationN} 件）・作った引用の拒否 ${f.rejected}/${f.fabricated}（人工の${f.fabricated}例）・根拠のない文は設計上表示しない（${f.evalRun}）`,
     codeTitle: "Claude Code で作った",
     code: [
       ["計画 → レビュー", "要件から計画モードで計画を立て、別の目でレビューしてから実装した"],
@@ -96,10 +90,7 @@ const T = dict({
       ["Server-side fallback", "A live demo does not stop on one model's capacity"],
       ["Fast mode", "Only for the live demo (about twice the cost)"],
       ["Prompt caching", "The same instructions are reused, cutting time and cost"],
-      ["Batch API", "The evaluation runs in one batch at half the cost; the numbers on screen come from it"],
     ],
-    evalTitle: "Evaluation",
-    evalLine: (f: LandingFacts) => `Quotes are cut from the original by code (Claude only points to sentence numbers): ${f.citationExactPct}% (${f.citationN}) · fabricated quotes rejected ${f.rejected}/${f.fabricated} (${f.fabricated} synthetic cases) · unsupported sentences are never shown, by design (${f.evalRun})`,
     codeTitle: "Built with Claude Code",
     code: [
       ["Plan → review", "Plans in plan mode from the requirements, reviewed by a second pair of eyes before any code"],
@@ -120,7 +111,6 @@ const SHORT = {
     ["あえて任せない", "年表で、あったかを判定"],
     ["引用しながら書く", "引用をもう一度確かめる"],
     ["資料だけで答える", "引用が資料にあるか照合"],
-    ["Batch API で一括実行", "正解と比べて採点"],
   ],
   en: [
     ["reads the brush lettering", "matches the place"],
@@ -129,11 +119,10 @@ const SHORT = {
     ["deliberately not Claude", "decides from the timeline"],
     ["writes, citing", "re-checks every citation"],
     ["answers from the sources only", "checks each quote is in them"],
-    ["runs as one Batch job", "scores against the gold"],
   ],
 } as const;
 
-export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; runs: number; since: string; facts: LandingFacts }) {
+export function HowView() {
   const t = useDict(T);
   const short = SHORT[useLang()];
   return (
@@ -193,33 +182,6 @@ export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; r
         </details>
       </section>
 
-      <section className="border-t border-rule pt-6" data-testid="how-measured">
-        <p className="label">{t.measuredTitle}</p>
-        <p className="mt-1 text-caption text-muted">{t.measuredNote(runs, since)}</p>
-        <table className="mt-3 w-full border-collapse text-small tabular-nums">
-          <thead>
-            <tr className="text-left text-caption text-muted">
-              <th className="py-2 font-normal">{t.colStage}</th>
-              <th className="py-2 text-right font-normal">{t.colCalls}</th>
-              <th className="py-2 pl-6 font-normal">{t.colModels}</th>
-              <th className="py-2 text-right font-normal">{t.colTime}</th>
-              <th className="py-2 text-right font-normal">{t.colCost}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stages.map((s) => (
-              <tr key={s.stage} className="border-t border-rule">
-                <td className="py-2">{t.stageName[s.stage] ?? s.stage}</td>
-                <td className="py-2 text-right">{s.calls}</td>
-                <td className="py-2 pl-6 text-paper/75">{s.models.map((m) => m.replace(/^claude-/, "")).join(", ")}</td>
-                <td className="py-2 text-right">{s.medianS.toFixed(1)} s</td>
-                <td className="py-2 text-right">${s.meanCost.toFixed(3)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
       <section className="grid gap-10 border-t border-rule pt-6 md:grid-cols-2">
         <div>
           <p className="label">{t.featuresTitle}</p>
@@ -231,10 +193,6 @@ export function HowView({ stages, runs, since, facts }: { stages: StageFact[]; r
               </div>
             ))}
           </dl>
-          <p className="label mt-8">{t.evalTitle}</p>
-          <p className="mt-2 text-small text-paper/85" data-testid="how-eval">
-            {t.evalLine(facts)}
-          </p>
         </div>
         <div>
           <p className="label">{t.codeTitle}</p>

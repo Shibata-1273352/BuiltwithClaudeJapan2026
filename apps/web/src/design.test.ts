@@ -36,4 +36,8 @@ describe("design rules (CLAUDE.md)", () => {
   it("5. the disclaimer is said once", () => {
     expect(hits(all, /根拠ではありません/).length).toBeLessThanOrEqual(1);
   });
+  it("evaluation stays out of the app: no screen reads the evaluation report", () => {
+    // system and evaluation are separate; the figures live in the README and docs, never on screen
+    expect(hits(all, /eval-summary|evalSummary|\bevalRun\b|評価/)).toEqual([]);
+  });
 });

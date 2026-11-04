@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { postcardData, sealOf } from "./postcard";
+import { postcardData, sealOf, sinceOf } from "./postcard";
 
 const events = [
   { type: "place", data: { chosen: { path: [{ name: { ja: "雷門", en: "Kaminarimon" } }, { name: { ja: "浅草", en: "Asakusa" } }] } } },
@@ -42,5 +42,24 @@ describe("postcard: what the visitor takes away", () => {
     expect(d.place?.en).toBe("Kaminarimon");
     expect(d.area?.ja).toBe("浅草");
     expect(d.sceneId).toBe("cap_x");
+  });
+});
+
+describe("postcard: an answer to the friend's two questions", () => {
+  const ev = (id: string, event: string, start: string) => ({ id, event, time: { start, end: start }, evidence: [] });
+  it("what it says: Claude's reading of the inscription the seal came from, in the card's language", () => {
+    const withMeaning = events.map((e) =>
+      e.type === "see" ? { type: "see", data: { elements: [{ text_original: null }, { text_original: "松下幸之助", box: { w: 0.1, h: 0.05 } }, { text_original: "風雷神門", meaning: { ja: "風神と雷神の門", en: "Gate of the Wind and Thunder Gods" }, box: { w: 0.5, h: 0.5 } }] } } : e,
+    );
+    expect(postcardData(withMeaning, "en", null, titles).reading).toEqual({ text: "風雷神門", meaning: "Gate of the Wind and Thunder Gods" });
+    expect(postcardData(withMeaning, "ja", null, titles).reading?.meaning).toBe("風神と雷神の門");
+    expect(postcardData(events, "en", null, titles).reading).toBeNull(); // no meaning read: no answer printed
+  });
+  it("how long: the year of the last rebuild, from the timeline (never typed); none if destroyed after", () => {
+    expect(sinceOf({ events: [ev("a", "destroyed", "1866-01-28"), ev("b", "temporary", "1868-01-01"), ev("c", "rebuilt", "1960-05-01")] })).toBe("1960");
+    expect(sinceOf({ events: [ev("a", "built", "1795-01-01"), ev("b", "destroyed", "1866-01-28")] })).toBeNull();
+    expect(sinceOf(undefined)).toBeNull();
+    const timeline = { type: "timeline", data: { events: [ev("c", "rebuilt", "1960-05-01")] } };
+    expect(postcardData([...events, timeline], "ja", null, titles).since).toBe("1960");
   });
 });

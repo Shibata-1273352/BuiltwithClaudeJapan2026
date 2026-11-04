@@ -1,19 +1,12 @@
 /**
- * The numbers and names on the landing page, computed — never typed (CLAUDE.md): the evaluation
- * figures from the latest report, the places with a reviewed timeline, the size of the corpus.
+ * The names on the landing page, computed — never typed (CLAUDE.md): the places with a reviewed
+ * timeline, the size of the corpus. No evaluation figures: evaluation stays out of the app.
  */
 import { entities } from "./entities-server";
-import { evalSummary } from "./eval-summary";
 import { timeline } from "./timeline-server";
 import sources from "../../../../corpus/sources.json";
 
 export type LandingFacts = {
-  citationExactPct: number;
-  citationN: number;
-  fabricated: number;
-  rejected: number;
-  unsupportedShown: number;
-  evalRun: string;
   places: { ja: string; en: string; reviewed: boolean }[];
   /** the year of the print on the landing (from the corpus, not typed) */
   printYear: number | null;
@@ -22,7 +15,6 @@ export type LandingFacts = {
 };
 
 export function landingFacts(): LandingFacts {
-  const e = evalSummary();
   const E = entities();
   const tl = timeline();
   // one line per structure, named with its site, the "(present hall)" style qualifiers dropped
@@ -44,12 +36,6 @@ export function landingFacts(): LandingFacts {
   const list = (sources as { sources: { lang: string; id?: string; first_published?: number }[] }).sources;
   const printYear = list.find((x) => x.id === "met-56689")?.first_published ?? null;
   return {
-    citationExactPct: Math.round(e.citation.exact * 100),
-    citationN: e.citation.n,
-    fabricated: e.citation.fabricated,
-    rejected: e.citation.rejected,
-    unsupportedShown: e.generation.shown,
-    evalRun: e.run,
     places,
     printYear,
     sources: list.length,

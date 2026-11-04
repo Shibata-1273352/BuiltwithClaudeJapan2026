@@ -22,7 +22,7 @@ const STAGE_JA: Record<string, string> = {
   "extract:en": "証拠の抽出・英（Claude）",
   "extract:ja": "証拠の抽出・日（Claude）",
   extract2: "追加の抽出（Claude）",
-  gap: "不足の評価（Claude、抽出と並行）",
+  gap: "不足の判断（Claude、抽出と並行）",
   existence: "存在判定（コード）",
   names: "言の地層（コード）",
   narrate: "紡ぐ（Claude）",

@@ -37,7 +37,6 @@ const T = dict({
     nowAlt: "いまの雷門の大提灯（写真、CC0）",
     printAlt: "歌川広重《名所江戸百景 浅草金龍山》の雷門の大提灯",
     own: "カメラで撮る",
-    sampleNote: "例の写真は Wikimedia Commons の CC0。その場でライブに解析します。",
     creditsTitle: "クレジット",
     creditPhoto: "例の写真（雷門の大提灯）：Wikimedia Commons、CC0。「雷門で試す」はこの写真をその場で解析します。",
     creditPrint: "歌川広重《名所江戸百景 浅草金龍山》：メトロポリタン美術館 Open Access、パブリックドメイン。",
@@ -47,12 +46,6 @@ const T = dict({
     ],
     trustTitle: "安心して使える理由",
     trust: "読むのは Claude、確かめるのはコード。資料にないことは「書かれていません」。",
-    numbers: (f: LandingFacts) => [
-      { v: `${f.citationExactPct}%`, l: `引用は原文からコードが切り出す（評価 ${f.citationN} 件）` },
-      { v: `${f.rejected}/${f.fabricated}`, l: "作られた引用を拒否" },
-      { v: `${f.unsupportedShown}`, l: "根拠のない文の表示" },
-    ],
-    evalNote: (run: string) => `評価：Batch API による一括評価（${run}）`,
     howLink: "しくみを見る",
     whereTitle: "いま使える場所",
     full: (f: LandingFacts) =>
@@ -83,7 +76,6 @@ const T = dict({
     nowAlt: "The great lantern of Kaminarimon today (photo, CC0)",
     printAlt: "The great lantern of Kaminarimon in Utagawa Hiroshige's Kinryūzan Temple in Asakusa",
     own: "Open the camera",
-    sampleNote: "The example photo is CC0 from Wikimedia Commons, analysed live.",
     creditsTitle: "Credits",
     creditPhoto: "Example photo (Kaminarimon's great lantern): Wikimedia Commons, CC0. \"Try it at Kaminarimon\" analyses this photo live.",
     creditPrint: "Utagawa Hiroshige, Kinryūzan Temple in Asakusa: The Metropolitan Museum of Art Open Access, public domain.",
@@ -93,12 +85,6 @@ const T = dict({
     ],
     trustTitle: "Why you can rely on it",
     trust: "Claude reads; code checks. What the sources do not say, it says so.",
-    numbers: (f: LandingFacts) => [
-      { v: `${f.citationExactPct}%`, l: `of quotes are cut from the original by code (${f.citationN} in the evaluation)` },
-      { v: `${f.rejected}/${f.fabricated}`, l: "fabricated quotes rejected" },
-      { v: `${f.unsupportedShown}`, l: "unsupported sentences shown" },
-    ],
-    evalNote: (run: string) => `Evaluation: one batch run with the Batch API (${run})`,
     howLink: "See how it works",
     whereTitle: "Where it works today",
     full: (f: LandingFacts) =>
@@ -185,14 +171,6 @@ export function Landing({ facts }: { facts: LandingFacts }) {
         <div>
           <p className="label">{t.trustTitle}</p>
           <p className="mt-3 max-w-[36em] text-body text-paper/85">{t.trust}</p>
-          <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
-            {t.numbers(facts).slice(0, 1).map((n) => (
-              <div key={n.l} className="flex flex-col">
-                <dt className="order-2 mt-1 text-caption text-muted">{n.l}</dt>
-                <dd className="font-serif text-title tabular-nums">{n.v}</dd>
-              </div>
-            ))}
-          </dl>
           <p className="mt-4 text-caption text-muted">
             <Link href="/how" className="underline decoration-rule-strong underline-offset-4 hover:text-paper">
               {t.howLink}
@@ -224,7 +202,6 @@ export function Landing({ facts }: { facts: LandingFacts }) {
           <ul className="mt-2 flex flex-col gap-1">
             <li>{t.creditPhoto}</li>
             <li>{t.creditPrint}</li>
-            <li>{t.evalNote(facts.evalRun)}</li>
           </ul>
         </div>
       </footer>
