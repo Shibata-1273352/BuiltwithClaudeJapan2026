@@ -18,7 +18,7 @@ await ctx.addCookies([
 const page = await ctx.newPage();
 const errors: string[] = [];
 page.on("pageerror", (e) => errors.push(String(e).slice(0, 160)));
-const out = `/Users/shibata/tsumugi-data/out/screens/print${present ? "-present" : ""}`;
+const out = `${process.env.DATA_DIR}/out/screens/print${present ? "-present" : ""}`;
 const log: string[] = [];
 const fails: string[] = [];
 const v = (id: string) => page.getByTestId(id).filter({ visible: true });

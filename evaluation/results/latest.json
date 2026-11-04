@@ -1,5 +1,5 @@
 {
-  "run": "2026-11-03-perf",
+  "run": "2026-11-04",
   "model": "claude-opus-5-5",
   "cases": {
     "version": 1,
@@ -342,17 +342,17 @@
     "outside_passages_dropped": true
   },
   "live": {
-    "explorations": 49,
+    "explorations": 89,
     "failure_rate": 0,
     "latency_ms": {
-      "n": 48,
-      "median": 39528,
-      "p90": 49860
+      "n": 86,
+      "median": 30409,
+      "p90": 47440
     },
-    "cost_usd_mean": 0.24234916666666662,
+    "cost_usd_mean": 0.3233883720930232,
     "rag08": {
-      "explorations": 40,
-      "consistent": 40
+      "explorations": 78,
+      "consistent": 78
     }
   },
   "llm": {
@@ -381,115 +381,115 @@
           "selected": 12
         },
         "D": {
-          "items": 23,
+          "items": 22,
           "identification": {
             "n": 9,
             "precision": 1
           },
           "relation": {
-            "n": 12,
+            "n": 10,
             "violations": 0,
             "precision": 1,
             "examples": []
           },
           "support_proxy": {
-            "n": 23,
+            "n": 22,
             "rate": 1
           },
           "proposed_unchecked": {
-            "items": 25,
-            "identification": {
-              "n": 10,
-              "precision": 1
-            },
-            "relation": {
-              "n": 12,
-              "violations": 0,
-              "precision": 1,
-              "examples": []
-            },
-            "support_proxy": {
-              "n": 25,
-              "rate": 1
-            }
-          },
-          "status": {
-            "accepted": 23,
-            "downgraded": 2,
-            "rejected": 0
-          },
-          "citation": {
-            "n": 25,
-            "exact": 1
-          }
-        },
-        "D_noRel": {
-          "items": 23,
-          "identification": {
-            "n": 9,
-            "precision": 1
-          },
-          "relation": {
-            "n": 12,
-            "violations": 0,
-            "precision": 1,
-            "examples": []
-          },
-          "support_proxy": {
-            "n": 23,
-            "rate": 1
-          },
-          "proposed_unchecked": {
-            "items": 24,
+            "items": 23,
             "identification": {
               "n": 9,
               "precision": 1
             },
             "relation": {
-              "n": 12,
+              "n": 10,
               "violations": 0,
               "precision": 1,
               "examples": []
             },
             "support_proxy": {
-              "n": 24,
+              "n": 23,
               "rate": 1
             }
           },
           "status": {
-            "accepted": 23,
+            "accepted": 22,
             "downgraded": 1,
             "rejected": 0
+          },
+          "citation": {
+            "n": 23,
+            "exact": 1
           }
         },
-        "Dplus": {
-          "items": 35,
+        "D_noRel": {
+          "items": 22,
           "identification": {
-            "n": 20,
+            "n": 8,
             "precision": 1
           },
           "relation": {
-            "n": 20,
+            "n": 10,
             "violations": 0,
             "precision": 1,
             "examples": []
           },
           "support_proxy": {
-            "n": 35,
-            "rate": 0.8857142857142857
+            "n": 22,
+            "rate": 1
+          },
+          "proposed_unchecked": {
+            "items": 23,
+            "identification": {
+              "n": 8,
+              "precision": 1
+            },
+            "relation": {
+              "n": 10,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 23,
+              "rate": 1
+            }
           },
           "status": {
-            "accepted": 35,
+            "accepted": 22,
+            "downgraded": 1,
+            "rejected": 0
+          }
+        },
+        "Dplus": {
+          "items": 40,
+          "identification": {
+            "n": 19,
+            "precision": 1
+          },
+          "relation": {
+            "n": 22,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 40,
+            "rate": 0.725
+          },
+          "status": {
+            "accepted": 40,
             "downgraded": 3,
             "rejected": 0
           },
           "recall_all": {
-            "en": 0.5833333333333334,
-            "ja": 0.4642857142857143
+            "en": 0.6666666666666666,
+            "ja": 0.42857142857142855
           },
           "gap": {
             "enough": false,
-            "assessment": "雷門の説明・名称・存在時期については英日の資料がある程度集まっているが、雷門が実際に描かれた作品の日本語側の証拠がなく、存在判定も多くが「不明」か「不在」のままで、時期の裏付けが弱い。",
+            "assessment": "雷門の描写と名称は英日ともに候補があるが、多くは隣接地の記述で、雷門自体の存在時期は「不明」か「不在」ばかりである。日本語の美術作品の証拠は0件で、広重の作品しか確認できていない。",
             "gaps": [
               {
                 "facet": "historical_artifacts",
@@ -498,7 +498,7 @@
                   "雷門",
                   "浮世絵",
                   "浅草",
-                  "名所江戸百景"
+                  "名所"
                 ]
               },
               {
@@ -506,26 +506,26 @@
                 "lang": "en",
                 "terms": [
                   "Kaminarimon",
+                  "Thunder Gate",
                   "burned",
-                  "1865",
-                  "rebuilt 1960"
+                  "Asakusa"
                 ]
               },
               {
                 "facet": "naming",
                 "lang": "ja",
                 "terms": [
-                  "風雷神門",
                   "雷門",
-                  "大提灯",
-                  "松下幸之助"
+                  "風神雷神",
+                  "雷神門",
+                  "仁王門"
                 ]
               }
             ],
             "found": 12
           },
           "citation": {
-            "n": 38,
+            "n": 43,
             "exact": 1
           }
         }
@@ -554,63 +554,20 @@
           "selected": 12
         },
         "D": {
-          "items": 20,
+          "items": 18,
           "identification": {
             "n": 3,
             "precision": 1
           },
           "relation": {
-            "n": 12,
+            "n": 11,
             "violations": 0,
             "precision": 1,
             "examples": []
           },
           "support_proxy": {
-            "n": 20,
-            "rate": 0.4
-          },
-          "proposed_unchecked": {
-            "items": 21,
-            "identification": {
-              "n": 3,
-              "precision": 1
-            },
-            "relation": {
-              "n": 13,
-              "violations": 0,
-              "precision": 1,
-              "examples": []
-            },
-            "support_proxy": {
-              "n": 21,
-              "rate": 0.38095238095238093
-            }
-          },
-          "status": {
-            "accepted": 20,
-            "downgraded": 1,
-            "rejected": 0
-          },
-          "citation": {
-            "n": 21,
-            "exact": 1
-          }
-        },
-        "D_noRel": {
-          "items": 20,
-          "identification": {
-            "n": 3,
-            "precision": 1
-          },
-          "relation": {
-            "n": 13,
-            "violations": 0,
-            "precision": 1,
-            "examples": []
-          },
-          "support_proxy": {
-            "n": 20,
-            "rate": 0.45
+            "n": 18,
+            "rate": 0.5
           },
           "proposed_unchecked": {
             "items": 21,
@@ -630,31 +587,74 @@
             }
           },
           "status": {
-            "accepted": 20,
-            "downgraded": 1,
-            "rejected": 0
+            "accepted": 18,
+            "downgraded": 2,
+            "rejected": 1
+          },
+          "citation": {
+            "n": 20,
+            "exact": 1
           }
         },
-        "Dplus": {
-          "items": 20,
+        "D_noRel": {
+          "items": 19,
           "identification": {
             "n": 3,
             "precision": 1
           },
           "relation": {
-            "n": 12,
+            "n": 11,
             "violations": 0,
             "precision": 1,
             "examples": []
           },
           "support_proxy": {
-            "n": 20,
-            "rate": 0.4
+            "n": 19,
+            "rate": 0.47368421052631576
+          },
+          "proposed_unchecked": {
+            "items": 20,
+            "identification": {
+              "n": 3,
+              "precision": 1
+            },
+            "relation": {
+              "n": 12,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 20,
+              "rate": 0.45
+            }
           },
           "status": {
-            "accepted": 20,
+            "accepted": 19,
             "downgraded": 1,
             "rejected": 0
+          }
+        },
+        "Dplus": {
+          "items": 18,
+          "identification": {
+            "n": 3,
+            "precision": 1
+          },
+          "relation": {
+            "n": 11,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 18,
+            "rate": 0.5
+          },
+          "status": {
+            "accepted": 18,
+            "downgraded": 2,
+            "rejected": 1
           },
           "recall_all": {
             "en": 0.75,
@@ -662,40 +662,39 @@
           },
           "gap": {
             "enough": false,
-            "assessment": "根本中堂について、旧中堂（竹の台）に関する英語・日本語の描写や名称、年表の資料は集まっている。ただし現在の堂そのものを直接描写した記述は乏しく、堂を描いた絵画・版画などの資料は英日ともに0件で、対比の材料も不足している。",
+            "assessment": "根本中堂について、英日の場所の描写・呼称と年表（公式サイトや観光庁解説）は一定程度集まっている。一方、現在の堂そのものを直接描写した記述は少なく、描いた美術作品は英日ともに0件。旧根本中堂（竹の台）との区別も十分に示されていない。",
             "gaps": [
               {
                 "facet": "historical_artifacts",
                 "lang": "ja",
                 "terms": [
-                  "寛永寺 根本中堂",
-                  "上野 浮世絵",
-                  "東叡山 絵図"
+                  "寛永寺 根本中堂 浮世絵",
+                  "上野 東叡山 錦絵",
+                  "竹の台 根本中堂"
                 ]
               },
               {
                 "facet": "historical_artifacts",
                 "lang": "en",
                 "terms": [
-                  "Kaneiji print",
-                  "Ueno Konpon Chudo",
-                  "Ueno temple woodblock"
+                  "Kaneiji Ueno print",
+                  "Konpon Chudo woodblock",
+                  "Toeizan Ueno"
                 ]
               },
               {
                 "facet": "existence_timeline",
                 "lang": "ja",
                 "terms": [
-                  "根本中堂 川越 移築",
-                  "喜多院 本地堂",
-                  "明治 根本中堂 再建"
+                  "根本中堂 川越 喜多院 移築",
+                  "彰義隊 根本中堂 焼失"
                 ]
               }
             ],
             "found": 0
           },
           "citation": {
-            "n": 21,
+            "n": 20,
             "exact": 1
           }
         }
@@ -724,29 +723,29 @@
           "selected": 12
         },
         "D": {
-          "items": 23,
+          "items": 22,
           "identification": {
-            "n": 13,
+            "n": 11,
             "precision": 1
           },
           "relation": {
-            "n": 12,
+            "n": 9,
             "violations": 0,
             "precision": 1,
             "examples": []
           },
           "support_proxy": {
-            "n": 23,
-            "rate": 0.6956521739130435
+            "n": 22,
+            "rate": 0.6818181818181818
           },
           "proposed_unchecked": {
             "items": 24,
             "identification": {
-              "n": 13,
+              "n": 12,
               "precision": 1
             },
             "relation": {
-              "n": 13,
+              "n": 10,
               "violations": 0,
               "precision": 1,
               "examples": []
@@ -757,8 +756,8 @@
             }
           },
           "status": {
-            "accepted": 23,
-            "downgraded": 1,
+            "accepted": 22,
+            "downgraded": 2,
             "rejected": 0
           },
           "citation": {
@@ -769,11 +768,11 @@
         "D_noRel": {
           "items": 24,
           "identification": {
-            "n": 14,
+            "n": 12,
             "precision": 1
           },
           "relation": {
-            "n": 14,
+            "n": 12,
             "violations": 0,
             "precision": 1,
             "examples": []
@@ -783,47 +782,47 @@
             "rate": 0.6666666666666666
           },
           "proposed_unchecked": {
-            "items": 24,
+            "items": 25,
             "identification": {
-              "n": 14,
+              "n": 13,
               "precision": 1
             },
             "relation": {
-              "n": 14,
+              "n": 12,
               "violations": 0,
               "precision": 1,
               "examples": []
             },
             "support_proxy": {
-              "n": 24,
-              "rate": 0.6666666666666666
+              "n": 25,
+              "rate": 0.68
             }
           },
           "status": {
             "accepted": 24,
-            "downgraded": 0,
+            "downgraded": 1,
             "rejected": 0
           }
         },
         "Dplus": {
-          "items": 31,
+          "items": 30,
           "identification": {
-            "n": 20,
+            "n": 19,
             "precision": 1
           },
           "relation": {
-            "n": 17,
+            "n": 16,
             "violations": 0,
             "precision": 1,
             "examples": []
           },
           "support_proxy": {
-            "n": 31,
-            "rate": 0.6774193548387096
+            "n": 30,
+            "rate": 0.7
           },
           "status": {
-            "accepted": 31,
-            "downgraded": 1,
+            "accepted": 30,
+            "downgraded": 2,
             "rejected": 0
           },
           "recall_all": {
@@ -832,16 +831,16 @@
           },
           "gap": {
             "enough": false,
-            "assessment": "吾妻橋の場所の描写・名称・存在時期は英日ともにほぼ揃っています。ただし、日本語での絵画・浮世絵（historical_artifacts）の証拠が0件で、英語側の資料に偏っています。",
+            "assessment": "吾妻橋の場所描写・名称・存在時期は日英ともほぼ揃っています。ただし、日本語での絵画・浮世絵（historical_artifacts）の資料が0件で、日本語側の裏付けが欠けています。",
             "gaps": [
               {
                 "facet": "historical_artifacts",
                 "lang": "ja",
                 "terms": [
                   "吾妻橋",
-                  "浮世絵",
                   "広重",
-                  "名所江戸百景"
+                  "名所江戸百景",
+                  "駒形堂"
                 ]
               },
               {
@@ -849,9 +848,9 @@
                 "lang": "ja",
                 "terms": [
                   "吾妻橋",
-                  "架橋",
-                  "安永",
-                  "明治二十年"
+                  "新築",
+                  "明治",
+                  "大橋"
                 ]
               }
             ],
@@ -887,19 +886,19 @@
     "batch": {
       "requests": 56,
       "failed": 0,
-      "cost_usd": 0.6206200000000002,
+      "cost_usd": 0.5349700000000001,
       "ids": {
         "round1": {
-          "id": "msgbatch_013F94Y1SjEFdA8LoxRkYHWX",
+          "id": "msgbatch_018qgaumpQZvgYEVhhJPJMin",
           "hash": "d017c5c38df8b675"
         },
         "round2": {
-          "id": "msgbatch_01SmjqEso8h3skhjukFzXR56",
-          "hash": "97ae9ced9bf0a57f"
+          "id": "msgbatch_012HbwTs2YvS5oByNqupLbJ1",
+          "hash": "f6ddedd3db183535"
         },
         "round3": {
-          "id": "msgbatch_01FCWQ5txbAhx2uVWqj3TZAF",
-          "hash": "fbd6eaa8b5b6cd2e"
+          "id": "msgbatch_01XBq7u674zYk9Vet38HcUN7",
+          "hash": "5872025d7ac1505e"
         }
       }
     }

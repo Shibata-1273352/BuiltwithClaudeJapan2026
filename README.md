@@ -71,11 +71,12 @@ flowchart LR
 
 ## 環境構築
 
-必要なもの：Apple Silicon の macOS（メモリ 16GB 以上）、Node.js 22 以上、[uv](https://docs.astral.sh/uv/)、Docker Desktop、Anthropic API キー、Hugging Face アカウント（SAM 3 の利用申請）。
+必要なもの：Apple Silicon の macOS（メモリ 16GB 以上）、Node.js 22 以上、[uv](https://docs.astral.sh/uv/)、Docker Desktop、gitleaks、Anthropic API キー、Hugging Face アカウント（SAM 3 の利用申請）。
 
 ```bash
 cp .env.example .env     # 値の入れ方は docs/setup.md を参照
-npm install
+npm ci
+npx lefthook install
 npm run graph:up && npm run graph:init
 ```
 
