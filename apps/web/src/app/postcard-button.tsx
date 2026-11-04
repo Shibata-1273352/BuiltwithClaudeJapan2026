@@ -61,8 +61,8 @@ export function PostcardButton({ expId, className = "" }: { expId: string; class
         {state === "busy" ? l.making : state === "failed" ? l.failed : l.make}
       </Button>
       {card && (
-        <div role="dialog" aria-modal="true" aria-label={l.title} className="fixed inset-0 z-50 flex items-center justify-center bg-night/95 p-6 page-enter" onClick={() => setCard(null)} data-testid="postcard-view">
-          <figure className="flex max-h-full flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
+        <div role="dialog" aria-modal="true" aria-label={l.title} className="fixed inset-0 z-50 flex items-center justify-center bg-night p-6" onClick={() => setCard(null)} data-testid="postcard-view">
+          <figure className="page-enter flex max-h-full flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element -- a generated blob */}
             <img src={card.url} alt={l.title} className="max-h-[78vh] w-auto rounded-md" />
             <div className="flex gap-3">

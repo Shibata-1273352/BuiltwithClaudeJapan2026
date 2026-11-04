@@ -271,6 +271,8 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const titles = useMemo(() => new Map(cards.map((c) => [c.sourceId, c.title])), [cards]);
   const storyShown = story && story.lang === lang && lang !== runLang ? story : null;
   const replay = source.kind === "replay";
+  // the source written in the absent year the stage is turned to: its cord is the one that broke
+  const brokenAt = ys?.state === "absent" && !(holdBroken && !scrubbedOnce) && scrub != null ? (cards.find((c) => c.year === scrub && c.plies.some((p) => p.state === "absent"))?.sourceId ?? null) : null;
   const photoUrl = photo ?? (s.space?.scene_id ? `/api/cache/scenes/${s.space.scene_id}/photo.jpg` : null);
   const into = s.visual?.hits.find((h) => h.into)?.into;
 
@@ -476,7 +478,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                   </StagePanel>
                 )}
                 </AnimatePresence>
-                <RopeLayer stageRef={stageRef} anchors={anchors} axisRef={axisRef} specs={specs} since={elapsed} hot={hot} reduced={reduced} pluckRef={pluckRef} />
+                <RopeLayer stageRef={stageRef} anchors={anchors} axisRef={axisRef} specs={specs} since={elapsed} hot={hot ?? brokenAt} reduced={reduced} pluckRef={pluckRef} />
               </div>
             )}
 

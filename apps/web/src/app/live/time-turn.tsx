@@ -103,6 +103,17 @@ export function TimeTurn({
     };
   }, [data.entity]);
   const [year, setYear] = useState(TO);
+  const yearRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // keep the year in view: the panel scrolls back when the year has gone above its top
+    const el = yearRef.current;
+    let p = el?.parentElement ?? null;
+    while (p && getComputedStyle(p).overflowY !== "auto") p = p.parentElement;
+    // the panel's title is sticky: the year is hidden once it is above the title's bottom
+    const head = p?.querySelector<HTMLElement>(":scope > .sticky");
+    const limit = head ? head.getBoundingClientRect().bottom : (p?.getBoundingClientRect().top ?? 0);
+    if (el && p && el.getBoundingClientRect().top < limit) p.scrollTo({ top: 0 });
+  }, [year]);
   const [playing, setPlaying] = useState(false);
   const ys = yearState(data, year);
   const segs = useMemo(() => segments(data, FROM, TO), [data]);
@@ -299,7 +310,7 @@ export function TimeTurn({
 
       {/* the year, what it means, who came */}
       <div className="flex min-w-0 flex-col gap-5">
-        <div className="flex items-end justify-between gap-4">
+        <div ref={yearRef} className="flex items-end justify-between gap-4">
           <m.p key={year < TO ? "y" : "now"} className="font-serif text-hero leading-none text-toki tabular-nums" data-testid="time-year">
             {year}
           </m.p>

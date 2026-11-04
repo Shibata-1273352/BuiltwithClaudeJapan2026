@@ -252,7 +252,7 @@ function EvalNumbers() {
           </tr>
           <tr>
             <td className="text-muted">{t.byPub}</td>
-            <td className="text-ba">
+            <td className="text-muted">
               {pct(e.existence.byPublication)}
               {t.misbind(e.existence.misbindPublication)}
             </td>
