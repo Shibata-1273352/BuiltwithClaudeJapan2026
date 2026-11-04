@@ -54,6 +54,8 @@
 
 ## 台本
 
+実際の語りと字幕の正は [`video/narration/lines.json`](../video/narration/lines.json) で、下の表は当初の構成です。
+
 日本語は 1 秒 6〜7 字、英語字幕は 1 秒 15 字を上限にする。数字は、引用の中か保存済みの値からだけ使う。
 
 | 時間 | 場面 | 画面・操作 | ナレーション（日本語） | 英語字幕 |
@@ -83,11 +85,11 @@
 
 **日本語**
 
-外国人の友人に浅草で「これ、なんて書いてあるの？ いつからあるの？」と聞かれ、答えられなかった。TSUMUGI は、その壁を取り払う。写真を撮ると、Claude が縦書きの筆文字を読み、意味を解説する。コードは、日英の一次資料と人が確認した年表で、その場所が「その年にあったか」を確かめる。Claude は資料が足りないと判断すれば探し直し、食い違う証言は両方を示す。資料にないことは「書かれていません」と答える。雷門は 95 年間再建されなかった。1960 年、一人の寄進で再建され、その名前は、写真の提灯に刻まれている。時と場所と人を、確かめた糸で紡ぐ。
+外国人の友人に浅草で「これ、なんて書いてあるの？ いつからあるの？」と聞かれ、答えられなかった。TSUMUGI は、その壁を取り払う。写真を撮ると、Claude が縦書きの筆文字を読み、意味を解説する。プログラムは、日英の一次資料と人が確認した年表で、その場所が「その年にあったか」を確かめる。Claude は資料が足りないと判断すれば探し直し、食い違う証言は両方を示す。資料にないことは「書かれていません」と答える。雷門は 95 年間再建されなかった。1960 年、一人の寄進で再建され、Claude が写真から読んだ銘板の名は、記録の寄進者と重なる。答えは英語の絵はがきとして、次の人へ渡せる。時と場所と人を、確かめた糸で紡ぐ。
 
 **English**
 
-In Asakusa, a friend asked me what a sign said and how long the gate had stood. I couldn't answer. TSUMUGI removes that wall. Take a photo: Claude reads the vertical brush lettering and explains it. Code checks, against Japanese and English primary sources and a human-reviewed timeline, whether the place existed in a given year. When the record is thin, Claude decides to search again. When sources disagree, both are shown. What the sources don't say, it says so. Kaminarimon was not rebuilt for 95 years. In 1960 one man's gift rebuilt it, and his name is on the lantern in the photo. TSUMUGI weaves time, place and people with threads checked one by one.
+In Asakusa, a friend asked me what a sign said and how long the gate had stood. I couldn't answer. TSUMUGI removes that wall. Take a photo: Claude reads the vertical brush lettering and explains it. Code checks, against Japanese and English primary sources and a human-reviewed timeline, whether the place existed in a given year. When the record is thin, Claude decides to search again. When sources disagree, both are shown. What the sources don't say, it says so. Kaminarimon was not rebuilt for 95 years. In 1960 one man's gift rebuilt it, and the name Claude reads from the plate in the photo matches the donor in the records. The answer leaves as a postcard in English. TSUMUGI weaves time, place and people with threads checked one by one.
 
 ## 撮影の手順
 

@@ -12,7 +12,7 @@ const LUFS = [-17, -13];
 const TRUE_PEAK = -1;
 const SUB_CPS = 7; // Japanese subtitles read at about 4 per second in the Netflix guide; narration leads here, so the bar is the point of unreadable
 const SUB_LINE = 30;
-/** Scenes that are the working app or the real place, for the budget. */
+/** Scenes that are the working app, its output or the real place, for the budget. Printed in the result, to be judged by a person. */
 const REAL = ["mystery", "wall", "enter", "read", "print", "absence", "check", "burn", "gift", "reveal", "other", "close"];
 const REAL_SHARE = 0.7;
 
@@ -62,8 +62,9 @@ check("subtitle line length", long.length === 0, long.join(" / ") || `all ${SUB_
 const overrun = guide.filter((g, i) => guide[i + 1] && g.start + g.seconds > guide[i + 1].start);
 check("no voice over voice", overrun.length === 0, overrun.map((g) => g.sub.slice(0, 12)).join(" / ") || "none");
 check("timeline and file agree", Math.abs(end - duration) < 0.2, `timeline ${end.toFixed(2)}, file ${duration.toFixed(2)}`);
-const real = scenes.filter((s) => REAL.includes(s.id)).reduce((t, s) => t + s.end - s.start, 0);
-check("the app and the place lead", real / end >= REAL_SHARE, `${((100 * real) / end).toFixed(0)}% of the film; want ${REAL_SHARE * 100}%`);
+const counted = scenes.filter((s) => REAL.includes(s.id));
+const real = counted.reduce((t, s) => t + s.end - s.start, 0);
+check("the app and the place lead", real / end >= REAL_SHARE, `${((100 * real) / end).toFixed(0)}% of the film; want ${REAL_SHARE * 100}%. Counted: ${counted.map((s) => s.id).join(" ")}`);
 
 for (const r of results) console.log(`${r.ok ? "ok  " : r.warnOnly ? "warn" : "FAIL"}  ${r.name.padEnd(26)} ${r.detail}`);
 const failed = results.filter((r) => !r.ok && !r.warnOnly);
