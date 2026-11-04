@@ -21,7 +21,7 @@ API features in use (each chosen for a reason):
 - **Native citations** (`search_result` blocks, one text block per sentence) for 「糸を引く」:
   Claude answers a visitor's question from this run's passages only; code keeps a citation only if
   its quote is in the corpus, and with none left the answer is "not in the sources" (`lib/ask.ts`).
-- **Model split**: Opus to read the photo and write the story; Sonnet for the gap judgment, the
+- **Model split** (standard speed; in fast mode every call is Opus): Opus to read the photo and write the story; Sonnet for the gap judgment, the
   viewpoint and the guide notes (Opus in fast mode for the live demo).
 - **Fast mode** (`speed: "fast"`) only for the live demo, retried at standard speed on rate limits.
 - **Streaming** of the reading and the story, so the first answer appears within seconds.

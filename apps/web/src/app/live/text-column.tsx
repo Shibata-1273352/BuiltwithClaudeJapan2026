@@ -39,6 +39,7 @@ const T = dict({
     en: "英語",
     sep: "、",
     searched: (n: number) => `Claude が足りない観点を判断し、追加で探した（${n} 節が見つかった）：`,
+    judgedEn: (n: number) => `${n}`,
     story: "この場所の物語 ── Claude が書き、一文ずつコードが確かめた",
     skippedGap: "追加の探索はしなかった（残り時間が少ないため・コードの判断）",
     threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：糸のある資料 ${src}`,
@@ -67,6 +68,7 @@ const T = dict({
     en: "English",
     sep: ", ",
     searched: (n: number) => `Claude judged what was missing and searched again (${n} passages found): `,
+    judgedEn: (n: number) => `Claude judged what was still missing and searched again — ${n} more passages found.`,
     story: "The story of this place — written by Claude, each sentence checked by code",
     skippedGap: "No further search (little time left — the code's decision)",
     threads: (n: number, b: number, src: number) => `${n} threads (${b} broken), from ${src} sources with threads`,
@@ -155,7 +157,10 @@ export function TextColumn({
   guideFocus,
   story,
   world,
+  holdBroken = false,
 }: {
+  /** ?hold=broken (recording): the discovery waits until the visitor turns the years */
+  holdBroken?: boolean;
   s: LiveState;
   cards: SourceCard[];
   elapsed: number;
@@ -179,7 +184,7 @@ export function TextColumn({
   const docked = placeName && since("place") >= 1900;
   const readings = (s.see?.elements ?? s.seeProgress?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
-  const showBroken = broken.length > 0 && since("threads") > 1800;
+  const showBroken = broken.length > 0 && since("threads") > 1800 && !holdBroken;
   const brokenYearNum = (() => {
     const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
     const row = s.existence?.rows.find((r) => r.source === src);
@@ -279,7 +284,8 @@ export function TextColumn({
           <m.figure initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="claude-line">
             <figcaption className="label">{t.judgment}</figcaption>
             <blockquote className="mt-1 font-serif text-body">
-              <Typed text={s.gap.assessment} since={since("gap")} reduced={reduced} />
+              {/* Claude wrote its judgment in the run's language; an English reader of a Japanese run gets a plain English line (the terms follow below) */}
+              <Typed text={ui === "en" && /[\u3040-\u30ff\u4e00-\u9fff]/.test(s.gap.assessment) ? t.judgedEn(s.gap.found ?? 0) : s.gap.assessment} since={since("gap")} reduced={reduced} />
             </blockquote>
             {s.gap.gaps && s.gap.gaps.length > 0 && since("gap") > 1500 && (
               <p className="mt-2 text-caption text-muted">

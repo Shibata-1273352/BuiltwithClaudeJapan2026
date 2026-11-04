@@ -140,7 +140,8 @@ export function useExploration(source: Source) {
       if (source.kind === "replay") {
         mark();
         setPhase("running");
-        listen(`/api/explorations/${source.explorationId}/events?pace=replay${source.instant ? "&instant=1" : ""}`);
+        const speed = new URLSearchParams(location.search).get("speed");
+        listen(`/api/explorations/${source.explorationId}/events?pace=replay${source.instant ? "&instant=1" : ""}${speed ? `&speed=${encodeURIComponent(speed)}` : ""}`);
         return;
       }
       if (source.kind === "attach") {

@@ -129,6 +129,9 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const pluckRef = useRef<(objKey: string) => number>(() => 0);
   const [selectedObj, setSelectedObj] = useState<string | null>(null);
   const [scrub, setScrub] = useState<number | null>(null);
+  // ?hold=broken (recording the video): 1878 is revealed when the years are turned, not before
+  const [holdBroken] = useState(() => typeof location !== "undefined" && new URLSearchParams(location.search).get("hold") === "broken");
+  const [scrubbedOnce, setScrubbedOnce] = useState(false);
   const lang = useLang();
   const t = useDict(T);
   const lastDecade = useRef<number | null>(null);
@@ -175,6 +178,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   }, [s.timeline, scene]);
   const onScrub = useCallback((y: number) => {
     setScrub(y);
+    setScrubbedOnce(true);
     const d = Math.floor(y / 10);
     if (lastDecade.current !== d) {
       lastDecade.current = d;
@@ -366,6 +370,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                     actions={actions}
                     guide={<GuideCards s={s} register={register} selectedSee={selectedSee} onSelectSee={onSelectSee} onAsk={finished && expId && s.place ? onAsk : undefined} />}
                     story={storyShown}
+                    holdBroken={holdBroken && scrub === null && !scrubbedOnce}
                     world={finished && s.place?.entity ? <WorldCard entity={s.place.entity} sourceIds={sourceIds} titles={titles} /> : null}
                     guideFocus={
                       <>
