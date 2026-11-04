@@ -1,0 +1,62 @@
+[
+ {
+  "scene": "mystery",
+  "at": 0.0,
+  "ja": "この提灯には、もうひとつの名前が刻まれています。この人は誰なのか。なぜこの門は、95年も再建されなかったのか。",
+  "en": "This lantern carries another name. Who is he — and why was this gate not rebuilt for 95 years?"
+ },
+ {
+  "scene": "wall",
+  "at": 0.3,
+  "ja": "浅草で、外国人の友人に聞かれました。『これ、なんて書いてあるの？ いつからあるの？』。人と人をつなぐ仕事なのに、答えられませんでした。言葉の壁です。",
+  "en": "In Asakusa, a friend from abroad asked what this says and how long it has been here. I connect people for a living, and I couldn't answer. That is the language wall."
+ },
+ {
+  "scene": "read",
+  "at": 0.5,
+  "ja": "これは、実際に動いている画面です。Claudeが筆文字を読み、同時にSAM 3が提灯を切り抜き、別のAIが奥行きを測る。Claudeは17回呼ばれ、資料を手分けして読みます。",
+  "en": "This is the real app, running. Claude reads the brush lettering while SAM 3 cuts out the lantern and another AI measures depth. Claude is called 17 times, splitting up the sources."
+ },
+ {
+  "scene": "burn",
+  "at": 1.0,
+  "ja": "ここからがClaudeの判断です。資料が足りないと見て、自分で探し直し、門が焼けた夜の回想録を見つけました。寺の記録と日付が食い違う。だから、両方を出します。",
+  "en": "Now, Claude's judgement. It saw the record was thin, searched again, and found a memoir of the night the gate burned. It disagrees with the temple on the date, so both are shown."
+ },
+ {
+  "scene": "check",
+  "at": 1.0,
+  "ja": "Claudeが読み、コードが確かめる。この文は否定だと見抜き、事実としては採りません。",
+  "en": "Claude reads; code checks. This sentence is a negation, so it is not taken as fact."
+ },
+ {
+  "scene": "absence",
+  "at": 3.6,
+  "ja": "年を動かすと、コードが年表を照らします。1878年、恒久的な門はない。時の糸だけが切れます。",
+  "en": "Turn the years and code checks the timeline. 1878: no permanent gate. Only the thread of time snaps."
+ },
+ {
+  "scene": "gift",
+  "at": 1.0,
+  "ja": "門は95年、戻りませんでした。1960年へ流すと、日本語の記録と英語の記録が、ひとつに結ばれます。",
+  "en": "For 95 years the gate did not return. Flow on to 1960, and the Japanese and English records tie into one."
+ },
+ {
+  "scene": "gift",
+  "at": 18.0,
+  "ja": "Claudeが写真から読んだ名前は、門を返した人でした。",
+  "en": "The name Claude read is the man who gave the gate back."
+ },
+ {
+  "scene": "reach",
+  "at": 0.5,
+  "ja": "観光庁の英語解説は、数千本。Claudeが読んで判断し、ほかのAIが形をとらえ、コードが確かめる。一枚の写真が、確かな答えになります。",
+  "en": "Japan has thousands of official English commentaries. Claude reads and judges, other AIs see the shapes, code checks. One photo becomes an answer you can trust."
+ },
+ {
+  "scene": "close",
+  "at": 0.5,
+  "ja": "あの日、友人には答えられなかった。いまは、次の人に届けられる。確かめた糸で紡ぐ。TSUMUGI。",
+  "en": "That day, I couldn't answer my friend. Now the answer reaches the next person. Woven with checked threads. TSUMUGI."
+ }
+]

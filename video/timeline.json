@@ -1,21 +1,268 @@
 {
-  "fps": 30,
-  "width": 1920,
-  "height": 1080,
-  "opening": {
-    "duration": 8.5,
-    "lettersIn": 2.2,
-    "spinEnd": 2.4,
-    "lettersFrames": 96,
-    "write": [
-      [0.05, 0.75, 0.75],
-      [1.32, 1.42, 0.16],
-      [1.95, 2.3, 0.5],
-      [2.45, 2.75, 0.45]
-    ],
-    "strike": 3.65,
-    "lanternIn": [5.7, 6.5],
-    "goldOut": [6.3, 7.2],
-    "firstWord": 8.5
+ "fps": 30,
+ "width": 1920,
+ "height": 1080,
+ "opening": {
+  "duration": 8.5,
+  "lettersIn": 2.2,
+  "spinEnd": 2.4,
+  "lettersFrames": 96,
+  "write": [
+   [
+    0.05,
+    0.75,
+    0.75
+   ],
+   [
+    1.32,
+    1.42,
+    0.16
+   ],
+   [
+    1.95,
+    2.3,
+    0.5
+   ],
+   [
+    2.45,
+    2.75,
+    0.45
+   ]
+  ],
+  "strike": 3.65,
+  "lanternIn": [
+   5.7,
+   6.5
+  ],
+  "goldOut": [
+   6.3,
+   7.2
+  ],
+  "firstWord": 8.5
+ },
+ "knot": 15.0,
+ "scenes": [
+  {
+   "id": "mystery",
+   "start": 8.5,
+   "end": 18.5,
+   "segments": [
+    {
+     "still": "lantern-dusk.png",
+     "dur": 10,
+     "cam": [
+      0.5,
+      0.5,
+      1.03,
+      1.08
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wall",
+   "start": 18.5,
+   "end": 32.5,
+   "segments": [
+    {
+     "still": "s/1-landing.png",
+     "dur": 14,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "enter",
+   "start": 32.5,
+   "end": 35.0,
+   "segments": [
+    {
+     "still": "takes/empty.png",
+     "dur": 2.5,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "read",
+   "start": 35.0,
+   "end": 53.85,
+   "segments": [
+    {
+     "src": "takes/live.mp4",
+     "from": 1.95,
+     "to": 20.8,
+     "rate": 1,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "burn",
+   "start": 53.85,
+   "end": 74.85,
+   "segments": [
+    {
+     "src": "takes/years.mp4",
+     "from": 0,
+     "to": 1.9,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "src": "takes/read.mp4",
+     "from": 28.5,
+     "to": 38.9,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "src": "takes/years.mp4",
+     "from": 11.6,
+     "to": 17.1,
+     "rate": 0.62,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "check",
+   "start": 74.85,
+   "end": 83.85,
+   "segments": [
+    {
+     "src": "takes/check.mp4",
+     "from": 1.2,
+     "to": 8.2,
+     "rate": 0.8,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "absence",
+   "start": 83.85,
+   "end": 97.85,
+   "segments": [
+    {
+     "src": "takes/years.mp4",
+     "from": 1.9,
+     "to": 10,
+     "rate": 0.7,
+     "cam": null
+    },
+    {
+     "still": "takes/1878-hold.png",
+     "dur": 2.5,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "print",
+   "start": 97.85,
+   "end": 102.85,
+   "segments": [
+    {
+     "src": "takes/space.mp4",
+     "from": 3,
+     "to": 8,
+     "rate": 1,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "gift",
+   "start": 102.85,
+   "end": 129.85,
+   "segments": [
+    {
+     "src": "takes/years.mp4",
+     "from": 17.1,
+     "to": 32.1,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "seq": "knot",
+     "dur": 3.0,
+     "cam": null
+    },
+    {
+     "still": "takes/knot-hold.png",
+     "dur": 9.0,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "reach",
+   "start": 129.85,
+   "end": 143.84999999999997,
+   "segments": [
+    {
+     "still": "s/1-landing.png",
+     "dur": 14,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "close",
+   "start": 143.84999999999997,
+   "end": 157.84999999999997,
+   "segments": [
+    {
+     "still": "s/postcard.png",
+     "dur": 14,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "title",
+   "start": 157.84999999999997,
+   "end": 162.84999999999997,
+   "segments": [
+    {
+     "still": "concept.png",
+     "dur": 5,
+     "cam": [
+      0.5,
+      0.5,
+      1.0,
+      1.03
+     ]
+    }
+   ]
+  },
+  {
+   "id": "credit",
+   "start": 162.84999999999997,
+   "end": 166.84999999999997,
+   "segments": []
   }
+ ],
+ "end": 166.84999999999997,
+ "bridges": {
+  "enter": {
+   "rect": [
+    539,
+    188,
+    555,
+    746
+   ],
+   "fly": [
+    0.1,
+    1.0
+   ],
+   "travel": 0.85,
+   "duration": 2.5
+  },
+  "knot": {
+   "tighten": 2.5,
+   "duration": 3.0
+  }
+ }
 }

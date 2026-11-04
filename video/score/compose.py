@@ -154,6 +154,85 @@ def theme():
     return m, m.render()
 
 
+def film(tl):
+    """A rough of the whole film: the guide voice over the arc of the score. Picture and score lock
+    together later, against the author's recording."""
+    S = {s["id"]: s for s in tl["scenes"]}
+    end = tl["end"]
+    m = Mix(end)
+    start = lambda k, at=0: S[k]["start"] + at  # noqa: E731
+
+    # 序: the voice alone, and at the end of the wall one thin chord
+    strings(m, start("wall", 9), 3.5, ["D3", "A3"], gain=0.1, attack=1.6, release=1.6)
+
+    # the threads fly into the frame: one string in, and the analysis starts on the stop
+    m.add(string(midi("E4"), gain=0.2, seed=11), start("enter", 0.2), send=0.5, label="enter")
+    n = int(2.4 * SR)
+    m.add(band(noise(2.4, 15), 900, 6000) * curve(n, [(0, 0), (1.2, 0.03), (2.3, 0.05), (2.4, 0)]), start("enter"), send=0.3, pan=0.2)
+
+    # 破: Claude reads; the theme begins under it
+    strings(m, start("read"), 14, ["D2", "A2"], gain=0.15, attack=2.5, release=2.5)
+    motif(m, start("read", 2.5), [1.2, 1.3, 1.25, 1.6], gain=0.36)
+    motif(m, start("read", 9), [1.1, 1.2, 1.15, 1.4], gain=0.38, pan=0.1)
+
+    # the fire, and two records that disagree
+    strings(m, start("burn"), 9, ["B1", "F#2", "D3"], gain=0.17, attack=2.2, release=2.2)
+    strings(m, start("burn", 9.5), 9, ["G1", "D3", "B3"], gain=0.17, attack=2.2, release=2.0)
+
+    strings(m, start("check"), 7, ["A2", "E3"], gain=0.1, attack=1.6, release=1.8)
+
+    # 1878: the phrase with its gold note gone, then the thread snaps
+    strings(m, start("absence"), 11, ["B1", "F#3"], gain=0.14, attack=1.6, release=1.8)
+    motif(m, start("absence", 4.6), [1.6, 2.0, 1.6, 2], gain=0.32, skip=1)
+    snap = string(midi("A4"), gain=0.42, seed=12, soft=1.1, seconds=0.5)
+    snap = snap * curve(len(snap), [(0, 1), (0.07, 1), (0.12, 0), (0.5, 0)])
+    m.add(snap, start("absence", 3.1), send=0.5, label="snap")
+
+    # into the print: snow only
+    n = int(5 * SR)
+    snow = band(noise(5, 12), 1800, 7000) * curve(n, [(0, 0), (1, 0.05), (4, 0.05), (5, 0)])
+    m.add(snow, start("print"), send=0.3)
+
+    # the gift: it grows, thins out, and leaves the room for the knot
+    knot = start("gift", tl["knot"])
+    strings(m, start("gift"), 6, ["D2", "A2", "D3"], gain=0.15, attack=2.0, release=1.4)
+    strings(m, start("gift", 6), 6.6, ["G2", "D3", "B3", "E4"], gain=0.16, attack=1.8, release=1.6)
+    # 間, and after the line the gold note comes home
+    solo(m, knot + 8.0, 1.0, 3.0, 0.95)
+    strings(m, knot + 9.0, 3, ["D3", "A3", "F#4"], gain=0.12, attack=1.6, release=1.2)
+
+    # 急: the chords open, the phrase returns whole over a plagal close
+    strings(m, start("reach"), 9, ["D2", "A2", "D3", "A3", "E4"], gain=0.14, attack=1.8, release=1.4)
+    gaps = [2.2, 2.4, 2.5, 3.2]
+    t = start("close", 1.0)
+    for chord, gap in zip(
+        (["A2", "E3", "A3", "C#4"], ["F#2", "D3", "A3", "D4"], ["G2", "D3", "B3", "D4"], ["D2", "A2", "F#3", "A3", "D4"]), gaps
+    ):
+        strings(m, t - 0.25, gap + 0.3, chord, gain=0.15, attack=0.7, release=1.2)
+        t += gap
+    motif(m, start("close", 1.0), gaps, gain=0.42)
+    strings(m, start("title"), 6.5, ["D2", "A2", "D3", "A3", "F#4", "A4"], gain=0.2, attack=1.2, release=2.4)
+    m.add(string(midi("D5"), gain=0.26, seed=16), start("title", 0.3), send=0.55, label="last note")
+
+    # the voice over it all: music steps back under every line
+    with open(os.path.join(ROOT, "public", "guide", "index.json")) as f:
+        voice = json.load(f)
+    pts = [(0, 1.0)]
+    for v in voice:
+        pts += [(v["start"] - 0.25, 1.0), (v["start"], 0.42), (v["start"] + v["seconds"], 0.42), (v["start"] + v["seconds"] + 0.45, 1.0)]
+    # 間: everything thins over a second and a half; only the room is left
+    pts = sorted(pts + [(knot - 1.5, 1.0), (knot, 0.0), (knot + 3.0, 0.0), (knot + 3.2, 1.0)])
+    music = m.render(pts)
+    music += room(end, 0.004)[: len(music)]  # the room stays when the music leaves, also in the 間
+    pre = len(sf.read(os.path.join(OUT, "opening.wav"))[0])
+    music[:pre] += sf.read(os.path.join(OUT, "opening.wav"), dtype="float32")[0]
+    for v in voice:
+        x, _ = sf.read(os.path.join(ROOT, "public", v["wav"]), dtype="float32", always_2d=True)
+        i = int(v["start"] * SR)
+        music[i : i + len(x)] += x[:, :1] * 0.5
+    return m, music
+
+
 def master(x, name, peak_db=-1.5):
     """One fixed gain, never a dynamic normaliser: the distance between quiet and loud is the point."""
     bus = Pedalboard([
@@ -173,7 +252,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(ROOT, "timeline.json")) as f:
         tl = json.load(f)
-    for name, build in (("opening", lambda: opening(tl)), ("theme", theme)):
+    for name, build in (("opening", lambda: opening(tl)), ("theme", theme), ("film", lambda: film(tl))):
         m, audio = build()
         master(audio, name)
         print(name, m.hits)
