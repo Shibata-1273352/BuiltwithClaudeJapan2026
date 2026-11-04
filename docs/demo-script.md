@@ -41,11 +41,11 @@
 | 0:20–0:40 | Claude が読む | `R?present=1&hold=broken&speed=0.5`。文字が写真から浮かぶ → 風雷神門 → 年月の銘 → 金具の名前 | 「Claude が縦書きの筆文字を読みます。風雷神門、風神と雷神の門。提灯の年月の銘、そして金具の名前まで。」 | "Claude reads the brush lettering — the Gate of the Wind and Thunder Gods — then the date on the lantern, and the name on its base." |
 | 0:40–1:15 | 焼けて、食い違う | 完了（いま｜1856）→ Claude の判断の一行（見つけた：幕末維新懐古談）→ 時をめくるで 1866 年（両論） | 「1856年、広重が描いた門。そして門は燃えました。Claude は資料が足りないと判断して探し直し、焼けた夜を回想した彫刻家の本を見つけました。日付は、寺の記録と食い違います。だから、両方を出します。」 | "1856: Hiroshige draws the gate. Then it burns. Claude judged the record thin, searched again, and found a sculptor's memoir of that night. It disagrees with the temple on the date — so both are shown." |
 | 1:15–1:30 | 確かめる | 舞台裏の確かめの実例（否定の言葉に下線） | 「Claude が読み、コードが確かめます。この文は否定だと見分け、主張として採りませんでした。」 | "Claude reads; code checks. This sentence is a negation, so it was not taken as a claim." |
-| 1:30–1:50 | 不在 | 年を 1878 年へ（`hold=broken`、ここで初めて発見が出る）→ 写真が夜に沈み、糸が切れる | 「1878年、イザベラ・バードは、恒久的な門のない参道を歩きました。判定したのは、年表を照らしたコードです。」 | "1878: Isabella Bird walks an avenue with no permanent gate. Code decided that, from the timeline." |
+| 1:30–1:50 | 不在 | 資料カードの「1878」を押す（`hold=broken`、ここで初めて発見が出る）→ 写真が夜に沈み、Bird の糸のうち時（金）の糸だけが切れる。場・言の糸は残る | 「1878年、イザベラ・バードは、恒久的な門のない参道を歩きました。判定したのは、年表を照らしたコードです。」 | "1878: Isabella Bird walks an avenue with no permanent gate. Code decided that, from the timeline." |
 | 1:50–1:55 | 絵の中へ（つなぎ） | `/space/<scene>?enter=1&3d=1` を 5 秒 | （雪の音だけ） | — |
 | 1:55–2:35 | 寄進 | 時をめくる →「時を流す」（1961 年で止まる）→ 日英の結び目 → 写真から：松下幸之助（Claude の読み・英語の意味） | 「95年のあいだ、雷門は再建されませんでした。1960年、一人の寄進で、門は戻りました。日本語の記録と、英語の記録が、ここで結ばれます。この写真の提灯に刻まれた名前は、門を返した人でした。」 | "For 95 years the gate was not rebuilt. In 1960, one man's gift brought it back — the Japanese and English records tie here. The name on this lantern is the man who gave the gate back." |
 | 2:35–2:45 | 広がり | `/how`（2 秒）→ 入口の「いま使える場所」 | 「政府は観光地の英語解説を数千本整えてきました。TSUMUGI は、写真から合う一本を探し、確かめて引用します。」 | "Japan has written thousands of these English commentaries. TSUMUGI finds the right one from a photo and quotes it, checked." |
-| 2:45–3:00 | 締め | 絵はがき（1960 年の記録の一文が入る） | 「この場所を書き残した人たちと、いまの友人を、一本ずつ確かめた糸で紡ぐ。あの日の質問に、いまは答えられます。誰が門を返したのかも。TSUMUGI。」 | "The people who wrote about this place, and my friend today, woven with threads checked one by one. Now I can answer — and say who gave the gate back. TSUMUGI." |
+| 2:45–3:00 | 締め | 「絵はがきを作る」→ 画面に絵はがきが出る（1960 年の記録の一文が入る）| 「この場所を書き残した人たちと、いまの友人を、一本ずつ確かめた糸で紡ぐ。あの日の質問に、いまは答えられます。誰が門を返したのかも。TSUMUGI。」 | "The people who wrote about this place, and my friend today, woven with threads checked one by one. Now I can answer — and say who gave the gate back. TSUMUGI." |
 
 - **必ず入れる場面**：0:00–1:50、1:55–2:35、締め
 - **時間が足りなければ削る場面**：絵の中へ、広がり
@@ -103,11 +103,11 @@ In Asakusa, a friend asked me what a sign said and how long the gate had stood. 
 4. 画面：4K モニターを「1920×1080 相当」に設定し、Chrome を全画面にしてツールバーを隠す。集中モードを入れ、Dock を隠す。
 5. 収録：音を入れるなら OBS（30 fps）で撮る。音なしで撮るなら、撮る前に「音：切」にする。
 6. 一度ずつ開いて温める：`/`、`R`（= `/replay/<DEMO_REPLAY_ID>`）、`/space/<scene>?enter=1&3d=1`、`/how`。
-7. ブックマークを 2 つ作る。
-   - 場面 2 の撮り始め：`R?present=1&hold=broken&speed=0.5`。画面の経過時間は録画の時間で表示される。
-   - 場面 3 の撮り始め：`R?present=1&hold=broken&at=end`。
-8. 場面 2 の撮り直しは、ブックマークを開き直す。再読み込みは使わない（終わると URL に `at=end` が付くため）。
-9. 場面 3：年のつまみを押し、Shift+↑ を 14 回、↑ を 8 回押す。門がなかった年に入った瞬間に 1878 の発見が出る。
+7. `/present` の「撮影の場面」から各場面を開く（URL を打たない）。プレゼンモードはページを移っても保たれる。
+   - 場面 2 の撮り始め：「場面 2–4：読む → 時をめくる（ゆっくり）」。画面の経過時間は録画の時間で表示される。
+   - 場面 3 の撮り始め：「終わった舞台から」。
+8. 撮り直しは、終わった舞台の「最初から再生」を押す。
+9. 場面 3：資料カードの年「1878」を押す。門がなかった年に入った瞬間に 1878 の発見が出る（年のつまみと矢印キーでも動く）。
 10. 場面 4：「時をめくる」→ 1866 年 →「時を流す」。1961 年で止まり、門が立つ。
 11. 場面 5a：`/space/<scene>?enter=1&3d=1` を直接開く。プレゼンモードの舞台から入るときも `3d=1` が付く。カメラを動かしたいときまで、ポインタを動かさない。
 12. 場面 5b：質問は最初に 1 回だけ撮る。1 時間に 10 問まで、1 問あたり約 $0.012。質問ごとの費用を記録する。
