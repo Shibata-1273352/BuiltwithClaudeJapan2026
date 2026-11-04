@@ -37,6 +37,9 @@ const T = dict({
     printAlt: "歌川広重《名所江戸百景 浅草金龍山》の雷門の大提灯",
     own: "カメラで撮る",
     sampleNote: "例の写真は Wikimedia Commons の CC0。その場でライブに解析します。",
+    creditsTitle: "クレジット",
+    creditPhoto: "例の写真（雷門の大提灯）：Wikimedia Commons、CC0。「雷門で試す」はこの写真をその場で解析します。",
+    creditPrint: "歌川広重《名所江戸百景 浅草金龍山》：メトロポリタン美術館 Open Access、パブリックドメイン。",
     moments: [
       { img: "time", title: "時を越える", body: "明治の旅人が歩いた日、ここに常設の門はなかった。" },
       { img: "read", title: "言葉を越える", body: "縦書きの筆文字も、明治の英文も。" },
@@ -80,6 +83,9 @@ const T = dict({
     printAlt: "The great lantern of Kaminarimon in Utagawa Hiroshige's Kinryūzan Temple in Asakusa",
     own: "Open the camera",
     sampleNote: "The example photo is CC0 from Wikimedia Commons, analysed live.",
+    creditsTitle: "Credits",
+    creditPhoto: "Example photo (Kaminarimon's great lantern): Wikimedia Commons, CC0. \"Try it at Kaminarimon\" analyses this photo live.",
+    creditPrint: "Utagawa Hiroshige, Kinryūzan Temple in Asakusa: The Metropolitan Museum of Art Open Access, public domain.",
     moments: [
       { img: "time", title: "Across time", body: "When a Meiji-era traveller walked here, no permanent gate stood." },
       { img: "read", title: "Across languages", body: "Vertical brush lettering, Meiji-era English." },
@@ -131,7 +137,6 @@ export function Landing({ facts }: { facts: LandingFacts }) {
             </ButtonLink>
             <ButtonLink href="#capture">{t.own}</ButtonLink>
           </div>
-          <p className="mt-3 text-caption text-muted">{t.sampleNote}</p>
         </div>
         {/* now ⇄ then: the same place, today and in Hiroshige's print (CC0 photo; public-domain print) */}
         <figure className="mx-auto grid w-full grid-cols-2 gap-3" data-testid="now-then">
@@ -148,6 +153,15 @@ export function Landing({ facts }: { facts: LandingFacts }) {
         </figure>
       </section>
 
+      <section className="mx-auto w-full max-w-7xl px-5 pb-16">
+          <figure className="max-w-[38em] border-l-2 border-lantern pl-4" data-testid="origin">
+            <figcaption className="label">{t.origin}</figcaption>
+            <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
+            <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
+            <p className="mt-3 text-small text-paper/80" data-testid="career">{t.career}</p>
+          </figure>
+      </section>
+
       {/* the three moments */}
       <section className="mx-auto w-full max-w-7xl px-5 pb-16" aria-label={t.moments.map((m) => m.title).join(" / ")}>
         <ol className="grid gap-10 border-t border-rule pt-10 md:grid-cols-2">
@@ -162,14 +176,6 @@ export function Landing({ facts }: { facts: LandingFacts }) {
         </ol>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-5 pb-14">
-          <figure className="max-w-[38em] border-l-2 border-lantern pl-4" data-testid="origin">
-            <figcaption className="label">{t.origin}</figcaption>
-            <blockquote className="mt-1 font-serif text-lead text-paper/90">{t.scene}</blockquote>
-            <p className="mt-1 text-caption text-muted">{t.sceneBy}</p>
-            <p className="mt-3 text-small text-paper/80" data-testid="career">{t.career}</p>
-          </figure>
-      </section>
 
       {/* why it can be relied on; where it works */}
       <section className="mx-auto w-full max-w-7xl px-5" data-testid="trust">
@@ -186,7 +192,6 @@ export function Landing({ facts }: { facts: LandingFacts }) {
             ))}
           </dl>
           <p className="mt-4 text-caption text-muted">
-            {t.evalNote(facts.evalRun)} ·{" "}
             <Link href="/how" className="underline decoration-rule-strong underline-offset-4 hover:text-paper">
               {t.howLink}
             </Link>
@@ -210,6 +215,17 @@ export function Landing({ facts }: { facts: LandingFacts }) {
           <CapturePreview />
         </div>
       </section>
+
+      <footer className="mx-auto w-full max-w-7xl px-5" data-testid="credits">
+        <div className="border-t border-rule py-8 text-caption text-muted">
+          <p className="label">{t.creditsTitle}</p>
+          <ul className="mt-2 flex flex-col gap-1">
+            <li>{t.creditPhoto}</li>
+            <li>{t.creditPrint}</li>
+            <li>{t.evalNote(facts.evalRun)}</li>
+          </ul>
+        </div>
+      </footer>
     </main>
   );
 }

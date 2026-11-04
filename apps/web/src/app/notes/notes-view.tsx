@@ -23,6 +23,13 @@ const T = dict({
   },
 });
 
+/** YYYY/MM/DD HH:mm in Tokyo — formatted by hand, so the server and the browser print the same text (no ICU differences) */
+function tokyoTime(iso: string): string {
+  const d = new Date(Date.parse(iso) + 9 * 3600_000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCFullYear()}/${p(d.getUTCMonth() + 1)}/${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+}
+
 export function NotesHeader() {
   const t = useDict(T);
   return (
@@ -47,7 +54,7 @@ export function NotesList({ notes }: { notes: NoteSummary[] }) {
           <a href={`/note/${n.id}`} className="flex min-h-11 flex-1 items-baseline justify-between gap-4 py-4 hover:text-paper">
             <span className="font-serif text-lead">{n.place?.name[lang]}</span>
             <span className="text-small text-muted tabular-nums">
-              {new Date(n.created_at).toLocaleString(lang === "en" ? "en-GB" : "ja-JP", { timeZone: "Asia/Tokyo" })} · {t.sentences(n.sentences)}
+              {tokyoTime(n.created_at)} · {t.sentences(n.sentences)}
             </span>
           </a>
           {/* FR-47: replay the recorded exploration (when live is not possible) */}
