@@ -34,7 +34,7 @@ export function StepRail({ s, elapsed, finished }: { s: LiveState; elapsed: numb
           >
             <span className="text-caption text-muted tabular-nums">{st.parallel ? "∥" : String(i + 1).padStart(2, "0")}</span>
             <span className="font-serif text-body">{st[lang]}</span>
-            {status === "running" && <span className="text-caption text-muted tabular-nums">{sec.toFixed(1)}</span>}
+            {status === "running" && sec >= 0.1 && <span className="text-caption text-muted tabular-nums">{sec.toFixed(1)}</span>}
           </li>
         );
       })}
@@ -130,11 +130,9 @@ type Toast = { key: string; at: number; text: string; who: string };
 
 function toastsOf(s: LiveState, t: (typeof T)["ja"], lang: "ja" | "en"): Toast[] {
   const out: Toast[] = [];
-  const see = s.calls.find((c) => c.stage === "see");
-  if (s.see && s.at.see !== undefined) out.push({ key: "see", at: s.at.see, who: "Claude", text: `${t.read(s.see.elements.length)}${see ? ` · ${(see.elapsedMs / 1000).toFixed(1)} s` : ""}` });
+  if (s.see && s.at.see !== undefined) out.push({ key: "see", at: s.at.see, who: "Claude", text: t.read(s.see.elements.length) });
   if (s.place && s.at.place !== undefined) out.push({ key: "place", at: s.at.place, who: t.code, text: `${t.place}${[...s.place.path].reverse().map((p) => p.name[lang]).join(" › ")}` });
-  if (s.space?.ok && s.at.space !== undefined) out.push({ key: "space", at: s.at.space, who: "SAM 3", text: `${t.layers(s.space.elements?.length ?? 0)} · ${((s.space.ms ?? 0) / 1000).toFixed(1)} s${s.space.aligned ? t.aligned : ""}` });
-  if (s.graph && s.at.graph !== undefined) out.push({ key: "graph", at: s.at.graph, who: "Neo4j", text: `${t.graph} · ${((s.graph.ms ?? 0) / 1000).toFixed(1)} s` });
+  if (s.space?.ok && s.at.space !== undefined) out.push({ key: "space", at: s.at.space, who: "SAM 3", text: `${t.layers(s.space.elements?.length ?? 0)}${s.space.aligned ? t.aligned : ""}` });
   return out;
 }
 

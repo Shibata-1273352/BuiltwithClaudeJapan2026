@@ -45,7 +45,7 @@
 | 1:50–1:55 | 絵の中へ（つなぎ） | `/space/<scene>?enter=1&3d=1` を 5 秒 | （雪の音だけ） | — |
 | 1:55–2:35 | 寄進 | 時をめくる →「時を流す」（1961 年で止まる）→ 日英の結び目 → 写真から：松下幸之助（Claude の読み・英語の意味） | 「95年のあいだ、雷門は再建されませんでした。1960年、一人の寄進で、門は戻りました。日本語の記録と、英語の記録が、ここで結ばれます。この写真の提灯に刻まれた名前は、門を返した人でした。」 | "For 95 years the gate was not rebuilt. In 1960, one man's gift brought it back — the Japanese and English records tie here. The name on this lantern is the man who gave the gate back." |
 | 2:35–2:45 | 広がり | `/how`（2 秒）→ 入口の「いま使える場所」 | 「政府は観光地の英語解説を数千本整えてきました。TSUMUGI は、写真から合う一本を探し、確かめて引用します。」 | "Japan has written thousands of these English commentaries. TSUMUGI finds the right one from a photo and quotes it, checked." |
-| 2:45–3:00 | 締め | 「絵はがきを作る」→ 画面に絵はがきが出る（1960 年の記録の一文が入る）| 「この場所を書き残した人たちと、いまの友人を、一本ずつ確かめた糸で紡ぐ。あの日の質問に、いまは答えられます。誰が門を返したのかも。TSUMUGI。」 | "The people who wrote about this place, and my friend today, woven with threads checked one by one. Now I can answer — and say who gave the gate back. TSUMUGI." |
+| 2:45–3:00 | 締め | 「絵はがきを作る」→ 画面に絵はがき。友人の二つの問い「これ、なんて書いてあるの？」「いつからあるの？」に、そのまま答える一枚（風雷神門・風神と雷神の門／1960年から／寄進の原文）。→（試用者の一言があれば、夜の画面に文字で 2 秒）→ TSUMUGI | 「あの日、友人には答えられなかった。いまは、次の人に届けられる。この場所を書き残した人たちと、いまの旅人を、確かめた糸で紡ぐ。TSUMUGI。」 | "That day, I couldn't answer my friend. Now the answer reaches the next person. The people who wrote about this place and today's traveller, woven with threads checked one by one. TSUMUGI." |
 
 - **必ず入れる場面**：0:00–1:50、1:55–2:35、締め
 - **時間が足りなければ削る場面**：絵の中へ、広がり
@@ -119,3 +119,18 @@ In Asakusa, a friend asked me what a sign said and how long the gate had stood. 
 
 - ライブが止まった：「記録を再生する（録画）」。30 秒応答がなければ、自動で録画を出す。
 - 推論サーバーが落ちた：切り抜きなしでも、Claude の枠で触れられる。3D は 2D 表示になる（「3Dで見る」で戻せる）。
+
+## 画面と評価を分ける（2026-11-04 の方針）
+
+- アプリの画面には、評価の数字・実行 ID・採点を出さない（`design.test.ts` で検査）。画面は可能な限りシンプルに。
+- 動画の「確かめる」場面は、舞台裏の一例（否定の文を主張として採らなかった）だけを見せる。
+- 評価の数字（Depth の裏付け）は、提出文と README にだけ書く。数字は `lib/eval-summary.ts` が結果ファイルから計算したものを写す。
+
+## 感動のために、画面の外で要るもの
+
+勝った作品に共通していたのは「本物の人が、本物の壁にいる」「作った本人も驚いた」「誰かが実際に使った」の三つ。TSUMUGI では次で満たす（演出はしない）。
+
+1. **試用者 1 人**：外国人の知人 1 人に、コーパスにある場所で一度使ってもらう（アクセス用トークンを渡す）。許可を得て、一言（文字か声）をもらう。費用は記録から計算して報告する。「多くの人に使われた」とは言わない。
+2. **作者自身の驚き**（本当のときだけ）：「私は、雷門が 95 年なかったことも、提灯の金具の名前の意味も知らなかった。Claude が見つけた。」
+3. **冒頭 6 秒**：アプリではなく、友人の二つの問いを夜の画面に文字で。作者の声で読み、1.5 秒の無音。
+4. **1960 年の結び目**：松下幸之助の切り抜きと並べて 3 秒の無音。そのあとに「写真の名前は、門を返した人だった。」

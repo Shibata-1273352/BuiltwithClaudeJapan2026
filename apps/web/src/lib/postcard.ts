@@ -1,6 +1,7 @@
 /**
- * The postcard (step 8): what a visitor takes away — the cut-out, a vermilion seal of the words read
- * from the photo, ONE sentence of the story that passed the code checks, and the broken thread.
+ * The postcard (step 8): an answer to the friend's two questions — what does it say (Claude's reading
+ * of the inscription in the photo) and how long has it been here (the year it stands since, decided by
+ * code from the timeline), with the record's own words about the rebuild (the route adds the quote).
  * Pure: built from the stored events; every number on it is counted here, never typed.
  */
 import { interimSince } from "./time-river";
@@ -11,6 +12,10 @@ export type PostcardData = {
   place: Bi | null;
   area: Bi | null;
   seal: string | null;
+  /** Claude's reading of the inscription the seal was taken from (its meaning in the card's language) */
+  reading: { text: string; meaning: string } | null;
+  /** the year the place stands since: its last rebuild (or build) in the timeline, never typed */
+  since: string | null;
   sentence: { text: string; source: string | null } | null;
   /** interim: the year a temporary structure was put up before this year (then "the permanent …") */
   broken: { year: string; source: string | null; interim: number | null } | null;
@@ -31,12 +36,23 @@ export function sealOf(texts: (string | null | undefined)[]): string | null {
 }
 
 type Sentence = { text: string; claim_ids: string[]; assertion_type: string };
+type TimelineData = { events?: { event: string; time?: { start?: string | null } | null }[] };
+
+/** The year the place stands since: its last rebuild or build, unless something destroyed it after. */
+export function sinceOf(tl: TimelineData | undefined): string | null {
+  const evs = (tl?.events ?? []).filter((e) => e.time?.start);
+  const at = (e: (typeof evs)[number]) => e.time!.start!;
+  const made = evs.filter((e) => e.event === "rebuilt" || e.event === "built").sort((a, b) => at(a).localeCompare(at(b))).at(-1);
+  if (!made) return null;
+  if (evs.some((e) => e.event === "destroyed" && at(e) > at(made))) return null;
+  return at(made).slice(0, 4);
+}
 type Claim = { id: string; source_id?: string; status: string };
 
 export function postcardData(events: Ev[], lang: "ja" | "en", story: Sentence[] | null, titles: Map<string, string>): PostcardData {
   const get = <T>(type: string) => events.find((e) => e.type === type)?.data as T | undefined;
   const place = get<{ chosen?: { path?: { name: Bi }[] } | null }>("place")?.chosen;
-  const see = get<{ elements?: { text_original?: string | null; box?: { w: number; h: number } }[] }>("see");
+  const see = get<{ elements?: { text_original?: string | null; meaning?: Bi | null; box?: { w: number; h: number } }[] }>("see");
   const guide = events.filter((e) => e.type === "guide").at(-1)?.data as { notes?: { element: number }[] } | undefined;
   const space = get<{ ok?: boolean; scene_id?: string }>("space");
   const claims = events.filter((e) => e.type === "claims").flatMap((e) => ((e.data as { claims?: Claim[] }).claims ?? []) as Claim[]);
@@ -50,6 +66,8 @@ export function postcardData(events: Ev[], lang: "ja" | "en", story: Sentence[] 
   const area = (i: number) => (els[i]?.box ? els[i].box!.w * els[i].box!.h : 0);
   const order = [...(guide?.notes ?? []).map((n) => n.element).sort((a, b) => area(b) - area(a)), ...els.map((_, i) => i).sort((a, b) => area(b) - area(a))];
   const seal = sealOf(order.map((i) => els[i]?.text_original));
+  const sealEl = order.map((i) => els[i]).find((e) => sealOf([e?.text_original]) === seal);
+  const reading = seal && sealEl?.text_original && sealEl.meaning?.[lang] ? { text: sealEl.text_original, meaning: sealEl.meaning[lang] } : null;
 
   const sourceOf = (claimId: string) => (claimId.startsWith("cl:exist:") ? (claimId.split(":").pop() ?? null) : (claims.find((c) => c.id === claimId)?.source_id ?? null));
   const limit = lang === "ja" ? 70 : 150;
@@ -70,6 +88,8 @@ export function postcardData(events: Ev[], lang: "ja" | "en", story: Sentence[] 
     place: path[0]?.name ?? null,
     area: path.at(-1)?.name ?? null,
     seal,
+    reading,
+    since: sinceOf(events.filter((e) => e.type === "timeline").at(-1)?.data as TimelineData | undefined),
     sentence: s ? { text: s.text, source: sentenceSource ? (titles.get(sentenceSource) ?? sentenceSource) : null } : null,
     broken: year
       ? {

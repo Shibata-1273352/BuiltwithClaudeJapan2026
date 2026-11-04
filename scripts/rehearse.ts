@@ -54,7 +54,7 @@ try {
   await page.getByTestId("backstage-toggle").click();
   await page.waitForTimeout(1200);
   await shot(page, "5-backstage");
-  if ((await page.getByTestId("eval-numbers").count()) === 0) fails.push("no eval numbers");
+  if ((await page.getByTestId("eval-numbers").count()) > 0) fails.push("evaluation numbers are on screen (they belong in the README)");
   for (const b of beats) if (!(b in at)) fails.push(`never shown: ${b}`);
   if (errors.length) fails.push(...errors.slice(0, 3));
   console.log(JSON.stringify({ route, secondsFromOpen: at, outDir, fails }, null, 1));

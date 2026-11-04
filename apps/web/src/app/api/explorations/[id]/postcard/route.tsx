@@ -13,8 +13,9 @@ import { sessionId } from "@/lib/session";
 import { store } from "@/lib/store";
 
 /**
- * GET ?lang=ja|en — the 9:16 postcard (1080×1920): the cut-out, a vermilion seal of the words read
- * from the photo, one sentence that passed the code checks, and the broken thread. No Claude call.
+ * GET ?lang=ja|en — the 9:16 postcard (1080×1920), an answer to the friend's two questions: what it
+ * says (Claude's reading) and how long it has been here (code, from the timeline), with the record's
+ * words about the rebuild. No Claude call.
  */
 const W = 1080;
 const H = 1920;
@@ -74,8 +75,8 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
   const placeSub = d.place ? (lang === "ja" ? d.place.en : [gloss, d.place.ja].filter(Boolean).join(" · ")) : "";
   const t =
     lang === "ja"
-      ? { broken: (y: string, permanent: boolean) => `${y}年、${permanent ? "恒久的な" : ""}${d.place?.ja ?? ""}は、まだなかった`, counts: `資料 ${d.counts.sources} · 採用した主張 ${d.counts.claims} · 糸 ${d.counts.threads}`, by: "Claude が読み、コードが確かめた", seal: "写真から読んだ文字" }
-      : { broken: (y: string, permanent: boolean) => `In ${y}, ${permanent ? "the permanent " : ""}${shortEn || "it"} was gone`, counts: `${d.counts.sources} sources · ${d.counts.claims} claims kept · ${d.counts.threads} threads`, by: "Read by Claude, checked by code", seal: "words read from the photo" };
+      ? { q1: "これ、なんて書いてあるの？", q2: "いつからあるの？", since: (y: string) => `${y}年から`, byClaude: "Claude が写真から読んだ", byCode: "年表で判定（コード）", by: "Claude が読み、コードが確かめた" }
+      : { q1: "What does it say?", q2: "How long has it been here?", since: (y: string) => `Since ${y}`, byClaude: "read from the photo by Claude", byCode: "decided by code, from the timeline", by: "Read by Claude, checked by code" };
   const cutH = 720;
   const cutW = Math.min(960, cutH * aspect);
 
@@ -93,46 +94,38 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
           ) : (
             <div style={{ display: "flex", fontSize: 220, fontWeight: 700 }}>{placeMain}</div>
           )}
-          {d.seal && (
-            <div style={{ position: "absolute", right: 0, bottom: 40, display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ display: "flex", flexWrap: "wrap", width: 190, height: 190, background: C.ba, borderRadius: 10, padding: 14, justifyContent: "center", alignContent: "center", transform: "rotate(-4deg)" }}>
-                {d.seal.split("").map((ch, i) => (
-                  <span key={i} style={{ display: "flex", width: d.seal!.length > 2 ? 81 : 160, height: d.seal!.length > 2 ? 81 : 160, alignItems: "center", justifyContent: "center", fontSize: d.seal!.length > 2 ? 72 : 130, fontWeight: 700, color: C.paper, lineHeight: 1 }}>
-                    {ch}
-                  </span>
-                ))}
-              </div>
-              <span style={{ marginTop: 14, fontSize: 22, color: C.muted }}>{t.seal}</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", borderTop: `2px solid ${C.rule}`, paddingTop: 44 }}>
+          <span style={{ fontSize: 44, fontWeight: 700, lineHeight: 1.1 }}>{placeMain}</span>
+          {placeSub && <span style={{ fontSize: 28, color: C.muted, marginTop: 8 }}>{placeSub}</span>}
+          {d.reading && (
+            <div style={{ display: "flex", flexDirection: "column", marginTop: 40 }}>
+              <span style={{ fontSize: 28, color: C.muted }}>{t.q1}</span>
+              <span style={{ fontSize: 64, fontWeight: 700, marginTop: 6, lineHeight: 1.15 }}>{d.reading.text}</span>
+              <span style={{ fontSize: 40, marginTop: 6 }}>{d.reading.meaning}</span>
+              <span style={{ fontSize: 22, color: C.muted, marginTop: 6 }}>{t.byClaude}</span>
             </div>
           )}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", borderTop: `2px solid ${C.rule}`, paddingTop: 48 }}>
-          <span style={{ fontSize: lang === "ja" ? 120 : 96, fontWeight: 700, lineHeight: 1.05 }}>{placeMain}</span>
-          {placeSub && <span style={{ fontSize: 40, color: C.muted, marginTop: 10 }}>{placeSub}</span>}
-          {d.broken && (
-            <div style={{ display: "flex", alignItems: "center", marginTop: 44, fontSize: 40, color: C.toki }}>
-              <div style={{ display: "flex", width: 70, height: 4, marginRight: 22 }}>
-                <div style={{ width: 26, height: 4, background: C.toki }} />
-                <div style={{ width: 18, height: 4 }} />
-                <div style={{ width: 26, height: 4, background: C.toki }} />
-              </div>
-              <span>{t.broken(d.broken.year, d.broken.interim !== null)}</span>
+          {d.since && (
+            <div style={{ display: "flex", flexDirection: "column", marginTop: 36 }}>
+              <span style={{ fontSize: 28, color: C.muted }}>{t.q2}</span>
+              <span style={{ fontSize: 64, fontWeight: 700, marginTop: 6, color: C.toki }}>{t.since(d.since)}</span>
+              <span style={{ fontSize: 22, color: C.muted, marginTop: 6 }}>{t.byCode}</span>
             </div>
           )}
           {gift && (
             <div style={{ display: "flex", flexDirection: "column", marginTop: 28, borderLeft: `4px solid ${C.rule}`, paddingLeft: 28 }}>
-              <span style={{ fontSize: 34, lineHeight: 1.5 }}>{gift.lang === "ja" ? `「${gift.text}」` : `“${gift.text}”`}</span>
-              <span style={{ fontSize: 24, color: C.muted, marginTop: 8 }}>— {gift.title}</span>
+              <span style={{ fontSize: 32, lineHeight: 1.5 }}>{gift.lang === "ja" ? `「${gift.text}」` : `“${gift.text}”`}</span>
+              <span style={{ fontSize: 22, color: C.muted, marginTop: 8 }}>— {gift.title}</span>
             </div>
           )}
-          {d.sentence && !gift && (
+          {d.sentence && !gift && !d.since && (
             <div style={{ display: "flex", flexDirection: "column", marginTop: 40, borderLeft: `4px solid ${C.rule}`, paddingLeft: 28 }}>
-              <span style={{ fontSize: 40, lineHeight: 1.6 }}>{d.sentence.text}</span>
-              {d.sentence.source && <span style={{ fontSize: 28, color: C.muted, marginTop: 12 }}>— {d.sentence.source}</span>}
+              <span style={{ fontSize: 36, lineHeight: 1.6 }}>{d.sentence.text}</span>
+              {d.sentence.source && <span style={{ fontSize: 24, color: C.muted, marginTop: 12 }}>— {d.sentence.source}</span>}
             </div>
           )}
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 56, fontSize: 26, color: C.muted }}>
-            <span>{t.counts}</span>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 44, fontSize: 24, color: C.muted }}>
             <span>{t.by}</span>
           </div>
         </div>

@@ -16,7 +16,7 @@
 5. **Into the print, and home.** Hiroshige's 1856 print opens into depth with snow falling; the names each source used land on what they name in it; a postcard and a travel note keep the checked sentence.
 6. **Anywhere.** At a place with no sources, the reading and the guide still work; history is told only where it can be checked.
 
-**Why it can be relied on.** Claude reads, explains and writes; every yes or no a traveller relies on is decided by code (claims checked against the sentence they cite, existence judged against the timeline, citations re-checked). Quotes are cut from the original by code — Claude only points to sentence numbers — so they match the original by construction; answers to a visitor's question are Claude's, written from this run's sources, with each citation checked to come from them. The evaluation runs as one Batch API job and the numbers on screen are computed from it — see [`evaluation/results/`](evaluation/results/) (the latest report, `latest.json`, is what the app reads) and the in-app page `/how`.
+**Why it can be relied on.** Claude reads, explains and writes; every yes or no a traveller relies on is decided by code (claims checked against the sentence they cite, existence judged against the timeline, citations re-checked). Quotes are cut from the original by code — Claude only points to sentence numbers — so they match the original by construction; answers to a visitor's question are Claude's, written from this run's sources, with each citation checked to come from them. The evaluation runs as one Batch API job, kept apart from the app: no score, run id or measurement is shown on any screen (a design rule, checked by `apps/web/src/design.test.ts`). The figures live here and in [`evaluation/results/`](evaluation/results/) (`latest.json` is the latest report).
 
 **Where it works today.** Full history (sources and a timeline): Kaminarimon (Sensō-ji; timeline checked by a person), Konpon Chūdō (Kan'ei-ji, Ueno) and Azuma Bridge (Sumida River; timelines compiled with Claude Code, awaiting a person's check). Everywhere else: the reading and Claude's guide, which may draw on what Claude knows and is labelled as Claude's, never as evidence.
 
@@ -171,7 +171,7 @@ local GPU / code / Neo4j), a step rail with timers and an ETA; below: the result
 - If live fails or is refused, the stage offers the one public recording (`DEMO_REPLAY_ID`), always labelled as a recording.
 - FR-35 視点の見立て and FR-59 連想の糸 are shown in pencil (interpretations, never evidence).
 
-After done, 「時をめくる」 (year slider 1856 → 1878 → 1960) and 「言の地層」 open over the stage, and 舞台裏 ends with the evaluation numbers, computed from `evaluation/results/latest.json` (written by the last evaluation run that called Claude). Rehearsal of the 6.5 script in presenter mode, with timings and a screenshot per scene: `npx tsx --env-file=.env scripts/rehearse.ts <base> [/replay/<id> | /live]` (default: `DEMO_REPLAY_ID`, no Claude call).
+After done, 「時をめくる」 (year slider 1856 → 1878 → 1960) and 「言の地層」 open over the stage, and 舞台裏 shows one check at work on this photo (a negation caught and downgraded) and this run's Claude calls — no evaluation numbers (those stay in this README). Rehearsal of the 6.5 script in presenter mode, with timings and a screenshot per scene: `npx tsx --env-file=.env scripts/rehearse.ts <base> [/replay/<id> | /live]` (default: `DEMO_REPLAY_ID`, no Claude call).
 
 Checks: `npx tsx --env-file=.env scripts/e2e-sample.ts <base>` (live, ~$0.24), `scripts/e2e-demo.ts <base> <id>` (the public recording from a fresh session), `scripts/stage-shots.ts <base> /replay/<id> [--phone] [--at 3,15,25,40]`.
 
@@ -246,7 +246,7 @@ Benchmarks: `scripts/bench-see.ts <photo>` (Claude), `scripts/bench-scene.ts <ph
 
 ## Evaluation (`npm run eval`, REQUIREMENTS.md 10)
 
-A limited, hand-made evaluation set (3 sites; gold annotated by Claude Code, **human review pending**). It checks citation agreement and mis-bindings of entity and era; it does not prove a zero hallucination rate. The tables below are the first run (`evaluation/results/2026-11-03.md`); the latest run, which the app reads, is [`evaluation/results/2026-11-03-perf.md`](evaluation/results/2026-11-03-perf.md). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
+A limited, hand-made evaluation set (3 sites; gold annotated by Claude Code, **human review pending**). It checks citation agreement and mis-bindings of entity and era; it does not prove a zero hallucination rate. The tables below are the first run (`evaluation/results/2026-11-03.md`); the latest run is [`evaluation/results/2026-11-03-perf.md`](evaluation/results/2026-11-03-perf.md). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
 
 | Method (4.9) | Recall@10 en / ja | Entity identification | Relation (observed ≠ mentions) | Support (proxy) |
 | --- | --- | --- | --- | --- |

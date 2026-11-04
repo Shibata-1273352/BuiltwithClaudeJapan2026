@@ -9,12 +9,10 @@ import { stripNumbers } from "@/lib/live/state";
 import { AssociationThreads } from "./association-threads";
 import { GraphDiagram } from "./graph-diagram";
 import { m } from "motion/react";
-import { evalSummary } from "@/lib/eval-summary";
 import type { LiveState } from "@/lib/live/state";
 import { dict, useDict, useLang } from "../i18n";
 import { StagePanel } from "./stage-panel";
 
-const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 const CALL: Record<string, { ja: string; en: string }> = {
   see: { ja: "視る（写真を読む）", en: "See (read the photo)" },
@@ -52,18 +50,6 @@ const T = dict({
     dropped: (n: number) => `物語の各文の引用を検査：削除 ${n} 文`,
     visual: "似た図像は画像の類似度（SigLIP）。根拠には使わない",
     viewpoint: "視点の見立ては鉛筆（解釈）。主張・糸・グラフにはしない",
-    evalTitle: (run: string, n: number, cost: string) => `評価（${run}・Batch API ${n} 件 $${cost}）`,
-    withTime: "存在の判定：資料の「時」で照合",
-    misbind: (n: number) => `・誤結合 ${n}`,
-    byPub: "　（比較）刊行年で照合した場合",
-    exact: (n: number) => `引用が原文と一致（n=${n}）`,
-    fabricated: "捏造した引用を拒否",
-    generation: "根拠のない文：Claude が書き、検査が捕捉／表示",
-    shown: (n: number) => `表示 ${n}`,
-    live: (n: number) => `実行（n=${n}）`,
-    liveValue: (s: string, cost: string, fail: string) => `中央値 ${s} 秒・$${cost}・失敗 ${fail}`,
-    caveat: (by: string) =>
-      `手作りの小さな評価セット（${by}）。幻覚がゼロであることの証明ではありません。指示を書いた紙の写真でも乗っ取られないことは SEC-01〜03（実際の Claude 呼び出し）で検査。`,
   },
   en: {
     totals: (n: ReturnType<typeof stripNumbers>) => `${n.sources} sources · ${n.passages} passages read · ${n.languages} languages · ${n.accepted} kept · ${n.downgraded + n.rejected} downgraded / rejected · ${n.claudeCalls} Claude calls · $${n.costUsd.toFixed(2)}`,
@@ -79,18 +65,6 @@ const T = dict({
     dropped: (n: number) => `Checked the citations of every story sentence: ${n} removed`,
     visual: "Similar images are by image similarity (SigLIP) and never used as evidence",
     viewpoint: "The viewpoint is pencil (interpretation): never a claim, a thread or a graph node",
-    evalTitle: (run: string, n: number, cost: string) => `Evaluation (${run} · Batch API, ${n} requests, $${cost})`,
-    withTime: "Existence: checked by the source's own time",
-    misbind: (n: number) => ` · ${n} misbound`,
-    byPub: "　(for comparison) checked by publication year",
-    exact: (n: number) => `Citations match the original (n=${n})`,
-    fabricated: "Fabricated citations rejected",
-    generation: "Unsupported sentences: written by Claude, caught by the checks / shown",
-    shown: (n: number) => `shown ${n}`,
-    live: (n: number) => `Runs (n=${n})`,
-    liveValue: (s: string, cost: string, fail: string) => `median ${s} s · $${cost} · failed ${fail}`,
-    caveat: (by: string) =>
-      `A small hand-made evaluation set (${by}). It does not prove zero hallucination. That a photo of a note with written instructions cannot hijack it is tested by SEC-01–03 (real Claude calls).`,
   },
 });
 
@@ -223,7 +197,6 @@ export function Backstage({
             {s.viewpoint && <li>{t.viewpoint}</li>}
           </ul>
         </div>
-        <EvalNumbers />
       </div>
       {s.graph?.sketch && <GraphDiagram sketch={s.graph.sketch} />}
       <div className="mt-6">
@@ -233,60 +206,3 @@ export function Backstage({
   );
 }
 
-/** 6.5 2:40 — the evaluation, from the stored result file (same numbers as the report). */
-function EvalNumbers() {
-  const t = useDict(T);
-  const e = evalSummary();
-  return (
-    <section data-testid="eval-numbers">
-      <h3 className="text-caption font-bold text-toki">
-        {t.evalTitle(e.run, e.batch.requests, e.batch.cost_usd.toFixed(2))}
-      </h3>
-      <table className="mt-1 w-full text-small">
-        <tbody className="[&_td]:py-0.5 [&_td:last-child]:text-right [&_td:last-child]:tabular-nums">
-          <tr>
-            <td>{t.withTime}</td>
-            <td className="text-toki">
-              {pct(e.existence.withTime)}{t.misbind(e.existence.misbindWith)}
-            </td>
-          </tr>
-          <tr>
-            <td className="text-muted">{t.byPub}</td>
-            <td className="text-muted">
-              {pct(e.existence.byPublication)}
-              {t.misbind(e.existence.misbindPublication)}
-            </td>
-          </tr>
-          <tr>
-            <td>{t.exact(e.citation.n)}</td>
-            <td>{pct(e.citation.exact)}</td>
-          </tr>
-          <tr>
-            <td>{t.fabricated}</td>
-            <td>
-              {e.citation.rejected}/{e.citation.fabricated}
-            </td>
-          </tr>
-          <tr>
-            <td>{t.generation}</td>
-            <td>
-              {e.generation.caught}/{e.generation.sentences} ・{" "}
-              {t.shown(e.generation.shown)}
-            </td>
-          </tr>
-          <tr>
-            <td>{t.live(e.live.n)}</td>
-            <td>
-              {t.liveValue(
-                e.live.medianS.toFixed(1),
-                e.live.cost.toFixed(2),
-                pct(e.live.failure),
-              )}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p className="mt-1 text-caption text-muted">{t.caveat(e.annotatedBy)}</p>
-    </section>
-  );
-}

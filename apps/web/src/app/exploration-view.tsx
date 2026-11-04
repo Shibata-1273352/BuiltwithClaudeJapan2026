@@ -68,7 +68,7 @@ const STAGE_LABEL: Record<string, L2> = {
   "extract:en": { ja: "抽出（英）", en: "Extract (EN)" },
   "extract:ja": { ja: "抽出（日）", en: "Extract (JA)" },
   extract2: { ja: "追加の抽出", en: "Extra extraction" },
-  gap: { ja: "不足の評価（並行）", en: "Gap check (parallel)" },
+  gap: { ja: "不足の判断（並行）", en: "Gap check (parallel)" },
   space: { ja: "間", en: "間 (space)" },
   existence: { ja: "存在判定", en: "Existence" },
   narrate: { ja: "紡ぐ", en: "Weave" },

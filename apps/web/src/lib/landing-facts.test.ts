@@ -1,14 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { evalSummary } from "./eval-summary";
 import { landingFacts } from "./landing-facts";
 
 describe("landing facts are computed, not typed", () => {
   const f = landingFacts();
-  it("the evaluation figures are the report's", () => {
-    const e = evalSummary();
-    expect(f.citationExactPct).toBe(Math.round(e.citation.exact * 100));
-    expect(f.rejected).toBe(e.citation.rejected);
-    expect(f.evalRun).toBe(e.run);
+  it("carries no evaluation figures (evaluation stays out of the app)", () => {
+    expect(Object.keys(f).some((k) => /eval|citation|fabricat|rejected/i.test(k))).toBe(false);
   });
   it("the places with a reviewed timeline include Kaminarimon; the corpus is bilingual", () => {
     expect(f.places.map((p) => p.ja)).toContain("浅草寺の雷門");
