@@ -100,7 +100,19 @@ export function PhotoStage({
   const masks = s.space?.ok && scene ? Object.entries(scene.elements).filter(([k]) => k !== "people") : [];
   const overlay = s.space?.aligned && scene?.alignment?.ok && scene.alignment.overlay && s.space.scene_id ? `/api/cache/scenes/${s.space.scene_id}/${scene.alignment.overlay}` : null;
   // the print wipes over the photo when the visual match lands, holds, then steps back (toggle brings it back)
-  const showOverlay = overlay && sinceVisual >= 0 && (overlayOn || sinceVisual < 5200);
+  // (the stage clock stops when a run is done, so the 5.2 s hold must not outlive a turn of the years)
+  const [autoHold, setAutoHold] = useState(false);
+  const visualAt = s.at.visual;
+  useEffect(() => {
+    if (visualAt === undefined) return;
+    const on = setTimeout(() => setAutoHold(true), 0);
+    const off = setTimeout(() => setAutoHold(false), 5200);
+    return () => {
+      clearTimeout(on);
+      clearTimeout(off);
+    };
+  }, [visualAt]);
+  const showOverlay = overlay && sinceVisual >= 0 && (overlayOn || (autoHold && sinceVisual < 5200 && !absent));
   const t = useDict(T);
   const lang = useLang();
   const placeName = s.place?.path[0]?.name; // leaf-first
@@ -156,17 +168,18 @@ export function PhotoStage({
         boxes
           .filter((e) => e.text_original)
           .slice(0, 3)
-          .map((e, i) => (
+          .map((e, i, all) => (
             <m.span
               key={i}
               className="absolute max-w-[45%] rounded-sm bg-night/85 px-2 py-0.5 text-caption shadow"
-              style={{ left: `${e.box.x * 100}%`, top: `calc(${e.box.y * 100}% - 1.6rem)` }}
+              // labels whose boxes start close together stack upward instead of overlapping
+              style={{ left: `${e.box.x * 100}%`, top: `calc(${e.box.y * 100}% - ${1.6 + 1.7 * all.slice(0, i).filter((p) => Math.abs(p.box.y - e.box.y) < 0.08).length}rem)` }}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: sincePlace > 2600 ? 0 : 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.15 }}
             >
               <span className="font-serif text-small text-lantern">{e.text_original}</span>
-              {e.meaning?.ja && <span className="ml-1 text-muted">{e.meaning.ja.slice(0, 18)}</span>}
+              {e.meaning?.[lang] && <span className="ml-1 text-muted">{e.meaning[lang].slice(0, lang === "en" ? 34 : 18)}</span>}
             </m.span>
           ))}
 

@@ -228,6 +228,18 @@ export function TextColumn({
 
         {/* the friend's two questions, answered first */}
         <FirstAnswer s={s} />
+        {/* after the story, Claude's judgment stays as one line: what it found missing, what it searched for */}
+        {showStory && s.gap?.gaps && s.gap.gaps.length > 0 && (
+          <p className="border-l-2 border-lantern pl-4 text-caption text-muted" data-testid="claude-searched">
+            {t.searched(s.gap.found ?? 0)}
+            <span className="text-paper">
+              {s.gap.gaps
+                .flatMap((g) => g.terms)
+                .slice(0, 4)
+                .join(t.sep)}
+            </span>
+          </p>
+        )}
 
         {/* the discovery: the broken thread */}
         <AnimatePresence>
@@ -337,18 +349,6 @@ export function TextColumn({
         )}
 
         {/* the viewpoint may land after the story has started: keep it, below the story */}
-        {/* after the story, Claude's judgment stays as one line: what it found missing, what it searched for */}
-        {showStory && s.gap?.gaps && s.gap.gaps.length > 0 && (
-          <p className="border-l-2 border-lantern pl-4 text-caption text-muted" data-testid="claude-searched">
-            {t.searched(s.gap.found ?? 0)}
-            <span className="text-paper">
-              {s.gap.gaps
-                .flatMap((g) => g.terms)
-                .slice(0, 4)
-                .join(t.sep)}
-            </span>
-          </p>
-        )}
         {showStory && <div className="present-hide"><ViewpointCard s={s} /></div>}
         {showStory && world}
 

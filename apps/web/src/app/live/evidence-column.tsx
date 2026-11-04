@@ -20,8 +20,11 @@ export function EvidenceColumn({
   hot,
   setHot,
   expId = null,
+  holdBroken = false,
 }: {
   expId?: string | null;
+  /** ?hold=broken (recording): the "not there that year" verdict waits for the years to be turned */
+  holdBroken?: boolean;
   s: LiveState;
   cards: SourceCard[];
   register: (id: string) => (el: HTMLElement | null) => void;
@@ -53,7 +56,7 @@ export function EvidenceColumn({
     <section className="flex h-full min-h-0 flex-col gap-4" aria-label={t.evidence} data-testid="evidence-column">
       <div className="flex items-baseline justify-between">
         <h2 className="label">{t.title}</h2>
-        <span className="text-caption text-muted tabular-nums">{t.n(new Set(s.candidates.map((c) => c.passageId)).size)}</span>
+        {s.candidates.length > 0 && <span className="text-caption text-muted tabular-nums">{t.n(new Set(s.candidates.map((c) => c.passageId)).size)}</span>}
       </div>
       {/* what was searched, in one line: topic × language, "none" struck through */}
       <p className="present-hide flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted" data-testid="search-matrix" aria-label={t.matrix}>
@@ -120,7 +123,7 @@ export function EvidenceColumn({
                     {c.excerpt.replace(/^Title:\s*/, "")}
                   </p>
                 )}
-                <div className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted">
+                <div className={`mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted ${holdBroken && c.existence?.value === "absent" ? "invisible" : ""}`}>
                   {c.existence && (
                     <span className={c.existence.value === "absent" ? "font-medium text-paper" : ""}>
                       {EXIST_LABEL[ui][c.existence.value]}

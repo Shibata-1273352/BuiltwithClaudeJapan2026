@@ -205,7 +205,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
             kind: "ink",
             color: LAYER_COLOR[c.layer ?? "koto"],
             year: c.year,
-            cut: c.state === "absent",
+            cut: c.state === "absent" && !(holdBroken && !scrubbedOnce),
             dashed: c.state === "pending",
             at: s.at.threads! + i * 140,
           }),
@@ -219,7 +219,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
       });
     });
     return out;
-  }, [s.guide, s.at.guide, s.at.threads, objects, mainObj, cards, asks]);
+  }, [s.guide, s.at.guide, s.at.threads, objects, mainObj, cards, asks, holdBroken, scrubbedOnce]);
   const finished = phase === "done";
   const runLang = s.narrative?.lang;
   const [story, setStory] = useState<{ lang: "ja" | "en"; sentences: { text: string; claim_ids: string[]; assertion_type: string }[] } | null>(null);
@@ -410,7 +410,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                   <YearAxis s={s} cards={cards} axisRef={axisRef} scrub={scrub} onScrub={finished && s.timeline ? onScrub : undefined} scrubLabel={ys?.label[lang]} />
                 </div>
                 <div className={`order-3 min-h-0 lg:order-none ${s.place === null ? "hidden" : ""}`}>
-                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} />
+                  <EvidenceColumn s={s} cards={cards} register={registerCard} hot={hot} setHot={setHot} expId={finished ? expId : null} holdBroken={holdBroken && !scrubbedOnce} />
                 </div>
                 {panel === "backstage" && <Backstage s={s} onClose={() => setPanel(null)} />}
                 {panel === "time" && s.timeline != null && (

@@ -14,7 +14,7 @@ export function StagePanel({ title, onClose, children, testid, wide = false }: {
       aria-label={title}
       data-testid={testid}
     >
-      <div className="flex items-baseline justify-between">
+      <div className="sticky -top-5 z-10 -mx-6 -mt-5 flex items-baseline justify-between bg-night-2 px-6 pt-5 pb-2">
         <h2 className="font-serif text-lead">{title}</h2>
         <Button variant="quiet" onClick={onClose}>
           {useLang() === "ja" ? "閉じる" : "Close"}
