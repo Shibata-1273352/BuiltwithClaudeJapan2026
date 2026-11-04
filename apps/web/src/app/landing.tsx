@@ -12,6 +12,7 @@ import { CapturePreview } from "./capture-preview";
 import { dict, LangToggle, useDict, useLang } from "./i18n";
 import { ButtonLink } from "./ui/button";
 import { Warm } from "./warm";
+import { Braid } from "./ui/braid";
 
 const T = dict({
   ja: {
@@ -139,12 +140,13 @@ export function Landing({ facts }: { facts: LandingFacts }) {
           </div>
         </div>
         {/* now ⇄ then: the same place, today and in Hiroshige's print (CC0 photo; public-domain print) */}
-        <figure className="mx-auto grid w-full grid-cols-2 gap-3" data-testid="now-then">
+        <figure className="mx-auto grid w-full grid-cols-[1fr_1.5rem_1fr] items-start gap-2" data-testid="now-then">
           <div className="relative">
             {/* eslint-disable-next-line @next/next/no-img-element -- CC0 photo of the place */}
             <img src="/landing/now.jpg" alt={t.nowAlt} className="aspect-[3/4] w-full rounded-md object-cover" />
             <span className="mt-2 block font-serif text-title text-paper">{t.now}</span>
           </div>
+          <Braid className="aspect-[1/16] h-auto w-full self-stretch" />
           <div className="relative">
             {/* eslint-disable-next-line @next/next/no-img-element -- public-domain print of the same place */}
             <img src="/landing/print.jpg" alt={t.printAlt} className="aspect-[3/4] w-full rounded-md object-cover" />

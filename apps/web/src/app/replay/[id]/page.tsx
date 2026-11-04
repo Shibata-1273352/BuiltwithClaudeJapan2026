@@ -39,7 +39,7 @@ async function Replay({ params, searchParams }: { params: Promise<{ id: string }
 
 export default function ReplayPage({ params, searchParams }: PageProps<"/replay/[id]">) {
   return (
-    <Suspense fallback={<p className="p-10 text-muted">読み込み中…</p>}>
+    <Suspense fallback={<div className="flex-1" />}>
       <Replay params={params} searchParams={searchParams} />
     </Suspense>
   );

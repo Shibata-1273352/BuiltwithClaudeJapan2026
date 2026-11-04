@@ -22,7 +22,10 @@ export function EvidenceColumn({
   setHot,
   expId = null,
   holdBroken = false,
+  onYear,
 }: {
+  /** turn the stage to a source's year (the card's year is a button once the run is done) */
+  onYear?: (y: number) => void;
   expId?: string | null;
   /** ?hold=broken (recording): the "not there that year" verdict waits for the years to be turned */
   holdBroken?: boolean;
@@ -102,12 +105,16 @@ export function EvidenceColumn({
                   <span className="min-w-0 flex-1 truncate font-serif text-body" lang={c.lang}>
                     {c.title}
                   </span>
-                  {c.year && (
+                  {c.year && (onYear && c.yearKind !== "published" ? (
+                    <button type="button" onClick={() => onYear(c.year!)} className="min-h-11 font-serif text-body text-paper tabular-nums underline decoration-rule-strong underline-offset-4 hover:decoration-paper" title={t.time} data-testid="card-year">
+                      {c.year}
+                    </button>
+                  ) : (
                     <span className={`font-serif text-body tabular-nums ${c.yearKind === "published" ? "text-muted" : "text-paper"}`} title={c.yearKind === "published" ? t.pub : t.time}>
                       {c.year}
                       {c.yearKind === "published" ? t.pubMark : ""}
                     </span>
-                  )}
+                  ))}
                   <span className="rounded-sm border border-rule-strong px-1.5 text-caption leading-5 text-paper/80" lang={c.lang}>
                     {c.lang === "ja" ? "日本語" : "English"}
                   </span>

@@ -240,7 +240,7 @@ export function TextColumn({
             {foundTitles.length > 0 && (
               <span className="text-paper" data-testid="claude-found">
                 {t.found2}
-                <span className="font-serif text-body">{foundTitles.join(t.sep)}</span>
+                <span className="font-serif text-lead">{foundTitles.join(t.sep)}</span>
               </span>
             )}
             <span className="present-hide text-paper">

@@ -75,10 +75,10 @@ function ViewpointBody({ v, art }: { v: NonNullable<LiveState["viewpoint"]>; art
         )}
         {art && (
           <div className="flex gap-3">
-            <Compass facing={art.facing} color="var(--thread-toki)" label={t.hiroshige} />
+            <Compass facing={art.facing} color="var(--muted)" label={t.hiroshige} />
             <div className="min-w-0">
               <p className="text-small">
-                <span className="font-medium text-toki">{t.hiroshige}</span> {t.facing(f(art.facing))} ── {art[lang]}
+                <span className="font-medium text-paper">{t.hiroshige}</span> {t.facing(f(art.facing))} ── {art[lang]}
               </p>
               <p className="mt-0.5 text-caption text-muted">
                 {t.premisesArt}

@@ -62,9 +62,9 @@ export function LiveChips({ s, finished, replay, note }: { s: LiveState; finishe
   const lang = useLang();
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-small" data-testid="live-chip">
-      <Tag tone={replay ? "koto" : finished ? "toki" : "ba"}>
+      <Tag tone={replay || finished ? "paper" : "lantern"}>
         <span className="mr-1.5 inline-flex">
-          <StatusDot tone={replay ? "koto" : finished ? "toki" : "ba"} pulse={!replay && !finished} />
+          <StatusDot tone={replay || finished ? "muted" : "lantern"} pulse={!replay && !finished} />
         </span>
         {replay ? t.replay : finished ? t.fin : "LIVE"}
       </Tag>

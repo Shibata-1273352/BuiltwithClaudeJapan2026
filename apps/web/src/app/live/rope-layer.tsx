@@ -23,6 +23,8 @@ export type RopeSpec = {
   /** ink: absent source — the cord is cut at the year */
   cut?: boolean;
   dashed?: boolean;
+  /** ink: this ply's offset (px) from the cord's centre, so a source's strands lie side by side */
+  offset?: number;
   /** ms after the threads beat when this rope appears (stagger) */
   at: number;
 };
@@ -106,10 +108,12 @@ export function RopeLayer({
           continue;
         }
         const pa = attach(spec.from, a, origin);
-        const pb = attach(spec.to, b, origin);
+        const pb0 = attach(spec.to, b, origin);
+        const off = spec.offset ?? 0;
+        const pb = { x: pb0.x, y: pb0.y + off };
         // a card scrolled out of its column: no thread to it
         const visible = pb.y > 0 && pb.y < origin.height;
-        const mid = spec.kind === "ink" ? (spec.year ? { x: axisX, y: yearY(spec.year) } : { x: axisX, y: (pa.y + pb.y) / 2 }) : null;
+        const mid = spec.kind === "ink" ? (spec.year ? { x: axisX + off, y: yearY(spec.year) } : { x: axisX + off, y: (pa.y + pb.y) / 2 }) : null;
         const ends: [Pt, Pt][] = mid ? [[pa, mid], [mid, pb]] : [[pa, pb]];
         let cur = l;
         if (!cur) {
@@ -171,7 +175,7 @@ export function RopeLayer({
         const n = Math.hypot(dx, dy) || 1;
         const ux = dx / n;
         const uy = dy / n;
-        const L = 110;
+        const L = 90 + 20 * strands.length; // more questions, a longer cord
         const amp = 4.5;
         const wave = 22;
         const k = strands.length;
@@ -230,7 +234,7 @@ export function RopeLayer({
             {parts.map((part) =>
               s.kind === "ink" ? (
                 <g key={part}>
-                  <path data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke={s.color} strokeWidth={2} style={{ ["--sw" as string]: 2 }} strokeLinecap="round" strokeDasharray={s.dashed ? "0.02 0.015" : undefined} />
+                  <path data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke={s.color} strokeWidth={s.cut ? 3 : 2} style={{ ["--sw" as string]: s.cut ? 3 : 2 }} strokeLinecap="round" strokeDasharray={s.dashed ? "0.02 0.015" : undefined} />
                   {/* the twist of a cord: a thin light strand along it */}
                   <path data-rope={s.id} data-part={part} pathLength={1} fill="none" stroke="var(--paper)" strokeOpacity={0.35} strokeWidth={0.7} style={{ ["--sw" as string]: 0.7 }} strokeDasharray="0.006 0.006" />
                 </g>

@@ -12,7 +12,7 @@ export const STEPS: Step[] = [
   { key: "check", ja: "確かめる", en: "Check claims", stages: ["extract:en", "extract:ja", "gap", "extract2"], median: 9000 },
   { key: "time", ja: "時を照らす", en: "Check the dates", stages: ["existence", "names"], median: 100 },
   { key: "weave", ja: "紡ぐ", en: "Weave the story", stages: ["narrate", "graph"], median: 6500 },
-  { key: "ma", ja: "間", en: "Layers", stages: ["space"], median: 7000, parallel: true },
+  { key: "ma", ja: "層", en: "Layers", stages: ["space"], median: 7000, parallel: true },
 ];
 
 type Stages = Record<string, { started: number; done?: number }>;

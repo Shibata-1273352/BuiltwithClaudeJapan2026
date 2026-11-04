@@ -36,6 +36,15 @@ describe("live state (a real recorded exploration)", () => {
     expect(cards.find((c) => c.sourceId === "met-56689")?.state).toBe("combined");
     expect(cards.reduce((a, c) => a + c.threads.length, 0)).toBe(s.threads!.length);
   });
+  it("a card keeps one ply per question; at an absent year only the 時 ply breaks", () => {
+    const cards = sourceCards(s);
+    const bird = cards.find((c) => c.sourceId === "bird-unbeaten")!;
+    expect(bird.plies.find((p) => p.layer === "toki")?.state).toBe("absent");
+    expect(bird.plies.filter((p) => p.layer !== "toki").every((p) => p.state !== "absent")).toBe(true);
+    expect(bird.plies.length).toBeGreaterThan(1);
+    // the four questions all reach the stage (間: the print that depicts the place)
+    expect(new Set(cards.flatMap((c) => c.plies.map((p) => p.layer)))).toEqual(new Set(["toki", "ba", "koto", "ma"]));
+  });
   it("strip numbers add up", () => {
     const n = stripNumbers(s);
     expect(n.accepted).toBeGreaterThan(10);

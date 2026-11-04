@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { BackLink } from "../../ui/back-link";
 import { Button } from "../../ui/button";
 import { PrintDiorama } from "./diorama";
@@ -11,7 +12,7 @@ const L = {
     inside: "絵の中",
     print: "歌川広重《名所江戸百景 浅草金龍山》1856",
     how: "奥行きは推定",
-    back: "今へ戻る",
+    back: "絵から出る",
     state: { present: "あった", absent: "不在", unknown: "確認待ち", withheld: "判定保留" },
     title: "間（ま）",
     sub: "写真を SAM 3 と深度で層に分け、広重の絵と重ねる",
@@ -35,7 +36,7 @@ const L = {
     inside: "Inside the print",
     print: "Utagawa Hiroshige, Kinryūzan Temple in Asakusa (1856)",
     how: "depth: an estimate",
-    back: "Back to now",
+    back: "Step out of the print",
     state: { present: "stood", absent: "absent", unknown: "to be checked", withheld: "withheld" },
     title: "Ma — the space between",
     sub: "The photo split into layers by SAM 3 and depth, laid over Hiroshige's print",
@@ -344,7 +345,7 @@ export function SpaceViewer({
       setInside(true);
       setYear(1856);
       setMoving(performance.now());
-    }, 1800);
+    }, 700);
     return () => clearTimeout(t);
   }, [autoEnter, align]);
 
@@ -421,7 +422,13 @@ export function SpaceViewer({
             data-testid="space-inside"
           >
             <div className="max-w-[24rem]">
-              <p className="label">{l.inside}</p>
+              <nav className="pointer-events-auto flex items-center gap-6" aria-label="TSUMUGI">
+                <BackLink className="-ml-1" />
+                <Link href="/" className="inline-flex min-h-11 items-center font-serif text-small tracking-[0.3em] text-paper/80 hover:text-paper" data-testid="home-link">
+                  TSUMUGI
+                </Link>
+              </nav>
+              <p className="label mt-3">{l.inside}</p>
               <p className="mt-2 font-serif text-title">{l.print}</p>
               {ys && (
                 <p className="mt-2 flex flex-wrap items-center gap-3 font-serif text-body text-paper/85" data-testid="space-year-state" data-state={ys.state}>
@@ -447,7 +454,12 @@ export function SpaceViewer({
 
       {!immersive && (
       <aside className="flex w-full flex-col gap-7 px-6 py-10 lg:w-[24rem] lg:pr-10">
-        <BackLink className="-ml-1 mb-1" />
+        <nav className="-ml-1 mb-1 flex items-center gap-6" aria-label="TSUMUGI">
+          <BackLink />
+          <Link href="/" className="inline-flex min-h-11 items-center font-serif text-small tracking-[0.3em] text-paper/80 hover:text-paper" data-testid="home-link">
+            TSUMUGI
+          </Link>
+        </nav>
         <h1 className="font-serif text-title">{l.title}</h1>
         <p className="-mt-4 text-caption text-muted">{l.sub}</p>
         {/* 3D-only controls are hidden in the 2D view (FR-37) */}
