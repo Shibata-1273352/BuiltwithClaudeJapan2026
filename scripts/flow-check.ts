@@ -20,7 +20,7 @@ const errors: string[] = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 const fails: string[] = [];
 const log: string[] = [];
-const out = "/Users/shibata/tsumugi-data/out/screens/flow";
+const out = `${process.env.DATA_DIR}/out/screens/flow`;
 const v = (id: string) => page.getByTestId(id).filter({ visible: true }).first();
 
 await page.goto(`${base}/replay/${replay}?present=1&hold=broken&at=end`, { waitUntil: "domcontentloaded" });

@@ -27,11 +27,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="ja" suppressHydrationWarning className={`h-full antialiased ${mincho.variable} ${garamond.variable} ${gothic.variable} ${hand.variable}`}>
       <head>
         {/* presenter mode (the video) is applied before the first paint and kept across pages */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{if(sessionStorage.getItem("tsumugi_present")==="1"||/[?&]present=1/.test(location.search))document.documentElement.dataset.present="1"}catch(e){}`,
-          }}
-        />
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- it must run before the first paint */}
+        <script src="/present.js" />
       </head>
       <body className="min-h-full flex flex-col">
         <LangProvider>{children}</LangProvider>

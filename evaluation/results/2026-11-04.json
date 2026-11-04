@@ -1,0 +1,906 @@
+{
+  "run": "2026-11-04",
+  "model": "claude-opus-5-5",
+  "cases": {
+    "version": 1,
+    "hash": "7a7a71fdc51e",
+    "frozen_at": "2026-11-03",
+    "annotated_by": "claude-code (human review pending)"
+  },
+  "perTarget": {
+    "kaminarimon": {
+      "retrieval": {
+        "en": {
+          "gold": 12,
+          "A_recall10": 0.5833333333333334,
+          "A_mrr": 1,
+          "B_recall10": 0.5833333333333334,
+          "B_mrr": 1,
+          "B_recall_all": 0.5833333333333334,
+          "B_candidates": 9,
+          "Bnohdr_recall10": 0.5833333333333334,
+          "Bnohdr_mrr": 1
+        },
+        "ja": {
+          "gold": 28,
+          "A_recall10": 0.25,
+          "A_mrr": 1,
+          "B_recall10": 0.25,
+          "B_mrr": 1,
+          "B_recall_all": 0.32142857142857145,
+          "B_candidates": 13,
+          "Bnohdr_recall10": 0.25,
+          "Bnohdr_mrr": 1
+        }
+      },
+      "B_items": {
+        "items": 33,
+        "identification": {
+          "n": 16,
+          "precision": 1
+        },
+        "relation": {
+          "n": 0,
+          "violations": 0,
+          "precision": null,
+          "examples": []
+        },
+        "support_proxy": {
+          "n": 33,
+          "rate": 0.7878787878787878
+        }
+      }
+    },
+    "ueno": {
+      "retrieval": {
+        "en": {
+          "gold": 4,
+          "A_recall10": 0.75,
+          "A_mrr": 1,
+          "B_recall10": 0.75,
+          "B_mrr": 1,
+          "B_recall_all": 0.75,
+          "B_candidates": 10,
+          "Bnohdr_recall10": 0.5,
+          "Bnohdr_mrr": 1
+        },
+        "ja": {
+          "gold": 12,
+          "A_recall10": 0.6666666666666666,
+          "A_mrr": 1,
+          "B_recall10": 0.5833333333333334,
+          "B_mrr": 1,
+          "B_recall_all": 0.6666666666666666,
+          "B_candidates": 11,
+          "Bnohdr_recall10": 0.5833333333333334,
+          "Bnohdr_mrr": 1
+        }
+      },
+      "B_items": {
+        "items": 31,
+        "identification": {
+          "n": 6,
+          "precision": 1
+        },
+        "relation": {
+          "n": 0,
+          "violations": 0,
+          "precision": null,
+          "examples": []
+        },
+        "support_proxy": {
+          "n": 31,
+          "rate": 0.45161290322580644
+        }
+      }
+    },
+    "azumabashi": {
+      "retrieval": {
+        "en": {
+          "gold": 5,
+          "A_recall10": 0.8,
+          "A_mrr": 1,
+          "B_recall10": 0.8,
+          "B_mrr": 1,
+          "B_recall_all": 0.8,
+          "B_candidates": 7,
+          "Bnohdr_recall10": 0.8,
+          "Bnohdr_mrr": 1
+        },
+        "ja": {
+          "gold": 18,
+          "A_recall10": 0.4444444444444444,
+          "A_mrr": 1,
+          "B_recall10": 0.3888888888888889,
+          "B_mrr": 1,
+          "B_recall_all": 0.5,
+          "B_candidates": 13,
+          "Bnohdr_recall10": 0.3888888888888889,
+          "Bnohdr_mrr": 1
+        }
+      },
+      "B_items": {
+        "items": 33,
+        "identification": {
+          "n": 27,
+          "precision": 1
+        },
+        "relation": {
+          "n": 0,
+          "violations": 0,
+          "precision": null,
+          "examples": []
+        },
+        "support_proxy": {
+          "n": 33,
+          "rate": 0.6666666666666666
+        }
+      }
+    }
+  },
+  "existence": {
+    "rows": [
+      {
+        "target": "kaminarimon",
+        "entity": "ent:kaminarimon",
+        "source": "met-56689",
+        "expected": "present",
+        "approved": true,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "unknown"
+      },
+      {
+        "target": "kaminarimon",
+        "entity": "ent:kaminarimon",
+        "source": "koun-kaiko",
+        "expected": "unknown",
+        "hold": "sources disagree on the date of the fire",
+        "approved": true,
+        "got": "unknown",
+        "reason": "sources_disagree",
+        "ablation_publication": "absent"
+      },
+      {
+        "target": "kaminarimon",
+        "entity": "ent:kaminarimon",
+        "source": "bird-unbeaten",
+        "expected": "absent",
+        "approved": true,
+        "got": "absent",
+        "reason": "inside_absent",
+        "ablation_publication": "absent"
+      },
+      {
+        "target": "kaminarimon",
+        "entity": "ent:kaminarimon",
+        "source": "kafu-hiyorigeta",
+        "expected": "absent",
+        "approved": true,
+        "got": "absent",
+        "reason": "inside_absent",
+        "ablation_publication": "absent"
+      },
+      {
+        "target": "kaminarimon",
+        "entity": "ent:kaminarimon",
+        "source": "scidmore-jinrikisha",
+        "expected": "unknown",
+        "hold": "no observation date",
+        "approved": true,
+        "got": "unknown",
+        "reason": "no_time",
+        "ablation_publication": "absent"
+      },
+      {
+        "target": "ueno",
+        "entity": "ent:konponchudo",
+        "source": "koun-kaiko",
+        "expected": "absent",
+        "approved": false,
+        "got": "absent",
+        "reason": "inside_absent",
+        "ablation_publication": "present"
+      },
+      {
+        "target": "ueno",
+        "entity": "ent:konponchudo",
+        "source": "bird-unbeaten",
+        "expected": "absent",
+        "approved": false,
+        "got": "absent",
+        "reason": "inside_absent",
+        "ablation_publication": "present"
+      },
+      {
+        "target": "ueno",
+        "entity": "ent:konponchudo",
+        "source": "kafu-hiyorigeta",
+        "expected": "present",
+        "approved": false,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "present"
+      },
+      {
+        "target": "ueno",
+        "entity": "ent:konponchudo",
+        "source": "scidmore-jinrikisha",
+        "expected": "unknown",
+        "hold": "no observation date",
+        "approved": false,
+        "got": "unknown",
+        "reason": "no_time",
+        "ablation_publication": "present"
+      },
+      {
+        "target": "ueno",
+        "entity": "ent:konponchudo-old",
+        "source": "koun-kaiko",
+        "expected": "unknown",
+        "hold": "the hall burned on the day he recalls",
+        "approved": false,
+        "got": "unknown",
+        "reason": "boundary",
+        "ablation_publication": "absent"
+      },
+      {
+        "target": "ueno",
+        "entity": "ent:konponchudo-old",
+        "source": "met-56689",
+        "expected": "present",
+        "approved": false,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "unknown"
+      },
+      {
+        "target": "azumabashi",
+        "entity": "ent:azumabashi",
+        "source": "met-45257",
+        "expected": "present",
+        "approved": false,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "unknown"
+      },
+      {
+        "target": "azumabashi",
+        "entity": "ent:azumabashi",
+        "source": "met-37282",
+        "expected": "present",
+        "approved": false,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "unknown"
+      },
+      {
+        "target": "azumabashi",
+        "entity": "ent:azumabashi",
+        "source": "koun-kaiko",
+        "expected": "present",
+        "approved": false,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "present"
+      },
+      {
+        "target": "azumabashi",
+        "entity": "ent:azumabashi",
+        "source": "bird-unbeaten",
+        "expected": "present",
+        "approved": false,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "present"
+      },
+      {
+        "target": "azumabashi",
+        "entity": "ent:azumabashi",
+        "source": "kafu-hiyorigeta",
+        "expected": "present",
+        "approved": false,
+        "got": "present",
+        "reason": "inside_present",
+        "ablation_publication": "present"
+      },
+      {
+        "target": "azumabashi",
+        "entity": "ent:azumabashi",
+        "source": "met-37387",
+        "expected": "unknown",
+        "hold": "the rebuilding year (1887) at year precision",
+        "approved": false,
+        "got": "unknown",
+        "reason": "boundary",
+        "ablation_publication": "unknown"
+      }
+    ],
+    "accuracy_approved": 1,
+    "accuracy_pending": 1,
+    "accuracy_all": 1,
+    "hold_rate": 1,
+    "n": 17,
+    "n_hold": 5,
+    "ablation_time": {
+      "accuracy_with": 1,
+      "accuracy_publication": 0.4117647058823529,
+      "era_misbindings_with": 0,
+      "era_misbindings_publication": 6
+    }
+  },
+  "citation": {
+    "fabricated": 4,
+    "rejected_or_dropped": 4,
+    "valid_accepted": true,
+    "cases": [
+      "sentence id does not exist",
+      "sentence from a passage not given",
+      "entity not in the dictionary",
+      "named_as value not in the sentence"
+    ],
+    "outside_passages_dropped": true
+  },
+  "live": {
+    "explorations": 89,
+    "failure_rate": 0,
+    "latency_ms": {
+      "n": 86,
+      "median": 30409,
+      "p90": 47440
+    },
+    "cost_usd_mean": 0.3233883720930232,
+    "rag08": {
+      "explorations": 78,
+      "consistent": 78
+    }
+  },
+  "llm": {
+    "methods": {
+      "kaminarimon": {
+        "C": {
+          "items": 12,
+          "identification": {
+            "n": 9,
+            "precision": 1
+          },
+          "relation": {
+            "n": 7,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 12,
+            "rate": 1
+          },
+          "recall10": {
+            "en": 0.25,
+            "ja": 0.32142857142857145
+          },
+          "selected": 12
+        },
+        "D": {
+          "items": 22,
+          "identification": {
+            "n": 9,
+            "precision": 1
+          },
+          "relation": {
+            "n": 10,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 22,
+            "rate": 1
+          },
+          "proposed_unchecked": {
+            "items": 23,
+            "identification": {
+              "n": 9,
+              "precision": 1
+            },
+            "relation": {
+              "n": 10,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 23,
+              "rate": 1
+            }
+          },
+          "status": {
+            "accepted": 22,
+            "downgraded": 1,
+            "rejected": 0
+          },
+          "citation": {
+            "n": 23,
+            "exact": 1
+          }
+        },
+        "D_noRel": {
+          "items": 22,
+          "identification": {
+            "n": 8,
+            "precision": 1
+          },
+          "relation": {
+            "n": 10,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 22,
+            "rate": 1
+          },
+          "proposed_unchecked": {
+            "items": 23,
+            "identification": {
+              "n": 8,
+              "precision": 1
+            },
+            "relation": {
+              "n": 10,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 23,
+              "rate": 1
+            }
+          },
+          "status": {
+            "accepted": 22,
+            "downgraded": 1,
+            "rejected": 0
+          }
+        },
+        "Dplus": {
+          "items": 40,
+          "identification": {
+            "n": 19,
+            "precision": 1
+          },
+          "relation": {
+            "n": 22,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 40,
+            "rate": 0.725
+          },
+          "status": {
+            "accepted": 40,
+            "downgraded": 3,
+            "rejected": 0
+          },
+          "recall_all": {
+            "en": 0.6666666666666666,
+            "ja": 0.42857142857142855
+          },
+          "gap": {
+            "enough": false,
+            "assessment": "雷門の描写と名称は英日ともに候補があるが、多くは隣接地の記述で、雷門自体の存在時期は「不明」か「不在」ばかりである。日本語の美術作品の証拠は0件で、広重の作品しか確認できていない。",
+            "gaps": [
+              {
+                "facet": "historical_artifacts",
+                "lang": "ja",
+                "terms": [
+                  "雷門",
+                  "浮世絵",
+                  "浅草",
+                  "名所"
+                ]
+              },
+              {
+                "facet": "existence_timeline",
+                "lang": "en",
+                "terms": [
+                  "Kaminarimon",
+                  "Thunder Gate",
+                  "burned",
+                  "Asakusa"
+                ]
+              },
+              {
+                "facet": "naming",
+                "lang": "ja",
+                "terms": [
+                  "雷門",
+                  "風神雷神",
+                  "雷神門",
+                  "仁王門"
+                ]
+              }
+            ],
+            "found": 12
+          },
+          "citation": {
+            "n": 43,
+            "exact": 1
+          }
+        }
+      },
+      "ueno": {
+        "C": {
+          "items": 12,
+          "identification": {
+            "n": 4,
+            "precision": 0.75
+          },
+          "relation": {
+            "n": 2,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 12,
+            "rate": 0.9166666666666666
+          },
+          "recall10": {
+            "en": 0.75,
+            "ja": 0.6666666666666666
+          },
+          "selected": 12
+        },
+        "D": {
+          "items": 18,
+          "identification": {
+            "n": 3,
+            "precision": 1
+          },
+          "relation": {
+            "n": 11,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 18,
+            "rate": 0.5
+          },
+          "proposed_unchecked": {
+            "items": 21,
+            "identification": {
+              "n": 3,
+              "precision": 1
+            },
+            "relation": {
+              "n": 14,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 21,
+              "rate": 0.42857142857142855
+            }
+          },
+          "status": {
+            "accepted": 18,
+            "downgraded": 2,
+            "rejected": 1
+          },
+          "citation": {
+            "n": 20,
+            "exact": 1
+          }
+        },
+        "D_noRel": {
+          "items": 19,
+          "identification": {
+            "n": 3,
+            "precision": 1
+          },
+          "relation": {
+            "n": 11,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 19,
+            "rate": 0.47368421052631576
+          },
+          "proposed_unchecked": {
+            "items": 20,
+            "identification": {
+              "n": 3,
+              "precision": 1
+            },
+            "relation": {
+              "n": 12,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 20,
+              "rate": 0.45
+            }
+          },
+          "status": {
+            "accepted": 19,
+            "downgraded": 1,
+            "rejected": 0
+          }
+        },
+        "Dplus": {
+          "items": 18,
+          "identification": {
+            "n": 3,
+            "precision": 1
+          },
+          "relation": {
+            "n": 11,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 18,
+            "rate": 0.5
+          },
+          "status": {
+            "accepted": 18,
+            "downgraded": 2,
+            "rejected": 1
+          },
+          "recall_all": {
+            "en": 0.75,
+            "ja": 0.6666666666666666
+          },
+          "gap": {
+            "enough": false,
+            "assessment": "根本中堂について、英日の場所の描写・呼称と年表（公式サイトや観光庁解説）は一定程度集まっている。一方、現在の堂そのものを直接描写した記述は少なく、描いた美術作品は英日ともに0件。旧根本中堂（竹の台）との区別も十分に示されていない。",
+            "gaps": [
+              {
+                "facet": "historical_artifacts",
+                "lang": "ja",
+                "terms": [
+                  "寛永寺 根本中堂 浮世絵",
+                  "上野 東叡山 錦絵",
+                  "竹の台 根本中堂"
+                ]
+              },
+              {
+                "facet": "historical_artifacts",
+                "lang": "en",
+                "terms": [
+                  "Kaneiji Ueno print",
+                  "Konpon Chudo woodblock",
+                  "Toeizan Ueno"
+                ]
+              },
+              {
+                "facet": "existence_timeline",
+                "lang": "ja",
+                "terms": [
+                  "根本中堂 川越 喜多院 移築",
+                  "彰義隊 根本中堂 焼失"
+                ]
+              }
+            ],
+            "found": 0
+          },
+          "citation": {
+            "n": 20,
+            "exact": 1
+          }
+        }
+      },
+      "azumabashi": {
+        "C": {
+          "items": 12,
+          "identification": {
+            "n": 9,
+            "precision": 1
+          },
+          "relation": {
+            "n": 6,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 12,
+            "rate": 0.9166666666666666
+          },
+          "recall10": {
+            "en": 0.8,
+            "ja": 0.3888888888888889
+          },
+          "selected": 12
+        },
+        "D": {
+          "items": 22,
+          "identification": {
+            "n": 11,
+            "precision": 1
+          },
+          "relation": {
+            "n": 9,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 22,
+            "rate": 0.6818181818181818
+          },
+          "proposed_unchecked": {
+            "items": 24,
+            "identification": {
+              "n": 12,
+              "precision": 1
+            },
+            "relation": {
+              "n": 10,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 24,
+              "rate": 0.7083333333333334
+            }
+          },
+          "status": {
+            "accepted": 22,
+            "downgraded": 2,
+            "rejected": 0
+          },
+          "citation": {
+            "n": 24,
+            "exact": 1
+          }
+        },
+        "D_noRel": {
+          "items": 24,
+          "identification": {
+            "n": 12,
+            "precision": 1
+          },
+          "relation": {
+            "n": 12,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 24,
+            "rate": 0.6666666666666666
+          },
+          "proposed_unchecked": {
+            "items": 25,
+            "identification": {
+              "n": 13,
+              "precision": 1
+            },
+            "relation": {
+              "n": 12,
+              "violations": 0,
+              "precision": 1,
+              "examples": []
+            },
+            "support_proxy": {
+              "n": 25,
+              "rate": 0.68
+            }
+          },
+          "status": {
+            "accepted": 24,
+            "downgraded": 1,
+            "rejected": 0
+          }
+        },
+        "Dplus": {
+          "items": 30,
+          "identification": {
+            "n": 19,
+            "precision": 1
+          },
+          "relation": {
+            "n": 16,
+            "violations": 0,
+            "precision": 1,
+            "examples": []
+          },
+          "support_proxy": {
+            "n": 30,
+            "rate": 0.7
+          },
+          "status": {
+            "accepted": 30,
+            "downgraded": 2,
+            "rejected": 0
+          },
+          "recall_all": {
+            "en": 0.8,
+            "ja": 0.7222222222222222
+          },
+          "gap": {
+            "enough": false,
+            "assessment": "吾妻橋の場所描写・名称・存在時期は日英ともほぼ揃っています。ただし、日本語での絵画・浮世絵（historical_artifacts）の資料が0件で、日本語側の裏付けが欠けています。",
+            "gaps": [
+              {
+                "facet": "historical_artifacts",
+                "lang": "ja",
+                "terms": [
+                  "吾妻橋",
+                  "広重",
+                  "名所江戸百景",
+                  "駒形堂"
+                ]
+              },
+              {
+                "facet": "existence_timeline",
+                "lang": "ja",
+                "terms": [
+                  "吾妻橋",
+                  "新築",
+                  "明治",
+                  "大橋"
+                ]
+              }
+            ],
+            "found": 6
+          },
+          "citation": {
+            "n": 32,
+            "exact": 1
+          }
+        }
+      }
+    },
+    "generation": {
+      "kaminarimon": {
+        "sentences": 6,
+        "unsupported_detected": 0,
+        "unsupported_shown": 0,
+        "problems": []
+      },
+      "ueno": {
+        "sentences": 6,
+        "unsupported_detected": 0,
+        "unsupported_shown": 0,
+        "problems": []
+      },
+      "azumabashi": {
+        "sentences": 6,
+        "unsupported_detected": 0,
+        "unsupported_shown": 0,
+        "problems": []
+      }
+    },
+    "batch": {
+      "requests": 56,
+      "failed": 0,
+      "cost_usd": 0.5349700000000001,
+      "ids": {
+        "round1": {
+          "id": "msgbatch_018qgaumpQZvgYEVhhJPJMin",
+          "hash": "d017c5c38df8b675"
+        },
+        "round2": {
+          "id": "msgbatch_012HbwTs2YvS5oByNqupLbJ1",
+          "hash": "f6ddedd3db183535"
+        },
+        "round3": {
+          "id": "msgbatch_01XBq7u674zYk9Vet38HcUN7",
+          "hash": "5872025d7ac1505e"
+        }
+      }
+    }
+  }
+}

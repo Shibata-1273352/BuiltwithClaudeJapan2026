@@ -13,6 +13,7 @@
 data/
 weights/
 cache/
+!apps/web/src/app/api/cache/
 *.safetensors
 *.pt
 *.pth

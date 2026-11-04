@@ -16,6 +16,7 @@
 ```bash
 cp .env.example .env
 mkdir -p "$HOME/tsumugi-data"
+openssl rand -hex 32   # 乱数の作り方（ACCESS_TOKEN などに使う）
 ```
 
 | 変数 | 必須 | 内容 |
@@ -26,7 +27,7 @@ mkdir -p "$HOME/tsumugi-data"
 | `INFERENCE_TOKEN` | 必須 | 乱数 |
 | `DATA_DIR` | 必須 | リポジトリ外のデータ置き場（絶対パス） |
 | `PRESENTER_TOKEN` | 任意 | 発表モード用 |
-| `HF_TOKEN` | 任意 | `hf auth login` でも可 |
+| `HF_TOKEN` | 任意 | モデルの取得には `uv run hf auth login` を使う |
 | `DAILY_COST_LIMIT_USD` | 任意 | 1日の費用上限（費用の安全装置） |
 | `CLAUDE_FAST` | 任意 | `1` で fast mode（料金は約2倍、ライブデモ専用） |
 | `LOCAL_NO_AUTH` | 任意 | `1` で同じマシンのブラウザだけトークンを省略（開発用） |
@@ -35,7 +36,7 @@ mkdir -p "$HOME/tsumugi-data"
 ### 2. Node.js と Neo4j
 
 ```bash
-npm install
+npm ci
 npx lefthook install      # コミット前の秘密情報スキャン
 npm run graph:up
 npm run graph:init
@@ -48,15 +49,16 @@ npm run graph:init
 ```bash
 cd services/inference
 uv sync
-hf auth login
+uv run hf auth login
 uv run python scripts/download_models.py
 cd ../..
-npm run inference         # http://127.0.0.1:8100
+npm run inference         # http://127.0.0.1:8100（別のターミナルで実行し、起動したままにする）
 ```
 
 ### 4. 資料とサンプル
 
 ```bash
+set -a; . ./.env; set +a          # $DATA_DIR をシェルに読み込む
 npm run corpus:ingest            # 資料の取得、抜粋の照合、データベースの作成
 npm run corpus:headers -- --all  # 章ごとの文脈（Claude を使う。現在の資料で約 $7）
 npm run setup:samples            # パブリックドメイン、CC0 のサンプル写真
@@ -64,7 +66,7 @@ npm run setup:samples            # パブリックドメイン、CC0 のサン�
 (cd services/inference && uv run python scripts/build_scene.py photo "$DATA_DIR/samples/kaminarimon_cc0.jpg" --artifact met-56689)
 ```
 
-似た図像の検索も使う場合：
+似た図像の検索も使う場合（Wikimedia Commons のレート制限により、30分以上かかることがあります）：
 
 ```bash
 npx tsx --env-file=.env scripts/visual/collect.ts
@@ -87,11 +89,11 @@ npm run start -w web -- -p 3000
 | 画面 | パス |
 | --- | --- |
 | トップ | `/` |
-| 雷門で試す | `/live` |
-| 上野・根本中堂で試す | `/live?sample=kaneiji_konponchudo_cc0.jpg` |
+| 雷門で試す | `/live`（開くと Claude を呼ぶ探索が始まる。約 $0.4） |
+| 上野・根本中堂で試す | `/live?sample=kaneiji_konponchudo_cc0.jpg`（同上） |
 | しくみ | `/how` |
 | 旅ノート | `/notes` |
-| 録画の再生 | `/replay/<探索 ID>` |
+| 録画の再生 | `/replay/<探索 ID>`（探索を実行したセッションか、`DEMO_REPLAY_ID` の ID） |
 
 スマートフォンのカメラには HTTPS が必要です。`npm run tunnel` で公開できます。
 

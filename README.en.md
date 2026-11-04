@@ -76,7 +76,7 @@ mkdir -p "$HOME/tsumugi-data"  # and set DATA_DIR to it
 # optional for local development: LOCAL_NO_AUTH=1 (no token for a browser on this machine; tunnels still need it)
 
 # 2. Node
-npm install
+npm ci
 npx lefthook install          # pre-commit secret scan
 
 # 3. Neo4j
@@ -86,12 +86,13 @@ npm run graph:init            # 11 constraints + seed (17 entities, 3 sites); id
 # 4. Inference server (Python 3.12 via uv)
 cd services/inference
 uv sync
-hf auth login                 # SAM 3 is gated: accept the license on huggingface.co/facebook/sam3 first
+uv run hf auth login          # SAM 3 is gated: accept the license on huggingface.co/facebook/sam3 first
 uv run python scripts/download_models.py   # SAM 3, Depth Anything V2, SigLIP so400m — pinned revisions, safetensors only
 cd ../..
 npm run inference             # http://127.0.0.1:8100
 
 # 5. Corpus (books + official excerpts) and context headers
+set -a; . ./.env; set +a       # load $DATA_DIR into the shell
 npm run corpus:ingest          # downloads, verifies excerpts, builds $DATA_DIR/tsumugi.db, prints term counts
 npm run corpus:headers -- --all   # Claude context headers per chapter (~$7 for the current corpus)
 npm run corpus:search          # retrieval smoke test
@@ -255,7 +256,7 @@ Benchmarks: `scripts/bench-see.ts <photo>` (Claude), `scripts/bench-scene.ts <ph
 
 ## Evaluation (`npm run eval`, REQUIREMENTS.md 10)
 
-A hand-made evaluation set (3 sites; gold annotated by Claude Code, a person's review comes next). It covers citation agreement and mis-bindings of entity and era; measuring hallucination in general is future work. The tables below are the first run (`evaluation/results/2026-11-03.md`); the latest run is [`evaluation/results/2026-11-03-perf.md`](evaluation/results/2026-11-03-perf.md). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
+A hand-made evaluation set (3 sites; gold annotated by Claude Code, a person's review comes next). It covers citation agreement and mis-bindings of entity and era; measuring hallucination in general is future work. The tables below are the first run (`evaluation/results/2026-11-03.md`); the latest run is [`evaluation/results/2026-11-04.md`](evaluation/results/2026-11-04.md) (Japanese summary: [`docs/evaluation.md`](docs/evaluation.md)). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
 
 | Method (4.9) | Recall@10 en / ja | Entity identification | Relation (observed ≠ mentions) | Support (proxy) |
 | --- | --- | --- | --- | --- |
@@ -287,7 +288,7 @@ Also (first run): citations match the canonical text by construction (code cuts 
 
 ### Security tests (`npm run test:security`, SEC-01..10)
 
-Last run 2026-11-03: **17/17 passed** (vitest), plus **12/12** inference-server tests (pytest).
+Last run 2026-11-05: **17/17 passed** (vitest), plus **20/20** inference-server tests (pytest).
 
 | ID | Test | Result |
 | --- | --- | --- |
