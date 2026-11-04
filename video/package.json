@@ -1,0 +1,24 @@
+{
+  "name": "tsumugi-video",
+  "private": true,
+  "description": "The TSUMUGI demo video: Remotion compositions and the Claude-composed score",
+  "scripts": {
+    "assets": "node scripts/fetch-assets.mjs",
+    "studio": "remotion studio src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "opening": "remotion render src/index.ts Opening out/opening.mp4 --crf=16",
+    "film": "remotion render src/index.ts Film out/film.mp4 --crf=20",
+    "path-check": "remotion still src/index.ts PathCheck out/path-check.png",
+    "sheet": "node scripts/contact-sheet.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.540",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.540"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

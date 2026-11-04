@@ -11,8 +11,8 @@ describe("samples allowlist (例で試す)", () => {
     expect(isServableSample("cap_0123.jpg")).toBe(false);
     expect(isServableSample("kaminarimon_cc0.jpg/../../x.jpg")).toBe(false);
   });
-  it("only the face-masked CC0 photo may start a live run", () => {
-    expect([...TRY_SAMPLES]).toEqual(["kaminarimon_cc0.jpg"]);
+  it("only CC0 photos with no visible face may start a live run", () => {
+    expect([...TRY_SAMPLES]).toEqual(["kaminarimon_cc0.jpg", "kaneiji_konponchudo_cc0.jpg"]);
   });
 });
 

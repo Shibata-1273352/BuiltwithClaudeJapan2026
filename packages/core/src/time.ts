@@ -42,8 +42,11 @@ export function toRange(t: Pick<TimeValue, "precision" | "start" | "end">): Date
   return { start: expand(t.start, "start"), end: expand(t.end ?? t.start, "end") };
 }
 
-/** moved_in: the structure was moved to this site (it existed elsewhere before, e.g. 根本中堂 from 喜多院). */
-export type ExistenceEventKind = "built" | "rebuilt" | "destroyed" | "moved_in" | "temporary";
+/**
+ * moved_in: the structure was moved to this site (it existed elsewhere before, e.g. 根本中堂 from 喜多院).
+ * built_elsewhere: where the building began, before the move; it says nothing about this site.
+ */
+export type ExistenceEventKind = "built" | "built_elsewhere" | "rebuilt" | "destroyed" | "moved_in" | "temporary";
 
 export type ExistenceEvent = {
   id: string;
@@ -55,6 +58,8 @@ export type ExistenceEvent = {
   note?: string;
   /** sources disagree on this event (kept unresolved, both sides stored as a Conflict) */
   disputed?: boolean;
+  /** the day is inferred by joining sources (no one source states it), not stated */
+  date_precision?: "inferred_day";
 };
 
 export type Period = { state: "present" | "absent"; start: string; end: string; from: string[]; to: string[] };
@@ -62,10 +67,10 @@ export type Period = { state: "present" | "absent"; start: string; end: string; 
 /**
  * Turn events into verified present/absent periods. Between an event's start and end (the zone
  * where sources disagree or precision is coarse) nothing is asserted. Temporary structures do
- * not make the permanent structure "present" (4.5.2: 恒久的な雷門).
+ * not make the permanent structure "present" (4.5.2: 恒久的な雷門), nor does a building's life elsewhere.
  */
 export function periodsFrom(events: ExistenceEvent[], now = new Date().toISOString().slice(0, 10)): Period[] {
-  const ev = events.filter((e) => e.event !== "temporary").sort((a, b) => a.time.start.localeCompare(b.time.start));
+  const ev = events.filter((e) => e.event !== "temporary" && e.event !== "built_elsewhere").sort((a, b) => a.time.start.localeCompare(b.time.start));
   const out: Period[] = [];
   // Before it was first built (or moved here) the structure was not at this site.
   if (ev[0] && (ev[0].event === "built" || ev[0].event === "moved_in"))

@@ -32,6 +32,7 @@ const T = dict({
     ),
     sub: "撮った場所が、いつ、何だったのか。日英の原典で確かめて、あなたの言葉で。",
     trySample: "雷門で試す",
+    tryUeno: "上野・根本中堂でも試す",
     heroAlt: "TSUMUGI の画面：写真の文字の読み、いつからあるか、資料へ伸びる糸",
     now: "いま",
     nowAlt: "いまの雷門の大提灯（写真、CC0）",
@@ -71,6 +72,7 @@ const T = dict({
     ),
     sub: "When was this place, and what was it? Checked in Japanese and English sources, told in your language.",
     trySample: "Try it at Kaminarimon",
+    tryUeno: "Or at Konpon Chūdō, Ueno",
     heroAlt: "The TSUMUGI stage: the words in the photo read, how long it has stood, threads to the sources",
     now: "now",
     nowAlt: "The great lantern of Kaminarimon today (photo, CC0)",
@@ -123,6 +125,9 @@ export function Landing({ facts }: { facts: LandingFacts }) {
               {t.trySample}
             </ButtonLink>
             <ButtonLink href="#capture">{t.own}</ButtonLink>
+            <ButtonLink href="/live?sample=kaneiji_konponchudo_cc0.jpg" variant="quiet" data-testid="try-sample-ueno">
+              {t.tryUeno}
+            </ButtonLink>
           </div>
         </div>
         {/* now ⇄ then: the same place, today and in Hiroshige's print (CC0 photo; public-domain print) */}

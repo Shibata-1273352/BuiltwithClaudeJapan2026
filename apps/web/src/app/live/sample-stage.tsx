@@ -4,8 +4,8 @@ import { useState } from "react";
 import { LiveStage } from "./live-stage";
 import type { Source } from "./use-exploration";
 
-export function SampleStage({ demoReplay }: { demoReplay: string | null }) {
-  const [source] = useState<Source>(() => ({ kind: "sample", name: "kaminarimon_cc0.jpg" }));
+export function SampleStage({ name, demoReplay }: { name: string; demoReplay: string | null }) {
+  const [source] = useState<Source>(() => ({ kind: "sample", name }));
   return <LiveStage source={source} demoReplay={demoReplay} />;
 }
 

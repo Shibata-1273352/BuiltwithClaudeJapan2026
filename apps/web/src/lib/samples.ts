@@ -6,8 +6,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import manifest from "../../../../corpus/samples.json";
 
-/** Photos that may start a live run (faces already masked in the CC0 original). */
-export const TRY_SAMPLES = new Set(["kaminarimon_cc0.jpg"]);
+/** Photos that may start a live run: faces masked in the CC0 original, or none facing the camera. */
+export const TRY_SAMPLES = new Set(["kaminarimon_cc0.jpg", "kaneiji_konponchudo_cc0.jpg"]);
 const KNOWN = new Set((manifest as { items: { file: string }[] }).items.map((i) => i.file));
 
 export function isServableSample(name: string): boolean {

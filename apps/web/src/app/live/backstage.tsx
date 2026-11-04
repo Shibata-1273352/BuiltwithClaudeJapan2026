@@ -16,6 +16,7 @@ import { StagePanel } from "./stage-panel";
 
 const CALL: Record<string, { ja: string; en: string }> = {
   see: { ja: "視る（写真を読む）", en: "See (read the photo)" },
+  closer: { ja: "寄って読む", en: "Read closer" },
   extract: { ja: "主張の抽出", en: "Extract claims" },
   gap: { ja: "不足の判断", en: "Judge gaps" },
   viewpoint: { ja: "視点の見立て（鉛筆）", en: "Viewpoint (pencil)" },
@@ -33,6 +34,7 @@ const CHECK: Record<string, { ja: string; en: string }> = {
   name_in_sentence: { ja: "呼び名が文中にある", en: "the name is in the sentence" },
   negation_handled: { ja: "否定文を肯定と読んでいない", en: "a negation was not read as a statement" },
   time_consistent: { ja: "時間が矛盾しない", en: "the times are consistent" },
+  observation_on_record: { ja: "見たと記録にある", en: "the record says the writer saw it" },
 };
 
 const T = dict({

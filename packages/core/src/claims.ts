@@ -52,6 +52,8 @@ export type CheckContext = {
   namesOf: (entityId: string) => string[];
   /** existence of an entity at the time of the passage's source (4.4.7 時間の整合), if known */
   existenceAt?: (entityId: string, passageId: string) => "present" | "absent" | "unknown";
+  /** the reviewed record of whether this source's writer saw the subject; null when it does not say */
+  sawSubject?: (entityId: string, passageId: string) => boolean | null;
 };
 
 export function checkClaim(p: ProposedClaim, ctx: CheckContext, idx: number): CheckedClaim {
@@ -88,6 +90,10 @@ export function checkClaim(p: ProposedClaim, ctx: CheckContext, idx: number): Ch
   const timeConflict = existence === "absent" && (p.predicate === "observed" || p.predicate === "describes") && p.relation === "supports";
   add("time_consistent", !timeConflict, timeConflict ? "subject absent at the source's time" : undefined);
 
+  // 7. a writer who is only recorded as mentioning a place did not "observe" it (Kōun on Azuma Bridge)
+  const unseen = p.predicate === "observed" && ctx.sawSubject?.(p.subject, p.passage_id) === false;
+  add("observation_on_record", !unseen, unseen ? "the record does not say the writer saw it" : undefined);
+
   let status: CheckedClaim["status"] = "accepted";
   let relation = p.relation;
   let predicate = p.predicate;
@@ -96,6 +102,10 @@ export function checkClaim(p: ProposedClaim, ctx: CheckContext, idx: number): Ch
   else {
     if ((negated || timeConflict) && relation === "supports") {
       relation = "context_only";
+      status = "downgraded";
+    }
+    if (unseen) {
+      predicate = "mentions";
       status = "downgraded";
     }
     if (!named && (predicate === "observed" || predicate === "describes")) {

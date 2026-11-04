@@ -266,6 +266,7 @@ export function SpaceViewer({
   scene,
   timeline,
   autoEnter = false,
+  film = false,
   force2d = false,
   force3d = false,
 }: {
@@ -273,6 +274,8 @@ export function SpaceViewer({
   scene: SceneJson;
   timeline?: TimelineData;
   autoEnter?: boolean;
+  /** ?film=1 (recording the video): no UI, and the print fills the width of the frame, on the snowy approach and the temple. Same mesh, same walk. */
+  film?: boolean;
   force2d?: boolean;
   /** ?3d=1: keep 3D even below 30 fps (screenshots on a software renderer) */
   force3d?: boolean;
@@ -320,8 +323,10 @@ export function SpaceViewer({
   const artFrame = useMemo(() => {
     if (!artRect) return null;
     const k = depthCompensation(artZ);
-    return framePlane({ x: artRect.x * k, y: artRect.y * k, w: artRect.w * k, h: artRect.h * k }, artZ, 30, aspect);
-  }, [artRect, artZ, aspect]);
+    const plane = { x: artRect.x * k, y: artRect.y * k, w: artRect.w * k, h: artRect.h * k };
+    if (film) return framePlane({ ...plane, y: plane.y - plane.h * 0.16, h: plane.w / aspect }, artZ, 30, aspect);
+    return framePlane(plane, artZ, 30, aspect);
+  }, [artRect, artZ, aspect, film]);
   // the year readout follows what is shown: inside the print it is the print's year
   const go = (into: boolean) => {
     setOpened(0);
@@ -437,7 +442,7 @@ export function SpaceViewer({
           <Fps onFps={setFps} />
         </Canvas>
         )}
-        {(immersive || focus) && (
+        {(immersive || focus) && !film && (
           <LazyMotion features={domAnimation} strict>
           <m.div
             initial={{ opacity: 0, y: 8 }}

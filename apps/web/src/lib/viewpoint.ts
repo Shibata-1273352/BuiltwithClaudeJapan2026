@@ -2,6 +2,7 @@
  * FR-35 視点の見立て: a separate, small Claude call (run in parallel once the place is known, so it
  * does not lengthen the critical path). Qualitative, no geometry; shown in pencil with premises.
  */
+import { callStarted } from "./dag/call-notice";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import {
   UNTRUSTED_POLICY,
@@ -34,6 +35,7 @@ export async function guessViewpoint(
   place: string,
 ): Promise<{ value: Viewpoint | null; errors: string[]; record: CallRecord }> {
   const startedAt = new Date();
+  callStarted("viewpoint", startedAt);
   // with fast mode on, Opus 5.5 fast answers before the story starts (Sonnet took ~6 s); else Sonnet 5.5
   const model = fastOn() ? CLAUDE_MODEL : CLAUDE_LIGHT_MODEL;
   const { data, response } = await withFast((fast) =>

@@ -16,6 +16,7 @@ export const STAGE_WORK: Record<string, { who: "claude" | "local" | "code" | "gr
   narrate: { who: "claude", ja: "根拠つきの物語を書く", en: "writes the story, each sentence sourced" },
   space: { who: "local", ja: "SAM 3 と深度で写真を層に分ける", en: "splits the photo into layers (SAM 3, depth)" },
   viewpoint: { who: "claude", ja: "立ち位置と向きを見立てる（鉛筆）", en: "guesses where you stand (pencil)" },
+  closer: { who: "claude", ja: "小さな文字に寄って読み直す", en: "reads the small writing again, closer" },
   guide: { who: "claude", ja: "ガイドノートを書く", en: "writes the guide notes" },
   graph: { who: "graph", ja: "根拠グラフ（Neo4j）に保存", en: "saves the evidence graph (Neo4j)" },
 };
