@@ -19,7 +19,7 @@ export const Opening = () => {
   const letterFrame = Math.min(lettersFrames, Math.max(0, frame - Math.round(lettersIn * fps)));
   const lantern = interpolate(t, lanternIn, [0, 1], clamp);
   const gold = interpolate(t, goldOut, [1, 0], clamp);
-  const push = interpolate(t, [lettersIn, duration], [1, 1.03], clamp);
+  const push = interpolate(t, [lettersIn, duration], [1, 1.015], clamp);
   // 雷 lands: one flash in the silk, gone in a quarter of a second
   const flash = interpolate(t, [strike - 0.03, strike, strike + 0.28], [1, 1.4, 1], clamp);
 

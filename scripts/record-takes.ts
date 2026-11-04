@@ -23,7 +23,7 @@ rmSync(dir, { recursive: true, force: true });
 mkdirSync(dir, { recursive: true });
 
 const browser = await chromium.launch({ args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] });
-const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: take === "stills" ? 2 : 1 });
 const u = new URL(base);
 await ctx.addCookies([
   { name: "tsumugi_token", value: process.env.ACCESS_TOKEN!, domain: u.hostname, path: "/", httpOnly: true, sameSite: "Lax" },
@@ -162,6 +162,29 @@ const takes: Record<string, () => Promise<void>> = {
     await panel.getByTestId("time-knot").waitFor({ timeout: 60_000 });
     beat("knot");
     await hold(6000);
+  },
+  /** Sharp stills for the enlarged cuts: a device scale of 2, from the recording, no Claude call. */
+  async stills() {
+    const dir2 = path.resolve("video/public/s");
+    await page.goto(`${R}?present=1&hold=broken&at=end`, { waitUntil: "domcontentloaded" });
+    await vis(page, "note-link").waitFor({ timeout: 60_000 });
+    await roll();
+    await hold(1200);
+    await vis(page, "backstage-toggle").click();
+    await hold(1500);
+    await page.screenshot({ path: path.join(dir2, "check-2x.png") });
+    await page.keyboard.press("Escape");
+    await hold(600);
+    await vis(page, "time-toggle").click();
+    await hold(1200);
+    const panel = page.getByTestId("time-panel");
+    await panel.getByRole("slider").fill("1866");
+    await hold(1500);
+    await page.screenshot({ path: path.join(dir2, "1866-2x.png") });
+    await panel.getByRole("slider").fill("1961");
+    await panel.getByTestId("time-knot").waitFor({ timeout: 30_000 });
+    await hold(1500);
+    await page.screenshot({ path: path.join(dir2, "1961-2x.png") });
   },
   /** One check in 舞台裏. */
   async check() {

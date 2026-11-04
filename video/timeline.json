@@ -3,7 +3,7 @@
  "width": 1920,
  "height": 1080,
  "opening": {
-  "duration": 8.5,
+  "duration": 21.0,
   "lettersIn": 2.2,
   "spinEnd": 2.4,
   "lettersFrames": 96,
@@ -38,31 +38,25 @@
    6.3,
    7.2
   ],
-  "firstWord": 8.5
+  "firstWord": 8.5,
+  "cue": 11.0,
+  "title": [
+   8.5,
+   11.0
+  ]
  },
  "knot": 15.0,
  "scenes": [
   {
    "id": "mystery",
-   "start": 8.5,
-   "end": 18.5,
-   "segments": [
-    {
-     "still": "lantern-dusk.png",
-     "dur": 10,
-     "cam": [
-      0.5,
-      0.5,
-      1.03,
-      1.08
-     ]
-    }
-   ]
+   "start": 11.0,
+   "end": 21.0,
+   "segments": []
   },
   {
    "id": "wall",
-   "start": 18.5,
-   "end": 32.5,
+   "start": 21.0,
+   "end": 35.0,
    "segments": [
     {
      "still": "s/1-landing.png",
@@ -73,8 +67,8 @@
   },
   {
    "id": "enter",
-   "start": 32.5,
-   "end": 35.0,
+   "start": 35.0,
+   "end": 37.5,
    "segments": [
     {
      "still": "takes/empty.png",
@@ -85,145 +79,188 @@
   },
   {
    "id": "read",
-   "start": 35.0,
-   "end": 53.85,
+   "start": 37.5,
+   "end": 66.7,
    "segments": [
     {
-     "src": "takes/live.mp4",
-     "from": 1.95,
-     "to": 20.8,
+     "src": "takes/full.mp4",
+     "from": 0.3,
+     "to": 29.5,
      "rate": 1,
-     "cam": null
-    }
-   ]
-  },
-  {
-   "id": "burn",
-   "start": 53.85,
-   "end": 74.85,
-   "segments": [
-    {
-     "src": "takes/years.mp4",
-     "from": 0,
-     "to": 1.9,
-     "rate": 1,
-     "cam": null
-    },
-    {
-     "src": "takes/read.mp4",
-     "from": 28.5,
-     "to": 38.9,
-     "rate": 1,
-     "cam": null
-    },
-    {
-     "src": "takes/years.mp4",
-     "from": 11.6,
-     "to": 17.1,
-     "rate": 0.62,
-     "cam": null
-    }
-   ]
-  },
-  {
-   "id": "check",
-   "start": 74.85,
-   "end": 83.85,
-   "segments": [
-    {
-     "src": "takes/check.mp4",
-     "from": 1.2,
-     "to": 8.2,
-     "rate": 0.8,
-     "cam": null
-    }
-   ]
-  },
-  {
-   "id": "absence",
-   "start": 83.85,
-   "end": 97.85,
-   "segments": [
-    {
-     "src": "takes/years.mp4",
-     "from": 1.9,
-     "to": 10,
-     "rate": 0.7,
-     "cam": null
-    },
-    {
-     "still": "takes/1878-hold.png",
-     "dur": 2.5,
      "cam": null
     }
    ]
   },
   {
    "id": "print",
-   "start": 97.85,
-   "end": 102.85,
+   "start": 66.7,
+   "end": 76.45,
    "segments": [
     {
-     "src": "takes/space.mp4",
-     "from": 3,
-     "to": 8,
+     "src": "takes/full.mp4",
+     "from": 34.85,
+     "to": 44.6,
      "rate": 1,
      "cam": null
+    }
+   ]
+  },
+  {
+   "id": "absence",
+   "start": 76.45,
+   "end": 85.85000000000001,
+   "segments": [
+    {
+     "src": "takes/full.mp4",
+     "from": 47.0,
+     "to": 54.4,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "still": "takes/1878-hold.png",
+     "dur": 2.0,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "check",
+   "start": 85.85000000000001,
+   "end": 92.85000000000001,
+   "segments": [
+    {
+     "src": "takes/full.mp4",
+     "from": 54.4,
+     "to": 58.9,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "still": "s/check-2x.png",
+     "dur": 2.5,
+     "cam": [
+      0.46,
+      0.3,
+      1.55
+     ]
+    }
+   ]
+  },
+  {
+   "id": "burn",
+   "start": 92.85000000000001,
+   "end": 100.15,
+   "segments": [
+    {
+     "src": "takes/full.mp4",
+     "from": 61.3,
+     "to": 65.0,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "still": "s/1866-2x.png",
+     "dur": 3.6,
+     "cam": [
+      0.7,
+      0.57,
+      1.6
+     ]
     }
    ]
   },
   {
    "id": "gift",
-   "start": 102.85,
-   "end": 129.85,
+   "start": 100.15,
+   "end": 113.55000000000001,
    "segments": [
     {
-     "src": "takes/years.mp4",
-     "from": 17.1,
-     "to": 32.1,
+     "src": "takes/full.mp4",
+     "from": 68.6,
+     "to": 82.0,
      "rate": 1,
-     "cam": null
-    },
-    {
-     "seq": "knot",
-     "dur": 3.0,
-     "cam": null
-    },
-    {
-     "still": "takes/knot-hold.png",
-     "dur": 9.0,
      "cam": null
     }
    ]
   },
   {
+   "id": "knot",
+   "start": 113.55000000000001,
+   "end": 116.55000000000001,
+   "segments": [
+    {
+     "seq": "knot",
+     "dur": 3.0,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "reveal",
+   "start": 116.55000000000001,
+   "end": 126.55000000000001,
+   "segments": [
+    {
+     "still": "lantern.jpg",
+     "dur": 3.2,
+     "cam": [
+      0.41,
+      0.57,
+      1.7,
+      1.7
+     ]
+    },
+    {
+     "still": "s/1961-2x.png",
+     "dur": 3.2,
+     "cam": [
+      0.5,
+      0.66,
+      3.0,
+      3.0
+     ]
+    },
+    {
+     "still": "s/1961-2x.png",
+     "dur": 3.6,
+     "cam": [
+      0.82,
+      0.66,
+      2.5,
+      2.5
+     ]
+    }
+   ]
+  },
+  {
    "id": "reach",
-   "start": 129.85,
-   "end": 143.84999999999997,
+   "start": 126.55000000000001,
+   "end": 132.55,
    "segments": [
     {
      "still": "s/1-landing.png",
-     "dur": 14,
+     "dur": 6,
      "cam": null
     }
    ]
   },
   {
    "id": "close",
-   "start": 143.84999999999997,
-   "end": 157.84999999999997,
+   "start": 132.55,
+   "end": 144.55,
    "segments": [
     {
      "still": "s/postcard.png",
-     "dur": 14,
+     "dur": 12,
      "cam": null
     }
    ]
   },
   {
-   "id": "title",
-   "start": 157.84999999999997,
-   "end": 162.84999999999997,
+   "id": "concept",
+   "start": 144.55,
+   "end": 149.55,
    "segments": [
     {
      "still": "concept.png",
@@ -231,7 +268,7 @@
      "cam": [
       0.5,
       0.5,
-      1.0,
+      1.03,
       1.03
      ]
     }
@@ -239,12 +276,12 @@
   },
   {
    "id": "credit",
-   "start": 162.84999999999997,
-   "end": 166.84999999999997,
+   "start": 149.55,
+   "end": 155.55,
    "segments": []
   }
  ],
- "end": 166.84999999999997,
+ "end": 155.55,
  "bridges": {
   "enter": {
    "rect": [
@@ -264,5 +301,24 @@
    "tighten": 2.5,
    "duration": 3.0
   }
+ },
+ "steps": [
+  [
+   "① 写真を読む",
+   0.3
+  ],
+  [
+   "② 日英の資料を探す",
+   5.1
+  ],
+  [
+   "③ 出典と年代をつなぐ",
+   10.4
+  ]
+ ],
+ "notes": {
+  "mystery": "写真を夕景に調整",
+  "print": "映像用の表示",
+  "concept": "生成AIによるコンセプト画像"
  }
 }

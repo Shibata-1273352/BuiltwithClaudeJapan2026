@@ -5,11 +5,10 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-// the chosen voice is an instant clone and needs a paid plan: VOICE overrides it until then
-const VOICE = process.env.VOICE ?? "7FCDgFZEuRHu2FjvjzaI";
+const VOICE = process.env.VOICE ?? "JBFqnCBsd6RMkjVDRZzb";
 const MODEL = process.env.VOICE_MODEL ?? "eleven_v4";
 const READINGS = [
-  ["浅草寺", "せんそうじ"], ["浅草", "あさくさ"], ["SAM 3", "サムスリー"], ["17回", "じゅうななかい"], ["筆文字", "ふでもじ"], ["AI", "エーアイ"], ["観光庁", "かんこうちょう"], ["数千本", "すうせんぼん"],
+  ["浅草寺", "せんそうじ"], ["浅草", "あさくさ"], ["SAM 3", "サムスリー"], ["17回", "じゅうななかい"], ["筆文字", "ふでもじ"], ["AI", "エーアイ"], ["1856年。", "せんはっぴゃくごじゅうろくねん。"], ["観光庁", "かんこうちょう"], ["数千本", "すうせんぼん"],
   ["風雷神門", "ふうらいじんもん"], ["風神と雷神", "ふうじんとらいじん"], ["TSUMUGI", "ツムギ"], ["Claude", "クロード"],
   ["1856年", "せんはっぴゃくごじゅうろくねん"], ["1878年", "せんはっぴゃくななじゅうはちねん"], ["1960年", "せんきゅうひゃくろくじゅうねん"],
   ["95年", "きゅうじゅうごねん"], ["金具", "かなぐ"], ["年月の銘", "ねんげつのめい"], ["寄進", "きしん"], ["数千本", "すうせんぼん"],
@@ -50,9 +49,9 @@ for (const [i, l] of lines.entries()) {
   const limit = next?.scene === l.scene ? scene.start + next.at : scene.end;
   const fits = start + seconds <= limit;
   if (!fits) bad++;
-  const enRate = l.en.length / seconds;
-  console.log(`${l.scene.padEnd(8)} ${chars} chars ${seconds.toFixed(1)}s ${(chars / seconds).toFixed(1)}/s  en ${enRate.toFixed(1)}/s  ${fits ? "ok" : `OVER by ${(start + seconds - limit).toFixed(1)}s`}`);
-  index.push({ wav: `guide/${i}.wav`, start, seconds, en: l.en });
+  const enRate = (l.sub ?? "").length / seconds;
+  console.log(`${l.scene.padEnd(8)} ${chars} chars ${seconds.toFixed(1)}s ${(chars / seconds).toFixed(1)}/s  sub ${enRate.toFixed(1)}/s  ${fits ? "ok" : `OVER by ${(start + seconds - limit).toFixed(1)}s`}`);
+  index.push({ wav: `guide/${i}.wav`, start, seconds, sub: l.sub });
 }
 writeFileSync("public/guide/index.json", JSON.stringify(index));
 console.log(`total ${Math.floor(end / 60)}:${(end % 60).toFixed(1).padStart(4, "0")} (opening ${opening.duration}s); limit 2:57; ${bad} lines over`);

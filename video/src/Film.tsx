@@ -5,23 +5,24 @@ import { Opening } from "./Opening";
 
 type Segment = { src?: string; from?: number; to?: number; rate?: number; still?: string; seq?: string; dur?: number; cam?: number[] | null };
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
-const serif = '"Hiragino Mincho ProN", "Shippori Mincho", serif';
+const serif = '"Shippori", serif';
+const PAPER = "#f3ecdf";
+const fonts = `
+@font-face { font-family: Shippori; src: url(${staticFile("fonts/ShipporiMincho-Regular.ttf")}); font-weight: 400; }
+@font-face { font-family: Shippori; src: url(${staticFile("fonts/ShipporiMincho-Bold.ttf")}); font-weight: 700; }`;
 
-const seconds = (s: Segment) => (s.dur ? s.dur : ((s.to as number) - (s.from as number)) / (s.rate ?? 1));
+const seconds = (s: Segment) => s.dur ?? ((s.to as number) - (s.from as number)) / (s.rate ?? 1);
 
-/** One shot, moved the way a camera would: toward the one thing the viewer should look at. */
+/** One shot. `cam` is a fixed framing (x, y of the centre, scale): cuts, never a move on a moving screen. */
 const Shot = ({ seg }: { seg: Segment }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const len = seconds(seg);
-  const [x, y, a, b] = seg.cam ?? [0.5, 0.5, 1, 1];
-  const u = interpolate(frame / fps, [0, len], [0, 1], clamp);
+  const [x, y, s] = seg.cam ?? [0.5, 0.5, 1];
   const style = {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    transform: `scale(${a + (b - a) * u * u * (3 - 2 * u)})`,
-    transformOrigin: `${x * 100}% ${y * 100}%`,
+    transform: `translate(${(0.5 - x) * s * 100}%, ${(0.5 - y) * s * 100}%) scale(${s})`,
   } as const;
   return (
     <AbsoluteFill style={{ background: "#0e1426", overflow: "hidden" }}>
@@ -30,34 +31,24 @@ const Shot = ({ seg }: { seg: Segment }) => {
       ) : seg.still ? (
         <Img src={staticFile(seg.still)} style={style} />
       ) : (
-        <OffthreadVideo
-          src={staticFile(seg.src as string)}
-          muted
-          trimBefore={Math.round((seg.from as number) * fps)}
-          playbackRate={seg.rate ?? 1}
-          style={style}
-        />
+        <OffthreadVideo src={staticFile(seg.src as string)} muted trimBefore={Math.round((seg.from as number) * fps)} style={style} />
       )}
     </AbsoluteFill>
   );
 };
 
-/** Scene edges breathe through the night of the app rather than cut hard. */
-const Fade = ({ len, id }: { len: number; id: string }) => {
+/** Edges of a scene breathe through the night of the app; inside one take there is no fade. */
+const Fade = ({ len, open, shut }: { len: number; open: boolean; shut: boolean }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  // the frozen frame and the live take are one continuous shot: no fade between them
-  const open = id === "read" ? 0 : 1;
-  const shut = id === "enter" ? 0 : 1;
-  const opacity = interpolate(frame / fps, [0, 0.35, len - 0.35, len], [open, 0, 0, shut], clamp);
+  const opacity = interpolate(frame / fps, [0, 0.3, len - 0.3, len], [open ? 1 : 0, 0, 0, shut ? 1 : 0], clamp);
   return <AbsoluteFill style={{ background: "#0e1426", opacity }} />;
 };
 
-/** Bridge 1: the threads over the empty frame, gone as the real photo arrives. Nothing here overlaps AI output. */
+/** Bridge 1: the threads over the empty frame, gone as the real photo arrives, before any AI output. */
 const Bridge = ({ last }: { last: number }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const opacity = interpolate(frame / fps, [last / fps + 0.05, last / fps + 0.55], [1, 0], clamp);
+  const opacity = interpolate(frame, [last, last + 15], [1, 0], clamp);
   return (
     <Img
       src={staticFile(`enter/f${String(Math.min(frame, last)).padStart(4, "0")}.png`)}
@@ -66,53 +57,95 @@ const Bridge = ({ last }: { last: number }) => {
   );
 };
 
-const Credit = () => (
-  <AbsoluteFill style={{ background: "#0e1426", alignItems: "center", justifyContent: "center", color: "#f3ecdf", fontFamily: serif, gap: 18 }}>
-    <div style={{ fontSize: 34 }}>音楽と糸の映像は Claude Code で作りました</div>
-    <div style={{ fontSize: 20, color: "#b8bfd3" }}>写真は夕景に調整 / 録画の一部は再生速度を調整 / 題字の画像はコンセプト画像</div>
+const FadeText = ({ len, children, style }: { len: number; children: React.ReactNode; style: React.CSSProperties }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const opacity = interpolate(frame / fps, [0, 0.35, len - 0.35, len], [0, 1, 1, 0], clamp);
+  return <div style={{ position: "absolute", fontFamily: serif, color: PAPER, opacity, ...style }}>{children}</div>;
+};
+
+const Title = () => (
+  <AbsoluteFill style={{ background: "rgba(10,12,24,.42)", alignItems: "center", justifyContent: "center", color: PAPER, fontFamily: serif, gap: 26 }}>
+    <div style={{ fontSize: 96, letterSpacing: "0.34em", marginRight: "-0.34em" }}>TSUMUGI</div>
+    <div style={{ fontSize: 34, letterSpacing: "0.08em" }}>写真一枚から、言葉と時代を越えて、根拠をたどる。</div>
   </AbsoluteFill>
 );
 
-const Subtitle = ({ text }: { text: string }) => (
-  <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center" }}>
-    <div style={{ width: "100%", padding: "70px 0 42px", background: "linear-gradient(transparent, rgba(14,20,38,.92) 45%)", display: "flex", justifyContent: "center" }}>
-      <div style={{ maxWidth: 1300, textAlign: "center", color: "#f3ecdf", fontFamily: serif, fontSize: 30, lineHeight: 1.35 }}>{text}</div>
+const Credit = () => (
+  <AbsoluteFill style={{ background: "#0e1426", alignItems: "center", justifyContent: "center", color: PAPER, fontFamily: serif }}>
+    <div style={{ fontSize: 72, letterSpacing: "0.3em", marginRight: "-0.3em" }}>TSUMUGI</div>
+    <div style={{ fontSize: 28, marginTop: 20, letterSpacing: "0.06em" }}>写真一枚から、言葉と時代を越えて、根拠をたどる。</div>
+    <div style={{ fontSize: 44, marginTop: 72, letterSpacing: "0.12em" }}>柴田 高志</div>
+    <div style={{ fontSize: 26, marginTop: 14, color: "#b8bfd3" }}>通信事業者 AI エンジニア</div>
+    <div style={{ fontSize: 22, marginTop: 64, color: "#b8bfd3" }}>Built with Claude Japan 2026 ／ 音楽は Claude がコードで作曲</div>
+  </AbsoluteFill>
+);
+
+const Subtitle = ({ text, left }: { text: string; left: boolean }) => (
+  <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingLeft: left ? 320 : 0 }}>
+    <div style={{ marginBottom: 40, padding: "10px 26px", background: "rgba(14,20,38,.78)", textAlign: "center", color: PAPER, fontFamily: serif, fontSize: 38, lineHeight: 1.4, whiteSpace: "pre-line", borderRadius: 2 }}>
+      {text}
     </div>
   </AbsoluteFill>
 );
 
-/** The film. The app shots are real screen takes; the opening and title are made for the film. */
+/** The film. App shots are one live run; the threads, the title and the print's framing are made for the film. */
 export const Film = () => {
   const { fps } = useVideoConfig();
   const f = (s: number) => Math.round(s * fps);
-  const enterAt = timeline.scenes.find((s) => s.id === "enter")?.start ?? 0;
+  const scene = (id: string) => timeline.scenes.find((s) => s.id === id)!;
+  const read = scene("read");
   return (
     <AbsoluteFill style={{ background: "#0e1426" }}>
+      <style>{fonts}</style>
       <Sequence durationInFrames={f(timeline.opening.duration)}>
         <Opening />
       </Sequence>
-      {timeline.scenes.map((s) => (
-        <Sequence key={s.id} from={f(s.start)} durationInFrames={f(s.end - s.start)}>
-          {s.segments.length ? (
-            <Series>
-              {(s.segments as Segment[]).map((seg, i) => (
-                <Series.Sequence key={i} durationInFrames={f(seconds(seg))}>
-                  <Shot seg={seg} />
-                </Series.Sequence>
-              ))}
-            </Series>
-          ) : (
-            <Credit />
-          )}
-          <Fade len={s.end - s.start} id={s.id} />
-        </Sequence>
-      ))}
-      <Sequence from={f(enterAt)} durationInFrames={f(timeline.bridges.enter.duration + 0.6)}>
+      <Sequence from={f(timeline.opening.title[0])} durationInFrames={f(timeline.opening.title[1] - timeline.opening.title[0])}>
+        <Title />
+      </Sequence>
+      {timeline.scenes
+        .filter((s) => s.segments.length || s.id === "credit")
+        .map((s) => (
+          <Sequence key={s.id} from={f(s.start)} durationInFrames={f(s.end - s.start)}>
+            {s.id === "credit" ? (
+              <Credit />
+            ) : (
+              <Series>
+                {(s.segments as Segment[]).map((seg, i) => (
+                  <Series.Sequence key={i} durationInFrames={f(seconds(seg))}>
+                    <Shot seg={seg} />
+                  </Series.Sequence>
+                ))}
+              </Series>
+            )}
+            <Fade
+              len={s.end - s.start}
+              open={!["read", "check", "burn", "gift", "absence"].includes(s.id)}
+              shut={!["enter", "absence", "check", "burn"].includes(s.id)}
+            />
+          </Sequence>
+        ))}
+      <Sequence from={f(scene("enter").start)} durationInFrames={f(timeline.bridges.enter.duration + 0.6)}>
         <Bridge last={f(timeline.bridges.enter.duration)} />
       </Sequence>
+      {timeline.steps.map(([label, at], i) => (
+        <Sequence key={String(label)} from={f(read.start + (at as number))} durationInFrames={f(1.6)}>
+          <FadeText len={1.6} style={{ right: 96, top: 170 + i * 0, fontSize: 40, background: "rgba(14,20,38,.8)", padding: "8px 20px", borderRadius: 2 }}>
+            {label}
+          </FadeText>
+        </Sequence>
+      ))}
+      {Object.entries(timeline.notes).map(([id, note]) => (
+        <Sequence key={id} from={f(scene(id).start)} durationInFrames={f(Math.min(4, scene(id).end - scene(id).start))}>
+          <FadeText len={4} style={{ right: 28, bottom: 18, fontSize: 18, color: "#d9d3c7", textShadow: "0 0 6px #000" }}>
+            {note}
+          </FadeText>
+        </Sequence>
+      ))}
       {guide.map((g) => (
         <Sequence key={g.wav} from={f(g.start)} durationInFrames={f(g.seconds)}>
-          <Subtitle text={g.en} />
+          <Subtitle text={g.sub} left={g.start >= read.start && g.start < read.end} />
         </Sequence>
       ))}
     </AbsoluteFill>
