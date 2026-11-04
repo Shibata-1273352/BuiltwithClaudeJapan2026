@@ -29,6 +29,8 @@ export type LiveState = {
   /** when each event type was first shown (client ms), for animations relative to their beat */
   at: Record<string, number>;
   stages: Record<string, { started: number; done?: number; ms?: number }>;
+  /** Claude calls that have left; a call is paired with its record by startedAt */
+  started: { stage: string; startedAt: string }[];
   calls: { stage: string; model: string; served: string; startedAt: string; elapsedMs: number; costUsd: number; seq: number }[];
   see?: { elements: SeeElement[] };
   /** while Claude is still writing: its thinking summary and the elements completed so far (display only) */
@@ -59,7 +61,7 @@ export type LiveState = {
   failed?: { message: string };
 };
 
-export const initialState = (): LiveState => ({ applied: {}, at: {}, stages: {}, calls: [], candidates: [], candidateGroups: [], claims: [], claimTotals: { accepted: 0, downgraded: 0, rejected: 0 } });
+export const initialState = (): LiveState => ({ applied: {}, at: {}, stages: {}, started: [], calls: [], candidates: [], candidateGroups: [], claims: [], claimTotals: { accepted: 0, downgraded: 0, rejected: 0 } });
 
 /** Apply one event. `at` is the client time (ms) the event became visible, for stage timers. */
 export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
@@ -73,12 +75,21 @@ export function reduce(s: LiveState, ev: LiveEvent, at = 0): LiveState {
       n.stages = { ...n.stages, [name]: d.status === "done" ? { ...cur, done: at, ms: Number(d.ms ?? 0) } : { ...cur, started: Math.min(cur.started, at) } };
       break;
     }
+    case "ai_start":
+      n.started = [...n.started, { stage: String(d.stage), startedAt: String(d.startedAt) }];
+      break;
     case "ai_call":
       n.calls = [...n.calls, { stage: String(d.stage), model: String(d.model), served: String(d.servedModel ?? d.model), startedAt: String(d.startedAt ?? ""), elapsedMs: Number(d.elapsedMs ?? 0), costUsd: Number(d.costUsd ?? 0), seq: ev.seq }].sort((a, b) => a.seq - b.seq);
       break;
     case "see":
       n.see = { elements: (d.elements as SeeElement[]) ?? [] };
       break;
+    case "see_closer": {
+      // a second, closer reading of one element replaces the first (code checked it extends it)
+      const i = Number(d.element);
+      if (n.see?.elements[i]) n.see = { elements: n.see.elements.map((e, k) => (k === i ? { ...e, text_original: String(d.text_original), reading: (d.reading as string | null) ?? e.reading } : e)) };
+      break;
+    }
     case "see_progress": {
       // keep only well-formed elements (not validated yet): a box inside the photo
       const els = ((d.elements as SeeElement[]) ?? []).filter(

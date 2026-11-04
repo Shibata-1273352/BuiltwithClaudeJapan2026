@@ -29,4 +29,12 @@ describe("timeline quotes", () => {
     ];
     expect(readingsInside(r, [0.2556, 0.7505, 0.535, 0.8367]).map((x) => x.text_original)).toEqual(["松下幸之助"]);
   });
+  it("a small box just off the mask still counts; the lantern's own writing does not", () => {
+    const r = [
+      { box: { x: 0.11, y: 0.38, w: 0.6, h: 0.5 }, text_original: "風雷神門" },
+      { box: { x: 0.3, y: 0.4, w: 0.11, h: 0.42 }, text_original: "平成二十五年十一月吉日" },
+      { box: { x: 0.37, y: 0.85, w: 0.11, h: 0.06 }, text_original: "松下幸之助" },
+    ];
+    expect(readingsInside(r, [0.2556, 0.7505, 0.535, 0.8367]).map((x) => x.text_original)).toEqual(["松下幸之助"]);
+  });
 });

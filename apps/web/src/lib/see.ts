@@ -2,6 +2,7 @@
  * Stage 1 "視る": cultural elements and place candidates from a photo (FR-06, FR-07).
  * Claude proposes; `validateSee` (packages/core) verifies before anything is used.
  */
+import { callStarted } from "./dag/call-notice";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import {
   completedArrayItems,
@@ -56,6 +57,7 @@ export async function seePhoto(
   onProgress?: (p: SeeProgress) => void,
 ): Promise<SeeResult> {
   const startedAt = new Date();
+  callStarted("see", startedAt);
   const open = (fast: boolean) =>
     claude().beta.messages.stream({
       model: CLAUDE_MODEL,

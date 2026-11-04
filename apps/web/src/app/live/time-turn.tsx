@@ -18,6 +18,7 @@ import { dict, useDict, useLang } from "../i18n";
 import { Button } from "../ui/button";
 import { plainLabel } from "./text-column";
 import { By } from "../ui/by";
+import { sharedEn, sharedJa, splitAt } from "@/lib/name-match";
 import { knotOf, pickQuotes, readingsInside, type EventQuotes } from "@/lib/timeline-quotes";
 import type { SeeElement } from "@/lib/live/state";
 
@@ -31,6 +32,7 @@ const EVENT: Record<string, { ja: string; en: string }> = {
   destroyed: { ja: "焼失", en: "burned" },
   rebuilt: { ja: "再建", en: "rebuilt" },
   built: { ja: "建立", en: "built" },
+  built_elsewhere: { ja: "他所で建立", en: "built elsewhere" },
   moved_in: { ja: "移築", en: "moved here" },
   temporary: { ja: "仮設の門", en: "a temporary gate" },
 };
@@ -50,6 +52,7 @@ const L = dict({
     conflict: "資料が食い違う",
     record: "この出来事の記録（原文）",
     knot: "日本語と英語の記録が、この年に結ばれる",
+    sameName: "写真の銘板と、記録の文字が一致",
     yourPhoto: "写真から",
   },
   en: {
@@ -66,9 +69,31 @@ const L = dict({
     conflict: "The sources disagree",
     record: "The record of this event (the sources' own words)",
     knot: "The Japanese and the English records tie in this year",
+    sameName: "The plate in the photo and the record have the same words",
     yourPhoto: "From the photo",
   },
 });
+
+/** A record's line with the words shared with the photo drawn under, after the knot has tied. */
+function Named({ line, names }: { line: string; names: string[] }) {
+  return splitAt(line, names).map((p, i) =>
+    p.hit ? (
+      <m.span
+        key={i}
+        className="bg-gradient-to-r from-toki to-toki bg-no-repeat"
+        style={{ backgroundPosition: "0 100%" }}
+        initial={{ backgroundSize: "0% 2px" }}
+        animate={{ backgroundSize: "100% 2px" }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+        data-testid="time-same-name"
+      >
+        {p.text}
+      </m.span>
+    ) : (
+      p.text
+    ),
+  );
+}
 
 export function TimeTurn({
   data,
@@ -160,6 +185,10 @@ export function TimeTurn({
   // the rebuilt gate's lantern base, cut from the visitor's photo, and what Claude read on it
   const baseCut = scene?.elements?.lantern_base ?? null;
   const baseReadings = baseCut ? readingsInside(readings, baseCut.bbox) : [];
+  // the same words in the photo and in the record: compared by code, and only where the plate is shown
+  const shownPlate = atEvent?.event === "rebuilt" && knot ? baseReadings : [];
+  const sameJa = knot ? sharedJa(shownPlate.flatMap((r) => r.text_original ?? []), knot.ja.text) : [];
+  const sameEn = knot ? sharedEn(shownPlate.flatMap((r) => r.reading ?? []), knot.en.text) : [];
   const titleOf = (evidence: string[]) => {
     const src = evidence[0]?.split(":")[0];
     return (src && (data.sources.find((x) => x.source === src)?.title ?? cards.find((c) => c.sourceId === src)?.title)) || src || "";
@@ -234,14 +263,16 @@ export function TimeTurn({
         {atEvent?.event === "rebuilt" && knot && baseCut && baseReadings.length > 0 && (
           <m.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }} className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-4 rounded-md bg-night/90 p-3" data-testid="time-name">
             {/* eslint-disable-next-line @next/next/no-img-element -- the cut-out from the visitor's own photo */}
-            <img src={`/api/cache/scenes/${sceneId}/${baseCut.png}`} alt="" className="h-10 w-auto max-w-[35%] shrink rounded-sm object-contain" />
+            <img src={`/api/cache/scenes/${sceneId}/${baseCut.png}`} alt="" className="h-8 w-auto max-w-[22%] shrink rounded-sm object-contain" />
             <div className="min-w-0">
               <p className="text-caption text-muted">{l.yourPhoto}</p>
               {baseReadings.map((rd, k) => (
                 <div key={k}>
-                  <p className="font-serif text-lead leading-tight whitespace-nowrap" lang="ja">
-                    {rd.text_original}
-                  </p>
+                  {rd.text_original?.split(/\s+/).map((line) => (
+                    <p key={line} className="font-serif text-small leading-tight whitespace-nowrap" lang="ja">
+                      {line}
+                    </p>
+                  ))}
                   {rd.meaning?.[lang] && <p className="text-caption text-paper/80">{rd.meaning[lang]}</p>}
                 </div>
               ))}
@@ -347,12 +378,18 @@ export function TimeTurn({
                 <m.path d="M20 112 C 20 84, 4 76, 8 68 C 12 60, 20 66, 16 72 C 12 78, 4 70, 12 62" stroke="var(--thread-toki)" strokeWidth="2" strokeOpacity="0.75" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6, delay: 0.06 }} />
               </svg>
               <p className="font-serif text-body" lang="ja">
-                「{knot.ja.text}」<span className="ml-1 text-caption text-muted">— {knot.ja.title}</span>
+                「<Named line={knot.ja.text} names={sameJa} />」<span className="ml-1 text-caption text-muted">— {knot.ja.title}</span>
               </p>
               <p className="mt-3 font-serif text-body" lang="en">
-                “{knot.en.text}”<span className="ml-1 text-caption text-muted">— {knot.en.title}</span>
+                “<Named line={knot.en.text} names={sameEn} />”<span className="ml-1 text-caption text-muted">— {knot.en.title}</span>
               </p>
             </div>
+            {sameJa.length + sameEn.length > 0 && (
+              <m.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.4 }} className="mt-3 flex items-center gap-2 text-caption text-paper/80" data-testid="time-match">
+                <By who="code" />
+                {l.sameName}
+              </m.p>
+            )}
           </m.figure>
         ) : atQuotes.length > 0 ? (
           <m.figure key={`q:${atEvent.id}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="border-l-2 border-rule-strong pl-4" data-testid="time-record">

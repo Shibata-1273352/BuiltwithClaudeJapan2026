@@ -42,7 +42,7 @@ export function scheduleBeats(arrivals: Arrival[], { reduced = false }: { reduce
     out.set(a.seq, show);
     if (a.type === "existence") existenceShown = show;
     // bookkeeping and live progress do not occupy the stage
-    if (a.type !== "stage" && a.type !== "ai_call" && a.type !== "received" && a.type !== "see_progress" && a.type !== "narrative_progress") free = show + (HOLD[a.type] ?? DEFAULT_HOLD);
+    if (a.type !== "stage" && a.type !== "ai_call" && a.type !== "ai_start" && a.type !== "see_closer" && a.type !== "received" && a.type !== "see_progress" && a.type !== "narrative_progress") free = show + (HOLD[a.type] ?? DEFAULT_HOLD);
   }
   return out;
 }

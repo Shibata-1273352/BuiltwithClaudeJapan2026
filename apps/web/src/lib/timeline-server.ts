@@ -79,6 +79,16 @@ export function sourceRelation(sourceId: string, entityId: string): SourceRelati
 }
 
 /**
+ * Did this source's writer see the subject? False when the review records the source for this site and
+ * records no sighting of it (an observed time, an observed site, an eyewitness); null when it says nothing.
+ */
+export function sourceSaw(sourceId: string, entityId: string): boolean | null {
+  const subject = timeline().t.source_times.find((x) => x.source === sourceId)?.subjects?.[entityId];
+  if (!subject) return null;
+  return subject.times?.some((t) => t.kind === "observed_at") || subject.relation?.kind === "observed_site" || subject.relation?.kind === "eyewitness_event" ? true : false;
+}
+
+/**
  * Existence of the PERMANENT structure at the source's time (a chronology-based inference, not a
  * statement of the source), plus the temporary-gate status judged separately, plus how the source
  * relates to the structure (depicts / observed the site / only written then / eyewitness of the event).

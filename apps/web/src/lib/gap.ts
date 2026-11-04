@@ -4,6 +4,7 @@
  * (known entities, short plain terms, at most 3 gaps) and runs the search with bound parameters.
  * The judgment text is shown in presentation mode so the decision is visible.
  */
+import { callStarted } from "./dag/call-notice";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import {
   UNTRUSTED_POLICY,
@@ -169,6 +170,7 @@ export async function evaluateGaps(
 ): Promise<{ out: GapOutput | null; record: CallRecord }> {
   const req = buildGap(E, targetId, summary);
   const startedAt = new Date();
+  callStarted("gap", startedAt);
   // On the critical path (gap → round-2 extraction). Sonnet 5.5 at standard speed; with fast mode
   // on, Opus 5.5 fast is faster than Sonnet (measured 2.5 s vs 4.8 s), so it runs there.
   const model = fastOn() ? CLAUDE_MODEL : CLAUDE_LIGHT_MODEL;

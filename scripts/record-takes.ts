@@ -4,13 +4,14 @@
  * uneven rate, so each keeps its timestamp and ffmpeg lays them onto a constant 30 fps.
  *
  *   npx tsx --env-file=.env scripts/record-takes.ts <baseUrl> <take> [--scene id]
- * takes: full (--source replay|live), live (one real run, costs a Claude run), read, years, space, close
+ * takes: full (--source replay|live), live (one real run, costs a Claude run), read, years, space, close,
+ * wall (the landing, a click, a real run begins), other (the second sample, a real run)
  * Output: video/out/takes/<take>.mp4
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { chromium, type CDPSession, type Page } from "playwright";
+import { chromium, type CDPSession, type Locator, type Page } from "playwright";
 
 const [base, take, ...rest] = process.argv.slice(2);
 if (!base || !take) throw new Error("usage: record-takes.ts <baseUrl> <take> [--scene id]");
@@ -30,6 +31,23 @@ await ctx.addCookies([
   { name: "tsumugi_lang", value: "ja", domain: u.hostname, path: "/" },
   { name: "tsumugi_presenter", value: process.env.PRESENTER_TOKEN!, domain: u.hostname, path: "/" },
 ]);
+// the pointer is not in a screencast, so the takes that show a hand draw one: a ring, film only
+if (take === "wall" || take === "other") {
+  await ctx.addInitScript(() => {
+    addEventListener("DOMContentLoaded", () => {
+      const ring = document.createElement("div");
+      ring.style.cssText = "position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid #f3ecdf;background:rgba(243,236,223,.16);z-index:2147483647;pointer-events:none;transition:transform .12s;opacity:0";
+      document.documentElement.append(ring);
+      addEventListener("mousemove", (e) => {
+        ring.style.left = `${e.clientX}px`;
+        ring.style.top = `${e.clientY}px`;
+        ring.style.opacity = "1";
+      });
+      addEventListener("mousedown", () => (ring.style.transform = "scale(.7)"));
+      addEventListener("mouseup", () => (ring.style.transform = ""));
+    });
+  });
+}
 const page = await ctx.newPage();
 const vis = (p: Page, id: string) => p.getByTestId(id).filter({ visible: true }).first();
 const beats: { label: string; at: number }[] = [];
@@ -52,7 +70,52 @@ const beat = (label: string) => {
 };
 const hold = (ms: number) => page.waitForTimeout(ms);
 
+/** A hand's path to an element: slow, eased by the steps of the move. */
+async function reach(target: Locator, ms = 1100) {
+  const box = (await target.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: Math.round(ms / 16) });
+}
+
 const takes: Record<string, () => Promise<void>> = {
+  /** The landing, read for a moment, then the sample pressed: a real run begins (it is left to finish). */
+  async wall() {
+    await page.goto(`${base}/?present=1`, { waitUntil: "networkidle" });
+    await page.mouse.move(1500, 860);
+    await hold(600);
+    await roll();
+    await hold(7000);
+    await page.mouse.move(1180, 520, { steps: 110 });
+    await hold(2200);
+    const go = vis(page, "try-sample");
+    await reach(go, 1600);
+    await hold(600);
+    beat("press");
+    await page.mouse.down();
+    await hold(90);
+    await page.mouse.up();
+    await page.waitForURL(/\/live/, { timeout: 15_000 });
+    beat("stage open");
+    await hold(2500);
+  },
+  /** Another place, from the landing to the answer: a real run. */
+  async other() {
+    await page.goto(`${base}/?present=1`, { waitUntil: "networkidle" });
+    await page.mouse.move(1500, 860);
+    await hold(400);
+    await roll();
+    await hold(800);
+    const go = vis(page, "try-sample-ueno");
+    await reach(go);
+    await hold(400);
+    beat("press");
+    await go.click();
+    await page.waitForURL(/\/live/, { timeout: 15_000 });
+    beat("stage open");
+    const done = await vis(page, "note-link").waitFor({ timeout: 150_000 }).then(() => true, () => false);
+    beat(done ? "run done" : "no note link in time");
+    console.log(`run ${new URL(page.url()).searchParams.get("run")}`);
+    await hold(8000);
+  },
   /** The real thing: the sample photo goes in and Claude works, live. */
   async live() {
     await page.goto(`${base}/?present=1`, { waitUntil: "networkidle" });

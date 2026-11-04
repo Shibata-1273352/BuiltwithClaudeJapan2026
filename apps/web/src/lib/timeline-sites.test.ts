@@ -1,6 +1,6 @@
 /** 13.2: the time layer works at two more sites (Ueno 根本中堂, Azuma Bridge) with per-site source times. */
 import { describe, expect, it } from "vitest";
-import { existenceFor, sourceRelation, timelineData } from "./timeline-server";
+import { existenceFor, sourceRelation, sourceSaw, timelineData } from "./timeline-server";
 
 describe("Ueno: the present Konpon Chūdō was moved here in 1879", () => {
   it("Kōun at the battle of Ueno (1868-07-04, NAOJ) and Bird (1878): not yet moved here", () => {
@@ -17,6 +17,24 @@ describe("Ueno: the present Konpon Chūdō was moved here in 1879", () => {
   it("Kōun's relation is hearsay about the former hall, and differs from his Kaminarimon one", () => {
     expect(sourceRelation("koun-kaiko", "ent:konponchudo")).toMatchObject({ kind: "eyewitness_event", entity: "ent:konponchudo-old" });
     expect(existenceFor("ent:kaminarimon", "koun-kaiko")).toMatchObject({ value: "unknown", reason: "sources_disagree", time: { start: "1866-01-30" } });
+  });
+});
+
+describe("reviewed changes to Ueno and the record of who saw what", () => {
+  it("the hall's life in Kawagoe does not put it at Ueno before 1879", () => {
+    const data = timelineData("ent:konponchudo", undefined, (s) => s);
+    expect(data.events.map((e) => e.event)).toEqual(["built_elsewhere", "moved_in"]);
+    expect(data.periods[0]).toMatchObject({ state: "absent", to: ["ex:konponchudo:1879-moved_in"] });
+    expect(existenceFor("ent:konponchudo", "met-56689").value).toBe("absent");
+  });
+  it("the day of the fire is recorded as inferred", () => {
+    expect(timelineData("ent:konponchudo-old", undefined, (s) => s).events.find((e) => e.event === "destroyed")?.date_precision).toBe("inferred_day");
+  });
+  it("Kōun is not on record as seeing Azuma Bridge; he is as an eyewitness of the Kaminarimon fire, and Bird of the bridge", () => {
+    expect(sourceSaw("koun-kaiko", "ent:azumabashi")).toBe(false);
+    expect(sourceSaw("koun-kaiko", "ent:kaminarimon")).toBe(true);
+    expect(sourceSaw("bird-unbeaten", "ent:azumabashi")).toBe(true);
+    expect(sourceSaw("koun-kaiko", "ent:unknown")).toBeNull();
   });
 });
 

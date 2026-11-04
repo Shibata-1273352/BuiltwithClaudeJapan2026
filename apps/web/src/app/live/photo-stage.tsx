@@ -130,7 +130,7 @@ export function PhotoStage({
   const facingLine = vf && af && F[vf] && F[af] ? (vf === af ? t.same(F[vf]) : t.both(F[vf], F[af])) : null;
 
   return (
-    <div className="relative h-full max-w-full overflow-hidden rounded-md bg-ink shadow-2xl ring-1 ring-muted/20" style={{ aspectRatio: aspect }} data-testid="stage-photo">
+    <div className={`relative overflow-hidden rounded-md bg-ink shadow-2xl ring-1 ring-muted/20 ${aspect > 1 ? "max-h-full w-full self-center" : "h-full max-w-full"}`} style={{ aspectRatio: aspect }} data-testid="stage-photo">
       {photo && (
         // eslint-disable-next-line @next/next/no-img-element -- the visitor's own (face-blurred) photo or the CC0 sample
         <img

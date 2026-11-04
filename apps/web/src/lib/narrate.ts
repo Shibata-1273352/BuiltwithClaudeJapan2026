@@ -2,6 +2,7 @@
  * Stage 8 "紡ぐ": narrative from adopted claims only (REQUIREMENTS.md 4.8, FR-17, RAG-07).
  * Claude never sees whole sources here — only claim cards. Code checks every sentence.
  */
+import { callStarted } from "./dag/call-notice";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { completedArrayItems } from "@tsumugi/core";
 import {
@@ -208,6 +209,7 @@ export async function narrate(
 ): Promise<NarrateResult> {
   const req = buildNarrate(E, cards, lang, subjectEntities, unmatchedSubject);
   const startedAt = new Date();
+  callStarted(`narrate:${lang}`, startedAt);
   const run = async (fast: boolean) => {
     const stream = claude().beta.messages.stream(
       {

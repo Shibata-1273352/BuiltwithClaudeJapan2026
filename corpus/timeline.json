@@ -134,6 +134,7 @@
     },
     {
       "id": "ex:konponchudo-old:1868-destroyed",
+      "date_precision": "inferred_day",
       "entity": "ent:konponchudo-old",
       "event": "destroyed",
       "original": "1868 慶応4 …同日兵火により、根本中堂…焼失（寛永寺）／in July 1868 … burned to the ground（観光庁）／慶応四年辰年の五月十五日 上野の戦争（高村光雲）",
@@ -149,6 +150,20 @@
         "koun-kaiko:18:0"
       ],
       "note": "Kan'ei-ji gives the year and 'the same day' as 公現法親王 left; the Tourism Agency gives July 1868; the day is the battle of Ueno, 慶応4年5月15日 = 1868-07-04 (NAOJ), from Kōun. No source states the hour or a later day."
+    },
+    {
+      "id": "ex:konponchudo:1638-built_elsewhere",
+      "entity": "ent:konponchudo",
+      "event": "built_elsewhere",
+      "original": "The building was constructed in 1638 as the main hall of Kitain Temple in Kawagoe（観光庁）",
+      "time": {
+        "start": "1638-01-01",
+        "end": "1638-12-31"
+      },
+      "evidence": [
+        "jta-tagengo-konponchudo:0:1"
+      ],
+      "note": "the building's origin, in Kawagoe: says nothing about Ueno, where it stands only from 1879"
     },
     {
       "id": "ex:konponchudo:1879-moved_in",
@@ -575,12 +590,12 @@
             }
           ],
           "relation": {
-            "kind": "eyewitness_event",
+            "kind": "written_period",
             "entity": "ent:azumabashi",
             "evidence": [
               "koun-kaiko:18:28"
             ],
-            "note": "recounts the bridge as a checkpoint guarded by government troops on the day of the battle"
+            "note": "mentions the bridge as a checkpoint guarded by government troops on the day of the battle; he does not write that he saw it"
           }
         }
       }
@@ -786,12 +801,12 @@
       "at": "2026-11-03"
     },
     "ent:konponchudo": {
-      "by": null,
-      "at": null
+      "by": "Shibata-1273352 (human review)",
+      "at": "2026-11-05"
     },
     "ent:konponchudo-old": {
-      "by": null,
-      "at": null
+      "by": "Shibata-1273352 (human review)",
+      "at": "2026-11-05"
     },
     "ent:azumabashi": {
       "by": null,

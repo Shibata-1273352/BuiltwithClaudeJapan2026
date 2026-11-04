@@ -86,6 +86,15 @@ describe("checkClaim (FR-13, FR-14, 4.4.7)", () => {
   });
 });
 
+describe("a writer only recorded as mentioning a place", () => {
+  it("is downgraded from observed to mentions", () => {
+    const seen = (saw: boolean | null) => checkClaim(base({ subject: "ent:kannon", predicate: "observed" }), { ...ctx, sawSubject: () => saw }, 0);
+    expect(seen(false)).toMatchObject({ predicate: "mentions", status: "downgraded" });
+    expect(seen(true).predicate).toBe("observed");
+    expect(seen(null).predicate).toBe("observed");
+  });
+});
+
 describe("displayState (4.6)", () => {
   it("ink only for direct + supports on the subject itself", () => {
     expect(displayState({ derivation: "direct", relations: ["supports"] })).toBe("ink");

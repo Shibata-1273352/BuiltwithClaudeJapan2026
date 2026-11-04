@@ -36,13 +36,13 @@
 
 **The story the demo tells** (all from stored sources): the gate burned in 慶応元年 (1865/66); 「実に95年間も雷門は再建されなかった」 (Sensō-ji); in 1960 it was rebuilt with Matsushita Kōnosuke's donation — said by Sensō-ji in Japanese and by the Japan Tourism Agency in English, which TSUMUGI ties into one knot; and Claude reads his name on the lantern base in the visitor's photo. When the record of the fire was thin, Claude decided to search again and found Takamura Kōun's memoir of that night, which disagrees with the temple's date; both are shown.
 
-- In the app: `/` (start), `/live` (try it at Kaminarimon), `/how` (how Claude is used, measured), `/notes` (travel notes and the trip weave).
+- In the app: `/` (start), `/live` (try it at Kaminarimon; `?sample=kaneiji_konponchudo_cc0.jpg` at Konpon Chūdō, Ueno), `/how` (how Claude is used, measured), `/notes` (travel notes and the trip weave).
 - Demo script (video): [`docs/demo-script.md`](docs/demo-script.md) · How Claude and Claude Code are used: [`docs/claude-code.md`](docs/claude-code.md)
 - Final verification (integration, acceptance, performance): [`docs/verification/final-2026-11-04.md`](docs/verification/final-2026-11-04.md)
 - Requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) · Earlier verification: [day 1](docs/verification/day1.md), [day 2](docs/verification/day2.md)
 - Timeline reviews (human): [Kaminarimon](docs/verification/timeline-review.md) (approved 2026-11-03), [Ueno / Azuma Bridge](docs/verification/timeline-review-ueno-azumabashi.md) (pending)
 
-Built for Built with Claude Japan 2026.
+Built for Built with Claude Japan 2026. Everything here was newly developed during the hackathon period.
 
 **Not done / not measured:** choosing another place candidate when Claude's first match is wrong (FR-07); narrowing search by a time range (FR-55); haptics, sound and frame rate on a real phone; French (FR-41).
 
@@ -166,6 +166,9 @@ the cited story sentence by sentence. Above the photo: who is working right now 
 local GPU / code / Neo4j), a step rail with timers and an ETA; below: the result strip.
 
 - 「舞台裏」: each Claude call on a timeline (parallel calls overlap) and what code checked or rejected.
+- While the run works, the footer is a thread: as thick as the Claude calls in flight at that moment (`ai_start` when a call leaves, `ai_call` when it returns), with the cut-out and depth stage beside it.
+- 寄って読む: small writing is read again from a close crop (`lib/closer.ts`). At the size of the whole photo a plate's first line is lost; code keeps the new reading only if it contains the old one. Part of the plate is soft in the photo, so this cannot tell reading from knowing.
+- At the rebuilding, code compares the plate as read with the record (`lib/name-match.ts`) and underlines the same words. It says the words match, not that they name the same person.
 - 「リスト表示」 or `?view=list`: the same run as the accessible list (6.4); `?motion=0` / reduced motion: no holds.
 - Presenter: press `P` or add `?present=1` (larger type for 1920×1080).
 - If live fails or is refused, the stage offers the one public recording (`DEMO_REPLAY_ID`), always labelled as a recording.

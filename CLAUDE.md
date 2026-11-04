@@ -1,6 +1,6 @@
 # TSUMUGI — working rules
 
-Requirements: `docs/REQUIREMENTS.md` (the source of truth). Deadline 2026-11-10 14:00 JST.
+Requirements: `docs/REQUIREMENTS.md` (the source of truth). Deadline 2026-11-08 20:00 JST.
 
 ## Development
 

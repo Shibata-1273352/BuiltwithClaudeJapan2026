@@ -11,6 +11,12 @@ const fonts = `
 @font-face { font-family: Shippori; src: url(${staticFile("fonts/ShipporiMincho-Regular.ttf")}); font-weight: 400; }
 @font-face { font-family: Shippori; src: url(${staticFile("fonts/ShipporiMincho-Bold.ttf")}); font-weight: 700; }`;
 
+/** The app is framed, not full bleed: the space under it belongs to the words, so nothing is laid over the UI. */
+const FRAME = { left: 134, top: 14, width: 1652, height: 929 };
+const FRAMED = ["wall", "enter", "read", "absence", "check", "burn", "gift", "reach"];
+const GOLD = "#e2b65a";
+const MUTED = "#b8bfd3";
+
 const seconds = (s: Segment) => s.dur ?? ((s.to as number) - (s.from as number)) / (s.rate ?? 1);
 
 /** One shot. `cam` is a fixed framing (x, y of the centre, scale): cuts, never a move on a moving screen. */
@@ -81,13 +87,83 @@ const Credit = () => (
   </AbsoluteFill>
 );
 
-const Subtitle = ({ text, left }: { text: string; left: boolean }) => (
-  <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingLeft: left ? 320 : 0 }}>
-    <div style={{ marginBottom: 40, padding: "10px 26px", background: "rgba(14,20,38,.78)", textAlign: "center", color: PAPER, fontFamily: serif, fontSize: 38, lineHeight: 1.4, whiteSpace: "pre-line", borderRadius: 2 }}>
+/** Under the frame the words stand alone on the night; over a full-bleed shot a soft shade carries them. */
+const Subtitle = ({ text, inFrame }: { text: string; inFrame: boolean }) => (
+  <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", pointerEvents: "none" }}>
+    {!inFrame && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 240, background: "linear-gradient(transparent, rgba(8,10,20,.72))" }} />}
+    <div
+      style={{
+        position: "relative",
+        marginBottom: inFrame ? 24 : 44,
+        textAlign: "center",
+        color: PAPER,
+        fontFamily: serif,
+        fontSize: inFrame ? 34 : 38,
+        lineHeight: 1.42,
+        letterSpacing: "0.04em",
+        fontFeatureSettings: '"palt"',
+        whiteSpace: "pre-line",
+      }}
+    >
       {text}
     </div>
   </AbsoluteFill>
 );
+
+/** The run as a thread down the left margin: it grows in real time, and each step lights as its recorded call starts. */
+const Progress = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const t = frame / fps;
+  const steps = timeline.steps as [string, number][];
+  const top = 44;
+  const span = 860;
+  const x = 62;
+  const at = (i: number) => top + (span * i) / steps.length;
+  const reach = interpolate(t, [steps[0][1], steps[1][1], steps[2][1], timeline.runDone], [at(0), at(1), at(2), top + span], clamp);
+  return (
+    <AbsoluteFill style={{ fontFamily: serif }}>
+      <div style={{ position: "absolute", left: x, top, width: 1, height: span, background: "rgba(184,191,211,.26)" }} />
+      <div style={{ position: "absolute", left: x - 0.5, top, width: 2, height: reach - top, background: GOLD, boxShadow: `0 0 8px ${GOLD}` }} />
+      {steps.map(([label, when], i) => {
+        const on = t >= when;
+        const active = on && (i === steps.length - 1 ? t < timeline.runDone : t < steps[i + 1][1]);
+        return (
+          <div key={label}>
+            <div
+              style={{
+                position: "absolute",
+                left: x - 6,
+                top: at(i) - 6,
+                width: 13,
+                height: 13,
+                borderRadius: 7,
+                background: on ? GOLD : "#0e1426",
+                border: `1px solid ${on ? GOLD : MUTED}`,
+                boxShadow: active ? `0 0 14px ${GOLD}` : "none",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: x + 16,
+                top: at(i) + 2,
+                writingMode: "vertical-rl",
+                fontSize: 26,
+                letterSpacing: "0.14em",
+                color: active ? PAPER : on ? MUTED : MUTED,
+                opacity: active ? 1 : on ? 0.75 : 0.38,
+                fontFeatureSettings: '"vpal"',
+              }}
+            >
+              {label}
+            </div>
+          </div>
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
 
 /** The film. App shots are one live run; the threads, the title and the print's framing are made for the film. */
 export const Film = () => {
@@ -95,6 +171,8 @@ export const Film = () => {
   const f = (s: number) => Math.round(s * fps);
   const scene = (id: string) => timeline.scenes.find((s) => s.id === id)!;
   const read = scene("read");
+  const sceneAt = (t: number) => timeline.scenes.find((s) => s.start <= t && t < s.end)?.id ?? "";
+  const framed = { position: "absolute", ...FRAME, overflow: "hidden", outline: "1px solid rgba(184,191,211,.16)" } as const;
   return (
     <AbsoluteFill style={{ background: "#0e1426" }}>
       <style>{fonts}</style>
@@ -111,13 +189,15 @@ export const Film = () => {
             {s.id === "credit" ? (
               <Credit />
             ) : (
-              <Series>
-                {(s.segments as Segment[]).map((seg, i) => (
-                  <Series.Sequence key={i} durationInFrames={f(seconds(seg))}>
-                    <Shot seg={seg} />
-                  </Series.Sequence>
-                ))}
-              </Series>
+              <div style={FRAMED.includes(s.id) ? framed : { position: "absolute", inset: 0 }}>
+                <Series>
+                  {(s.segments as Segment[]).map((seg, i) => (
+                    <Series.Sequence key={i} durationInFrames={f(seconds(seg))}>
+                      <Shot seg={seg} />
+                    </Series.Sequence>
+                  ))}
+                </Series>
+              </div>
             )}
             <Fade
               len={s.end - s.start}
@@ -127,15 +207,13 @@ export const Film = () => {
           </Sequence>
         ))}
       <Sequence from={f(scene("enter").start)} durationInFrames={f(timeline.bridges.enter.duration + 0.6)}>
-        <Bridge last={f(timeline.bridges.enter.duration)} />
+        <div style={framed}>
+          <Bridge last={f(timeline.bridges.enter.duration)} />
+        </div>
       </Sequence>
-      {timeline.steps.map(([label, at], i) => (
-        <Sequence key={String(label)} from={f(read.start + (at as number))} durationInFrames={f(1.6)}>
-          <FadeText len={1.6} style={{ right: 96, top: 170 + i * 0, fontSize: 40, background: "rgba(14,20,38,.8)", padding: "8px 20px", borderRadius: 2 }}>
-            {label}
-          </FadeText>
-        </Sequence>
-      ))}
+      <Sequence from={f(read.start)} durationInFrames={f(read.end - read.start)}>
+        <Progress />
+      </Sequence>
       {Object.entries(timeline.notes).map(([id, note]) => (
         <Sequence key={id} from={f(scene(id).start)} durationInFrames={f(Math.min(4, scene(id).end - scene(id).start))}>
           <FadeText len={4} style={{ right: 28, bottom: 18, fontSize: 18, color: "#d9d3c7", textShadow: "0 0 6px #000" }}>
@@ -145,7 +223,7 @@ export const Film = () => {
       ))}
       {guide.map((g) => (
         <Sequence key={g.wav} from={f(g.start)} durationInFrames={f(g.seconds)}>
-          <Subtitle text={g.sub} left={g.start >= read.start && g.start < read.end} />
+          <Subtitle text={g.sub} inFrame={FRAMED.includes(sceneAt(g.start))} />
         </Sequence>
       ))}
     </AbsoluteFill>

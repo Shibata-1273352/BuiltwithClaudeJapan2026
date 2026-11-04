@@ -3,6 +3,7 @@
  * place), in parallel with retrieval — off the critical path. Claude's explanations, labelled as
  * such; code drops what it can check is wrong (validateGuide). Never claims or evidence.
  */
+import { callStarted } from "./dag/call-notice";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { GuideOutput, UNTRUSTED_POLICY, validateGuide, type GuideNote, type SeeOutput } from "@tsumugi/core";
 import { CLAUDE_LIGHT_MODEL, CLAUDE_MODEL, FAST_BETA, claude, costOf, fastOn, rateLimitHeaders, withFast, type CallRecord } from "./claude";
@@ -29,6 +30,7 @@ export function guideTargets(see: SeeOutput, max = 3): number[] {
 
 async function oneNote(see: SeeOutput, index: number, place: { ja: string; en: string }) {
   const startedAt = new Date();
+  callStarted("guide", startedAt);
   const model = fastOn() ? CLAUDE_MODEL : CLAUDE_LIGHT_MODEL;
   const e = see.elements[index];
   const line = `0. ${e.label}${e.text_original ? ` — text: ${e.text_original}${e.reading ? ` (${e.reading})` : ""}` : ""}${e.meaning ? ` — ${e.meaning.en}` : ""}`;

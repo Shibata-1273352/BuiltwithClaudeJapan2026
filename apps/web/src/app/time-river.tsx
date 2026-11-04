@@ -32,6 +32,7 @@ const EVENT_LABEL: Record<string, { ja: string; en: string }> = {
   destroyed: { ja: "焼失", en: " destroyed" },
   rebuilt: { ja: "再建", en: " rebuilt" },
   built: { ja: "建立", en: " built" },
+  built_elsewhere: { ja: "他所で建立", en: " built elsewhere" },
   moved_in: { ja: "移築", en: " moved here" },
   temporary: { ja: "仮設", en: " temporary" },
 };

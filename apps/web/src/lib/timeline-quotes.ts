@@ -28,8 +28,11 @@ export function knotOf(qs: Quote[]): { ja: Quote; en: Quote } | null {
 
 /**
  * Claude's readings of the photo that lie on a cut-out: at least 40% of the reading's box overlaps the
- * cut-out's bbox (Claude's boxes run a little larger than SAM 3's masks). Both are 0..1 of the photo.
+ * cut-out's bbox (Claude's boxes run a little larger than SAM 3's masks), or its centre lies within
+ * NEAR of it (small boxes can sit just off the mask). Both are 0..1 of the photo.
  */
+const NEAR = 0.07;
+
 export function readingsInside<T extends { box: { x: number; y: number; w: number; h: number }; text_original: string | null }>(
   readings: T[],
   bbox: [number, number, number, number],
@@ -40,6 +43,9 @@ export function readingsInside<T extends { box: { x: number; y: number; w: numbe
     if (!r.text_original || r.box.w <= 0 || r.box.h <= 0) return false;
     const ix = Math.max(0, Math.min(x2, r.box.x + r.box.w) - Math.max(x1, r.box.x));
     const iy = Math.max(0, Math.min(y2, r.box.y + r.box.h) - Math.max(y1, r.box.y));
-    return (ix * iy) / (r.box.w * r.box.h) >= minShare;
+    const cx = r.box.x + r.box.w / 2;
+    const cy = r.box.y + r.box.h / 2;
+    const near = cx > x1 - NEAR && cx < x2 + NEAR && cy > y1 - NEAR && cy < y2 + NEAR;
+    return (ix * iy) / (r.box.w * r.box.h) >= minShare || near;
   });
 }

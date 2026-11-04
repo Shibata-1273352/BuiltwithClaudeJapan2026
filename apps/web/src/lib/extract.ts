@@ -3,6 +3,7 @@
  * Claude sees each passage with sentence ids and its 1-hop relations (which entity it matched, the
  * photo's subject, the source's time and edition) — never the graph alone. Code checks every claim.
  */
+import { callStarted } from "./dag/call-notice";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import {
   checkClaim,
@@ -25,7 +26,7 @@ import {
 } from "./claude";
 import type { DB } from "./corpus/db";
 import type { Retrieved } from "./dag/retrieve";
-import { existenceFor, sourceTime } from "./timeline-server";
+import { existenceFor, sourceSaw, sourceTime } from "./timeline-server";
 
 export const EXTRACT_LIMITS = { passages: 12, approxTokens: 8000 } as const;
 
@@ -163,6 +164,7 @@ export function buildExtract(
                 ].filter(Boolean),
               existenceAt: (entity, passageId) =>
                 existenceFor(entity, passageSource.get(passageId) ?? "").value,
+              sawSubject: (entity, passageId) => sourceSaw(passageSource.get(passageId) ?? "", entity),
             },
             i,
           ),
@@ -193,6 +195,7 @@ export async function extractClaims(
 ): Promise<ExtractResult> {
   const req = buildExtract(db, E, targetId, selected);
   const startedAt = new Date();
+  callStarted("extract", startedAt);
   // a slow extraction call (API tail latency) is hedged with an identical one (claude.ts)
   const {
     value: { data, response },

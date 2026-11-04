@@ -15,6 +15,8 @@ import { seePhoto } from "../see";
 import { guessViewpoint } from "../viewpoint";
 import { guideNotes } from "../guide-call";
 import { store } from "../store";
+import { withCallNotice } from "./call-notice";
+import { closerTargets, extends_, readCloser } from "../closer";
 import { emit } from "./events";
 import { buildPlan } from "./plan";
 import { retrieveFacet, type Retrieved } from "./retrieve";
@@ -78,7 +80,11 @@ async function stage<T>(ctx: RunContext, name: string, fn: () => Promise<T>): Pr
 export type RunOptions = { gapRound: boolean };
 
 /** opts.gapRound=false is method D, true is D+ (4.9); D+ is the adopted default. */
-export async function runExploration(explorationId: string, capture: CaptureRow, opts: RunOptions = { gapRound: true }): Promise<void> {
+export function runExploration(explorationId: string, capture: CaptureRow, opts: RunOptions = { gapRound: true }): Promise<void> {
+  return withCallNotice((stage, startedAt) => emit(explorationId, "ai_start", { stage, startedAt }), () => run(explorationId, capture, opts));
+}
+
+async function run(explorationId: string, capture: CaptureRow, opts: RunOptions): Promise<void> {
   const ctx = new RunContext(explorationId);
   const db = store();
   const finish = (status: "done" | "failed" | "deadline", result: unknown) => {
@@ -123,6 +129,24 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       emit(explorationId, "see", r.validation.value);
       return r.validation.value as SeeOutput;
     });
+
+    // small writing, read again from a close crop, alongside everything that follows (optional: the run goes on)
+    const closerPromise = (async () => {
+      const targets = closerTargets(see);
+      if (!targets.length || ctx.remaining() < 25_000) return;
+      const photo = await readFile(capture.image_path);
+      await stage(ctx, "closer", () =>
+        Promise.all(
+          targets.map(async (i) => {
+            ctx.claude();
+            const e = see.elements[i];
+            const r = await readCloser(photo, e.box);
+            logCall(ctx, db, explorationId, r.record);
+            if (r.text_original && extends_(e.text_original ?? "", r.text_original)) emit(explorationId, "see_closer", { element: i, text_original: r.text_original, reading: r.reading });
+          }),
+        ),
+      );
+    })().catch((e) => console.error(`[closer ${explorationId}]`, e instanceof Error ? e.message : e));
 
     // 2. Place: map Claude's candidates to the dictionary (FR-07). Unknown place -> honest stop (FR-19).
     const E = entities();
@@ -213,7 +237,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       // which is only a candidate (never matched to the dictionary, never a claim)
       const top = see.places.slice().sort((a, b) => a.rank - b.rank)[0]?.hierarchy.filter((h) => h.type !== "artwork").at(-1);
       const candidate = top ? { ja: top.name_ja || top.name_en, en: top.name_en || top.name_ja } : { ja: "写真の場所", en: "the place in the photo" };
-      await Promise.all([guideFor(candidate), scenePromise]);
+      await Promise.all([guideFor(candidate), scenePromise, closerPromise]);
       emit(explorationId, "done", { status: "no_known_place", claude_calls: ctx.claudeCalls, cost_usd: ctx.costUsd });
       finish("done", { place: null });
       return;
@@ -523,7 +547,7 @@ export async function runExploration(explorationId: string, capture: CaptureRow,
       return r.sentences;
     });
 
-    await viewpointPromise; // started right after the place; long done by now
+    await Promise.all([viewpointPromise, closerPromise]); // started early; long done by now
     await guidePromise;
 
     // 9. Save to the Evidence Graph in one transaction (4.4.8). Failure does not stop the exploration.

@@ -21,6 +21,7 @@ import { Button, ButtonLink } from "../ui/button";
 import { LoomLegend } from "../ui/legend";
 import { EvidenceColumn } from "./evidence-column";
 import { PhotoStage, useScene } from "./photo-stage";
+import { AiWeave } from "./ai-weave";
 import { LiveChips, ResultStrip, StepRail, Toasts } from "./stage-chrome";
 import { TextColumn } from "./text-column";
 import { RopeLayer, type RopeSpec } from "./rope-layer";
@@ -123,6 +124,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
   const [panel, setPanel] = useState<"backstage" | "time" | "names" | null>(null);
   const toggle = (p: NonNullable<typeof panel>) => setPanel((v) => (v === p ? null : p));
   const [aspect, setAspect] = useState(3 / 4);
+  const wide = aspect > 1; // a landscape photo takes a share of the row, not the height of the stage
   const stageRef = useRef<HTMLDivElement>(null);
   const axisRef = useRef<HTMLDivElement>(null);
   // every end a thread can tie to: obj:<key>, guide:<see index>, card:<source id>
@@ -407,7 +409,7 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
                 <ExplorationView attach={replay ? undefined : expId} replay={replay ? { explorationId: expId, recordedAt: source.recordedAt } : undefined} />
               </div>
             ) : (
-              <div ref={stageRef} data-beat={panel === "time" || panel === "names" ? "panel" : ys?.state === "absent" && !(holdBroken && !scrubbedOnce) ? "broken" : undefined} className={`stage-grid relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:gap-8 ${s.place === null ? "lg:grid-cols-[minmax(26rem,1.1fr)_auto]" : "lg:grid-cols-[minmax(20rem,1fr)_auto_6rem_minmax(22.5rem,30rem)]"}`}>
+              <div ref={stageRef} data-beat={panel === "time" || panel === "names" ? "panel" : ys?.state === "absent" && !(holdBroken && !scrubbedOnce) ? "broken" : undefined} className={`stage-grid relative flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:gap-8 ${s.place === null ? "lg:grid-cols-[minmax(26rem,1.1fr)_auto]" : wide ? "lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.7fr)_6rem_minmax(20rem,24rem)]" : "lg:grid-cols-[minmax(20rem,1fr)_auto_6rem_minmax(22.5rem,30rem)]"}`}>
                 <div className="order-2 min-h-0 lg:order-none">
                   <TextColumn
                     s={s}
@@ -484,7 +486,10 @@ export function LiveStage({ source, demoReplay, onExit }: { source: Source; demo
 
             <footer className="flex flex-wrap items-end justify-between gap-4 border-t border-rule pt-4">
               <ResultStrip s={s} elapsed={clock} />
-              <LoomLegend />
+              {!finished && <AiWeave s={s} elapsed={clock} />}
+              <div className={finished ? undefined : "lg:hidden"}>
+                <LoomLegend />
+              </div>
             </footer>
           </main>
         </LayoutGroup>
