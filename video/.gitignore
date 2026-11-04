@@ -1,0 +1,35 @@
+# Copied or downloaded by scripts/fetch-assets.mjs; rights are listed in ASSETS.md
+public/
+# Renders
+out/
+
+# CC0 samples fetched by score/fetch-samples.sh
+score/samples/
+
+# Images, audio and video never go to GitHub, wherever they land under video/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.tif
+*.tiff
+*.exr
+*.wav
+*.aif
+*.aiff
+*.flac
+*.mp3
+*.m4a
+*.aac
+*.ogg
+*.mp4
+*.mov
+*.m4v
+*.webm
+*.mkv
+*.avi
+# Blender scenes and the derived stitch data
+*.blend
+*.blend1
+*.npz

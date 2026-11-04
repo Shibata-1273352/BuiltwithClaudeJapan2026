@@ -1,0 +1,21 @@
+{
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "opening": {
+    "duration": 8.5,
+    "lettersIn": 2.2,
+    "spinEnd": 2.4,
+    "lettersFrames": 96,
+    "write": [
+      [0.05, 0.75, 0.75],
+      [1.32, 1.42, 0.16],
+      [1.95, 2.3, 0.5],
+      [2.45, 2.75, 0.45]
+    ],
+    "strike": 3.65,
+    "lanternIn": [5.7, 6.5],
+    "goldOut": [6.3, 7.2],
+    "firstWord": 8.5
+  }
+}
