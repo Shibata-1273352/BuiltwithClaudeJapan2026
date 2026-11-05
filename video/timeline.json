@@ -3,7 +3,7 @@
  "width": 1920,
  "height": 1080,
  "opening": {
-  "duration": 23.5,
+  "duration": 24.3,
   "lettersIn": 2.2,
   "spinEnd": 2.4,
   "lettersFrames": 96,
@@ -49,39 +49,59 @@
    1.45,
    3.1
   ],
-  "plateCut": 0.75
+  "plateCut": 0
  },
  "knot": 15.0,
  "scenes": [
   {
-   "id": "mystery",
+   "id": "friend",
    "start": 13.5,
-   "end": 23.5,
+   "end": 24.3,
    "segments": []
   },
   {
    "id": "wall",
-   "start": 23.5,
-   "end": 38.5,
+   "start": 24.3,
+   "end": 29.2,
    "segments": [
     {
      "src": "takes/wall.mp4",
      "from": 0,
+     "to": 4.9,
+     "rate": 1,
+     "cam": null
+    }
+   ]
+  },
+  {
+   "id": "mystery",
+   "start": 29.2,
+   "end": 38.9,
+   "segments": []
+  },
+  {
+   "id": "press",
+   "start": 38.9,
+   "end": 42.0,
+   "segments": [
+    {
+     "src": "takes/wall.mp4",
+     "from": 10.9,
      "to": 13.4,
      "rate": 1,
      "cam": null
     },
     {
      "still": "takes/empty.png",
-     "dur": 1.6,
+     "dur": 0.6,
      "cam": null
     }
    ]
   },
   {
    "id": "enter",
-   "start": 38.5,
-   "end": 41.0,
+   "start": 42.0,
+   "end": 44.5,
    "segments": [
     {
      "still": "takes/empty.png",
@@ -92,8 +112,8 @@
   },
   {
    "id": "read",
-   "start": 41.0,
-   "end": 61.5,
+   "start": 44.5,
+   "end": 65.0,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -111,8 +131,8 @@
   },
   {
    "id": "print",
-   "start": 61.5,
-   "end": 71.25,
+   "start": 65.0,
+   "end": 74.75,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -125,8 +145,8 @@
   },
   {
    "id": "absence",
-   "start": 71.25,
-   "end": 80.65,
+   "start": 74.75,
+   "end": 84.15,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -144,8 +164,8 @@
   },
   {
    "id": "check",
-   "start": 80.65,
-   "end": 87.65,
+   "start": 84.15,
+   "end": 91.15,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -167,8 +187,8 @@
   },
   {
    "id": "burn",
-   "start": 87.65,
-   "end": 94.95,
+   "start": 91.15,
+   "end": 98.45,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -190,8 +210,8 @@
   },
   {
    "id": "gift",
-   "start": 94.95,
-   "end": 108.35,
+   "start": 98.45,
+   "end": 111.85,
    "segments": [
     {
      "src": "takes/full.mp4",
@@ -204,8 +224,8 @@
   },
   {
    "id": "knot",
-   "start": 108.35,
-   "end": 111.35,
+   "start": 111.85,
+   "end": 114.85,
    "segments": [
     {
      "seq": "knot",
@@ -216,20 +236,20 @@
   },
   {
    "id": "reveal",
-   "start": 111.35,
-   "end": 121.85,
+   "start": 114.85,
+   "end": 125.35,
    "segments": []
   },
   {
    "id": "reach",
-   "start": 121.85,
-   "end": 127.85,
+   "start": 125.35,
+   "end": 131.85,
    "segments": []
   },
   {
    "id": "other",
-   "start": 127.85,
-   "end": 135.85,
+   "start": 131.85,
+   "end": 139.85,
    "segments": [
     {
      "src": "takes/other.mp4",
@@ -242,14 +262,14 @@
   },
   {
    "id": "close",
-   "start": 135.85,
-   "end": 147.85,
+   "start": 139.85,
+   "end": 151.85,
    "segments": []
   },
   {
    "id": "concept",
-   "start": 147.85,
-   "end": 152.85,
+   "start": 151.85,
+   "end": 156.85,
    "segments": [
     {
      "still": "concept.png",
@@ -265,12 +285,12 @@
   },
   {
    "id": "credit",
-   "start": 152.85,
-   "end": 158.85,
+   "start": 156.85,
+   "end": 162.85,
    "segments": []
   }
  ],
- "end": 158.85,
+ "end": 162.85,
  "bridges": {
   "enter": {
    "rect": [
@@ -306,10 +326,10 @@
   ]
  ],
  "notes": {
-  "mystery": "写真を夕景に調整",
   "print": "映像用の表示",
   "concept": "生成AIによるコンセプト画像",
-  "reach": "模式図"
+  "reach": "模式図",
+  "friend": "写真を夕景に調整"
  },
  "nameLines": [
   5.15,

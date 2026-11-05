@@ -13,7 +13,7 @@ const TRUE_PEAK = -1;
 const SUB_CPS = 7; // Japanese subtitles read at about 4 per second in the Netflix guide; narration leads here, so the bar is the point of unreadable
 const SUB_LINE = 30;
 /** Scenes that are the working app, its output or the real place, for the budget. Printed in the result, to be judged by a person. */
-const REAL = ["mystery", "wall", "enter", "read", "print", "absence", "check", "burn", "gift", "reveal", "other", "close"];
+const REAL = ["friend", "wall", "mystery", "press", "enter", "read", "print", "absence", "check", "burn", "gift", "reveal", "other", "close"];
 const REAL_SHARE = 0.7;
 
 const results = [];
