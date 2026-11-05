@@ -3,7 +3,7 @@
  "width": 1920,
  "height": 1080,
  "opening": {
-  "duration": 21.0,
+  "duration": 23.5,
   "lettersIn": 2.2,
   "spinEnd": 2.4,
   "lettersFrames": 96,
@@ -39,43 +39,49 @@
    7.2
   ],
   "firstWord": 8.5,
-  "cue": 11.0,
+  "cue": 13.5,
   "title": [
    8.5,
-   11.0
-  ]
+   13.5
+  ],
+  "titleLand": 1.45,
+  "titleSheen": [
+   1.45,
+   3.1
+  ],
+  "plateCut": 0.75
  },
  "knot": 15.0,
  "scenes": [
   {
    "id": "mystery",
-   "start": 11.0,
-   "end": 21.0,
+   "start": 13.5,
+   "end": 23.5,
    "segments": []
   },
   {
    "id": "wall",
-   "start": 21.0,
-   "end": 35.0,
+   "start": 23.5,
+   "end": 38.5,
    "segments": [
     {
      "src": "takes/wall.mp4",
      "from": 0,
-     "to": 13.2,
+     "to": 13.4,
      "rate": 1,
      "cam": null
     },
     {
      "still": "takes/empty.png",
-     "dur": 0.8,
+     "dur": 1.6,
      "cam": null
     }
    ]
   },
   {
    "id": "enter",
-   "start": 35.0,
-   "end": 37.5,
+   "start": 38.5,
+   "end": 41.0,
    "segments": [
     {
      "still": "takes/empty.png",
@@ -86,27 +92,32 @@
   },
   {
    "id": "read",
-   "start": 37.5,
-   "end": 66.7,
+   "start": 41.0,
+   "end": 61.5,
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 0.9,
-     "to": 30.1,
+     "from": 0.1,
+     "to": 19.9,
      "rate": 1,
+     "cam": null
+    },
+    {
+     "still": "takes/read-hold.png",
+     "dur": 0.7,
      "cam": null
     }
    ]
   },
   {
    "id": "print",
-   "start": 66.7,
-   "end": 76.45,
+   "start": 61.5,
+   "end": 71.25,
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 35.45,
-     "to": 45.2,
+     "from": 21.23,
+     "to": 30.98,
      "rate": 1,
      "cam": null
     }
@@ -114,13 +125,13 @@
   },
   {
    "id": "absence",
-   "start": 76.45,
-   "end": 85.85000000000001,
+   "start": 71.25,
+   "end": 80.65,
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 47.2,
-     "to": 54.6,
+     "from": 33.44,
+     "to": 40.84,
      "rate": 1,
      "cam": null
     },
@@ -133,13 +144,13 @@
   },
   {
    "id": "check",
-   "start": 85.85000000000001,
-   "end": 92.85000000000001,
+   "start": 80.65,
+   "end": 87.65,
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 54.6,
-     "to": 59.1,
+     "from": 40.84,
+     "to": 45.34,
      "rate": 1,
      "cam": null
     },
@@ -156,13 +167,13 @@
   },
   {
    "id": "burn",
-   "start": 92.85000000000001,
-   "end": 100.15,
+   "start": 87.65,
+   "end": 94.95,
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 61.5,
-     "to": 65.2,
+     "from": 47.74,
+     "to": 51.44,
      "rate": 1,
      "cam": null
     },
@@ -179,13 +190,13 @@
   },
   {
    "id": "gift",
-   "start": 100.15,
-   "end": 113.55000000000001,
+   "start": 94.95,
+   "end": 108.35,
    "segments": [
     {
      "src": "takes/full.mp4",
-     "from": 68.7,
-     "to": 82.1,
+     "from": 54.96,
+     "to": 68.36,
      "rate": 1,
      "cam": null
     }
@@ -193,8 +204,8 @@
   },
   {
    "id": "knot",
-   "start": 113.55000000000001,
-   "end": 116.55000000000001,
+   "start": 108.35,
+   "end": 111.35,
    "segments": [
     {
      "seq": "knot",
@@ -205,25 +216,25 @@
   },
   {
    "id": "reveal",
-   "start": 116.55000000000001,
-   "end": 126.55000000000001,
+   "start": 111.35,
+   "end": 121.85,
    "segments": []
   },
   {
    "id": "reach",
-   "start": 126.55000000000001,
-   "end": 132.55,
+   "start": 121.85,
+   "end": 127.85,
    "segments": []
   },
   {
    "id": "other",
-   "start": 132.55,
-   "end": 140.55,
+   "start": 127.85,
+   "end": 135.85,
    "segments": [
     {
      "src": "takes/other.mp4",
-     "from": 16,
-     "to": 24,
+     "from": 7.7,
+     "to": 15.7,
      "rate": 1,
      "cam": null
     }
@@ -231,14 +242,14 @@
   },
   {
    "id": "close",
-   "start": 140.55,
-   "end": 152.55,
+   "start": 135.85,
+   "end": 147.85,
    "segments": []
   },
   {
    "id": "concept",
-   "start": 152.55,
-   "end": 157.55,
+   "start": 147.85,
+   "end": 152.85,
    "segments": [
     {
      "still": "concept.png",
@@ -254,12 +265,12 @@
   },
   {
    "id": "credit",
-   "start": 157.55,
-   "end": 163.55,
+   "start": 152.85,
+   "end": 158.85,
    "segments": []
   }
  ],
- "end": 163.55,
+ "end": 158.85,
  "bridges": {
   "enter": {
    "rect": [
@@ -287,11 +298,11 @@
   ],
   [
    "sources",
-   9.53
+   6.8
   ],
   [
    "weave",
-   20.77
+   12.8
   ]
  ],
  "notes": {
@@ -301,7 +312,7 @@
   "reach": "模式図"
  },
  "nameLines": [
-  3.8,
-  4.9
+  5.15,
+  7.15
  ]
 }

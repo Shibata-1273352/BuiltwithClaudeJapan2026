@@ -30,9 +30,9 @@ const T = dict({
     broken: "切れた糸",
     notYet: (p: string) => `${p}は、まだなかった`,
     notYetPermanent: (p: string) => `恒久的な${p}は、まだなかった`,
-    byCodeShort: "年表との照合（コード）。Claude には判定させない",
+    byCodeShort: "年表との照合（プログラム）。Claude には判定させない",
     interim: (y: number) => `${y}年に仮設の門が設けられた（年表）。その後もあったかは記録されていない`,
-    byCode: "年表との照合はコード。Claude には判定させていません。",
+    byCode: "年表との照合はプログラム。Claude には判定させていません。",
     words: "写真の中の文字",
     judgment: "Claude の判断 ── 何が足りないか",
     more: "追加で探す語：",
@@ -42,8 +42,8 @@ const T = dict({
     found2: "見つけた：",
     searched: (n: number) => `Claude が足りない観点を判断し、追加で探した（${n} 節が見つかった）：`,
     judgedEn: (n: number) => `${n}`,
-    story: "この場所の物語 ── Claude が書き、一文ずつコードが確かめた",
-    skippedGap: "追加の探索はしなかった（残り時間が少ないため・コードの判断）",
+    story: "この場所の物語 ── Claude が書き、一文ずつプログラムが確かめた",
+    skippedGap: "追加の探索はしなかった（残り時間が少ないため・プログラムの判断）",
     threads: (n: number, b: number, src: number) => `糸 ${n} 本（切れた糸 ${b}）：糸のある資料 ${src}`,
   },
   en: {
@@ -188,7 +188,10 @@ export function TextColumn({
   const readings = (s.see?.elements ?? s.seeProgress?.elements ?? []).filter((e) => e.text_original).slice(0, 3);
   const broken = (s.threads ?? []).filter((t) => t.state === "absent");
   const showBroken = broken.length > 0 && since("threads") > 1800 && !holdBroken;
-  const foundTitles = [...new Set((s.gap?.candidates ?? []).map((c) => c.sourceTitle).filter(Boolean))].slice(0, 2);
+  // the sources that search brought the most passages from, not the first it happened to list
+  const foundCount = new Map<string, number>();
+  for (const c of s.gap?.candidates ?? []) if (c.sourceTitle) foundCount.set(c.sourceTitle, (foundCount.get(c.sourceTitle) ?? 0) + 1);
+  const foundTitles = [...foundCount.entries()].sort((a, b) => b[1] - a[1]).map(([title]) => title).slice(0, 2);
   const brokenYearNum = (() => {
     const src = broken[0] ? broken[0].claimId.split(":").pop() : null;
     const row = s.existence?.rows.find((r) => r.source === src);
@@ -279,7 +282,32 @@ export function TextColumn({
 
         {s.stages.see && !s.at.place && <SeeAsk s={s} since={since("received") >= 0 ? since("received") : elapsed} />}
 
-        {docked && !showStory && <ViewpointCard s={s} />}
+        {/* the judgment is the point of the run: it comes first while it stands, and the pencil waits below the story */}
+        {s.gap?.assessment && !showStory && (
+          <m.figure initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="claude-line">
+            <figcaption className="label">{t.judgment}</figcaption>
+            <blockquote className="mt-1 font-serif text-body">
+              {/* Claude wrote its judgment in the run's language; an English reader of a Japanese run gets a plain English line (the terms follow below) */}
+              <Typed text={ui === "en" && /[\u3040-\u30ff\u4e00-\u9fff]/.test(s.gap.assessment) ? t.judgedEn(s.gap.found ?? 0) : s.gap.assessment} since={since("gap")} reduced={reduced} />
+            </blockquote>
+            {s.gap.gaps && s.gap.gaps.length > 0 && since("gap") > 1500 && (
+              <p className="mt-2 text-caption text-muted">
+                {t.more}
+                {s.gap.gaps
+                  .flatMap((g) => g.terms.map((term) => ({ term, g })))
+                  .slice(0, 8)
+                  .map(({ term, g }, i) => (
+                    <m.span key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.06 }} className="text-paper" title={`${FACET_LABEL[ui][g.facet] ?? g.facet} (${g.lang === "ja" ? t.ja : t.en})`}>
+                      {i > 0 ? t.sep : ""}
+                      {term}
+                    </m.span>
+                  ))}
+              </p>
+            )}
+          </m.figure>
+        )}
+
+        {docked && !showStory && !s.gap?.assessment && <ViewpointCard s={s} />}
 
         {/* the words on the photo */}
         {!showStory ? guide : guideFocus}
@@ -306,30 +334,6 @@ export function TextColumn({
             {t.skippedGap}
           </p>
         )}
-        {s.gap?.assessment && !showStory && (
-          <m.figure initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-l-2 border-lantern pl-4" data-testid="claude-line">
-            <figcaption className="label">{t.judgment}</figcaption>
-            <blockquote className="mt-1 font-serif text-body">
-              {/* Claude wrote its judgment in the run's language; an English reader of a Japanese run gets a plain English line (the terms follow below) */}
-              <Typed text={ui === "en" && /[\u3040-\u30ff\u4e00-\u9fff]/.test(s.gap.assessment) ? t.judgedEn(s.gap.found ?? 0) : s.gap.assessment} since={since("gap")} reduced={reduced} />
-            </blockquote>
-            {s.gap.gaps && s.gap.gaps.length > 0 && since("gap") > 1500 && (
-              <p className="mt-2 text-caption text-muted">
-                {t.more}
-                {s.gap.gaps
-                  .flatMap((g) => g.terms.map((term) => ({ term, g })))
-                  .slice(0, 8)
-                  .map(({ term, g }, i) => (
-                    <m.span key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.06 }} className="text-paper" title={`${FACET_LABEL[ui][g.facet] ?? g.facet} (${g.lang === "ja" ? t.ja : t.en})`}>
-                      {i > 0 ? t.sep : ""}
-                      {term}
-                    </m.span>
-                  ))}
-              </p>
-            )}
-          </m.figure>
-        )}
-
         {/* the story, sentence by sentence (350 ms each), with source numbers */}
         {showStory && (
           <article className="present-hide" data-testid="narrative" lang={story?.lang ?? s.narrative?.lang ?? s.narrativeProgress?.lang ?? "ja"}>

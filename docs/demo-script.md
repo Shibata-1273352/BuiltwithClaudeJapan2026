@@ -4,23 +4,23 @@
 
 | 時間 | 場面 | 映像 | ナレーション |
 | --- | --- | --- | --- |
-| 0:00–0:11 | 糸・タイトル | 真綿が 4 色の糸に紡がれ、風雷神門を書き、提灯が灯る。TSUMUGI を絹糸で刺繍 | （音楽のみ） |
-| 0:11–0:21 | mystery | 提灯に第一声（冒頭から続く） | この提灯には、もうひとつの名前が刻まれています。この人は誰なのか。なぜこの門は、95年も再建されなかったのか。 |
-| 0:21–0:35 | wall | トップ画面の実操作、「雷門で試す」を押す | 浅草で、外国人の友人に聞かれました。『これ、なんて書いてあるの？ いつからあるの？』。人と人をつなぐ仕事なのに、答えられませんでした。言葉の壁です。 |
-| 0:35–0:37 | enter | 4 色の糸が空の写真枠へ（AI の処理前） | （語りなし） |
-| 0:37–1:06 | read | live。Claude が読み、下の帯の金の糸が同時に動く AI の数で太くなる。銘板は寄って読み直す | これは、実際に動いている画面です。Claudeが筆文字を読み、同時に二つのAIが、提灯を切り抜き、奥行きを測る。 複数のClaudeが同時に動き、資料を手分けして読む。足りないと判断し、自分で探し直す。見つけた資料は、すぐ根拠に加わります。 |
-| 1:06–1:16 | print | 絵の中へ（映像用の表示） | 1856年。広重が描いた門の中へ。 |
-| 1:16–1:25 | absence | 1878 で時の糸が切れる | 年を動かすと、プログラムが年表を照らす。1878年、恒久的な門はない。 |
-| 1:25–1:32 | check | 舞台裏。否定文の格下げ | Claudeが読み、検証プログラムが確かめる。否定の文は、事実にしない。 |
-| 1:32–1:40 | burn | 1866 の両論 | 焼けた日は、資料で食い違う。だから、両方の根拠を示します。 |
-| 1:40–1:53 | gift | 時を流す。1961 で銘板と記録の一致をコードが示す | 門は95年、戻らなかった。1960年、日本語と英語の記録が、ひとつに結ばれる。 |
-| 1:53–1:56 | knot | 間。Cycles の結び目（語りなし） | （語りなし） |
-| 1:56–2:06 | reveal | 銘板の接写と、Claude が読んだ写真、記録の原文 | Claudeが写真から読んだ名前は、記録の寄進者と、会社名まで同じでした。 |
-| 2:06–2:12 | reach | 数千本の糸から一本へ（模式図） | 観光庁の英語解説は、数千本。写真から、合う一本へ。 |
-| 2:12–2:20 | other | 別の写真：上野・根本中堂の live 実行 | （語りなし） |
-| 2:20–2:32 | close | 絵はがき | あの日、友人には答えられなかった。いまは、根拠をたどれる答えを、次の人に届けられる。確かめた糸で紡ぐ。TSUMUGI。 |
-| 2:32–2:37 | concept | コンセプト画像（生成 AI） | （語りなし） |
-| 2:37–2:43 | credit | クレジット | （語りなし） |
+| 0:00–0:13 | 糸・タイトル | 真綿が 4 色の糸に紡がれ、風雷神門を書き、提灯が灯る。TSUMUGI を絹糸で刺繍 | （音楽のみ） |
+| 0:13–0:23 | mystery | 提灯の底の銘板（解析した写真を大きくぼかし、名前は読めない） | 提灯の底に、もうひとつの名前が刻まれています。95年、戻らなかった門を返したのは、誰なのか。 |
+| 0:23–0:38 | wall | トップ画面の実操作、「雷門で試す」を押す | 外国人の友人に聞かれました。『これ、なんて書いてあるの？ いつからあるの？』。答えられませんでした。言葉の壁です。だから、写真一枚で答え、確かめる仕組みを作りました。 |
+| 0:38–0:41 | enter | 4 色の糸が空の写真枠へ（AI の処理前） | （語りなし） |
+| 0:41–1:01 | read | live 実行（12.8 秒で完了）。Claude が読み、銘板へ寄り、不足を判断して探し直す | 実際に動いている画面です。Claudeが筆文字を読み、別のAIが、切り抜き、奥行きを測る。複数のClaudeが資料を手分けして読み、足りないと判断すると、自分で探し直す。Claudeが読み、探す。プログラムが照合し、根拠を残す。 |
+| 1:01–1:11 | print | 絵の中へ（映像用の表示） | 1856年。広重が描いた門の中へ。 |
+| 1:11–1:20 | absence | 1878 で時の糸が切れる | 1878年、恒久的な雷門は、まだなかった。年表と合わない文は、根拠にしない。 |
+| 1:20–1:27 | check | 舞台裏。否定文の格下げ | 『立派なものではなく』と書かれた文は、主張として採りません。 |
+| 1:27–1:34 | burn | 1866 の両論 | 焼けた日は、資料で食い違う。だから、両方の根拠を示します。 |
+| 1:34–1:48 | gift | 時を流す。1961 で銘板と記録の一致をプログラムが示す | 門は95年、戻らなかった。1960年、日本語と英語の記録が、ひとつに結ばれる。 |
+| 1:48–1:51 | knot | 間。Cycles の結び目 | （語りなし） |
+| 1:51–2:01 | reveal | Claude が読んだ写真の銘板（拡大）と記録の原文 | Claudeが写真から読んだ銘板の名は、松下電器産業、松下幸之助。記録の寄進者と、社名まで重なりました。 |
+| 2:01–2:07 | reach | 数千本の糸から一本へ（模式図） | 観光庁の英語解説は、数千本。写真から、合う一本へ。 |
+| 2:07–2:15 | other | 別の写真：上野・根本中堂の live 実行 | 別の写真でも。上野の根本中堂でも、読み、探し、確かめる。 |
+| 2:15–2:27 | close | 日本語の絵はがきから英語の答えへ | あの日、友人には答えられなかった。いまは、根拠をたどれる答えを、次の人に届けられる。確かめた糸で紡ぐ。TSUMUGI。 |
+| 2:27–2:32 | concept | コンセプト画像（生成 AI） | （語りなし） |
+| 2:32–2:38 | credit | クレジット | （語りなし） |
 
 > 時と場所を読み、言葉の壁を越える。
 > Read time and place. Cross the language barrier.
@@ -54,6 +54,8 @@
 
 ## 台本
 
+実際の語りと字幕の正は [`video/narration/lines.json`](../video/narration/lines.json) で、下の表は当初の構成です。
+
 日本語は 1 秒 6〜7 字、英語字幕は 1 秒 15 字を上限にする。数字は、引用の中か保存済みの値からだけ使う。
 
 | 時間 | 場面 | 画面・操作 | ナレーション（日本語） | 英語字幕 |
@@ -83,11 +85,11 @@
 
 **日本語**
 
-外国人の友人に浅草で「これ、なんて書いてあるの？ いつからあるの？」と聞かれ、答えられなかった。TSUMUGI は、その壁を取り払う。写真を撮ると、Claude が縦書きの筆文字を読み、意味を解説する。コードは、日英の一次資料と人が確認した年表で、その場所が「その年にあったか」を確かめる。Claude は資料が足りないと判断すれば探し直し、食い違う証言は両方を示す。資料にないことは「書かれていません」と答える。雷門は 95 年間再建されなかった。1960 年、一人の寄進で再建され、その名前は、写真の提灯に刻まれている。時と場所と人を、確かめた糸で紡ぐ。
+外国人の友人に浅草で「これ、なんて書いてあるの？ いつからあるの？」と聞かれ、答えられなかった。TSUMUGI は、その壁を取り払う。写真を撮ると、Claude が縦書きの筆文字を読み、意味を解説する。プログラムは、日英の一次資料と人が確認した年表で、その場所が「その年にあったか」を確かめる。Claude は資料が足りないと判断すれば探し直し、食い違う証言は両方を示す。資料にないことは「書かれていません」と答える。雷門は 95 年間再建されなかった。1960 年、一人の寄進で再建され、Claude が写真から読んだ銘板の名は、記録の寄進者と重なる。答えは英語の絵はがきとして、次の人へ渡せる。時と場所と人を、確かめた糸で紡ぐ。
 
 **English**
 
-In Asakusa, a friend asked me what a sign said and how long the gate had stood. I couldn't answer. TSUMUGI removes that wall. Take a photo: Claude reads the vertical brush lettering and explains it. Code checks, against Japanese and English primary sources and a human-reviewed timeline, whether the place existed in a given year. When the record is thin, Claude decides to search again. When sources disagree, both are shown. What the sources don't say, it says so. Kaminarimon was not rebuilt for 95 years. In 1960 one man's gift rebuilt it, and his name is on the lantern in the photo. TSUMUGI weaves time, place and people with threads checked one by one.
+In Asakusa, a friend asked me what a sign said and how long the gate had stood. I couldn't answer. TSUMUGI removes that wall. Take a photo: Claude reads the vertical brush lettering and explains it. Code checks, against Japanese and English primary sources and a human-reviewed timeline, whether the place existed in a given year. When the record is thin, Claude decides to search again. When sources disagree, both are shown. What the sources don't say, it says so. Kaminarimon was not rebuilt for 95 years. In 1960 one man's gift rebuilt it, and the name Claude reads from the plate in the photo matches the donor in the records. The answer leaves as a postcard in English. TSUMUGI weaves time, place and people with threads checked one by one.
 
 ## 撮影の手順
 

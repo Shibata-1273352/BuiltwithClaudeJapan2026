@@ -116,8 +116,14 @@ def opening(tl):
 
     # the lantern lights: the first full chord of the film, and a solo line leaning into A
     a = o["lanternIn"][0]
-    strings(m, a - 0.25, 4.0, ["D2", "A2", "D3", "A3", "F#4", "A4", "E5"], gain=0.33, attack=1.2, release=1.3)
+    strings(m, a - 0.25, 7.0, ["D2", "A2", "D3", "A3", "F#4", "A4", "E5"], gain=0.33, attack=1.2, release=1.3)
     solo(m, a + 0.7, 0.62, 1.3, 0.75)
+
+    # the title: a soft note as each letter is stitched, the theme, then one high line as the light crosses
+    t0 = o["title"][0]
+    for i, note in enumerate(("E4", "A4", "G4", "D4", "E4", "A4", "D5")):
+        m.add(string(midi(note), gain=0.13, seed=30 + i), t0 + 0.42 + 0.7 * i / 6, send=0.5, pan=-0.3 + 0.1 * i, label="title" if i == 0 else None)
+    m.add(sampled(VIOLINS, midi("A5"), 2.4, gain=0.07, attack=0.7, release=1.0, offset=0.3), t0 + o["titleSheen"][0], send=0.7)
 
     # the held breath before the strike, and the fall to near silence before the first word
     duck = [(0, 1), (s - 0.3, 1), (s - 0.2, 0.3), (s - 0.01, 0.3), (s, 1), (s + 0.6, 1), (s + 1.1, 0.82), (a - 0.3, 0.82), (a + 0.8, 1), (end - 1.0, 1), (end, 0.32)]
@@ -171,10 +177,10 @@ def film(tl):
     m.add(band(noise(2.4, 15), 900, 6000) * curve(n, [(0, 0), (1.2, 0.03), (2.3, 0.05), (2.4, 0)]), start("enter"), send=0.3, pan=0.2)
 
     # 破: the live run. The theme under the work, thicker as more runs at once
-    strings(m, start("read"), 13, ["D2", "A2"], gain=0.15, attack=2.5, release=2)
-    strings(m, start("read", 13), 14, ["D2", "A2", "E3", "A3"], gain=0.14, attack=2, release=2)
+    strings(m, start("read"), 10, ["D2", "A2"], gain=0.15, attack=2.5, release=2)
+    strings(m, start("read", 10), 11, ["D2", "A2", "E3", "A3"], gain=0.14, attack=2, release=2)
     motif(m, start("read", 0.5), [1.2, 1.3, 1.25, 1.6], gain=0.34)
-    motif(m, start("read", 12.5), [1.1, 1.2, 1.15, 1.4], gain=0.36, pan=0.1)
+    motif(m, start("read", 10), [1.1, 1.2, 1.15, 1.4], gain=0.36, pan=0.1)
 
     # into the print: the first opening of the film's harmony since the lantern
     p = start("print")

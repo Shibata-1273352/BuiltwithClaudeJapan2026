@@ -46,7 +46,7 @@ const T = dict({
       { img: "read", title: "言葉を越える", body: "縦書きの筆文字も、明治の英文も。" },
     ],
     trustTitle: "安心して使える理由",
-    trust: "読むのは Claude、確かめるのはコード。資料にないことは「書かれていません」。",
+    trust: "読むのは Claude、確かめるのはプログラム。資料にないことは「書かれていません」。",
     howLink: "しくみを見る",
     whereTitle: "いま使える場所",
     full: (f: LandingFacts) =>

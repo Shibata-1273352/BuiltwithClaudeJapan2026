@@ -16,11 +16,12 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bpy  # noqa: E402
 from letters import APPROACH, args, at_time, scene  # noqa: E402
-from spin import FPS, ORDER, THREADS  # noqa: E402
+from spin import FPS, ORDER, THREADS, area  # noqa: E402
 
 K = 1.6 / 1920  # world units per screen pixel
 LEAVE = (0.05, 0.75)  # first and last fibre leave
 TRAVEL = 0.55
+SWEEP = (1.45, 3.1)  # once the silk has landed, a light crosses it, and the sheen runs along the stitches
 # the four colours in turn along the word, in the order of the app's threads
 COLOUR = [0, 1, 2, 3, 0, 1, 2]
 
@@ -62,6 +63,8 @@ def main():
     s, cu = scene(a)
     s.render.film_transparent = True
     s.render.image_settings.color_mode = "RGBA"
+    area("sweep", (-2.2, -0.3, 0.26), (-2.2, 0, 0.06), 0.08, (1.0, 0.9, 0.76), 0)
+    sweep = bpy.data.objects["sweep"]
     rail, start, travel, radius, points, colour = rails()
     n = rail.shape[0]
     cu.add_curves([points] * n)
@@ -79,6 +82,10 @@ def main():
             continue
         began = time.time()
         cu.attributes["position"].data.foreach_set("vector", at_time(rail, start, travel, points, t).ravel())
+        u = min(1.0, max(0.0, (t - SWEEP[0]) / (SWEEP[1] - SWEEP[0])))
+        x = -1.5 + 3.0 * (u * u * (3 - 2 * u))
+        sweep.location = (x, -0.3, 0.26)
+        sweep.data.energy = 13 * math.sin(math.pi * u) ** 0.4
         cu.update_tag()
         s.render.filepath = os.path.abspath(path)
         bpy.ops.render.render(write_still=True)

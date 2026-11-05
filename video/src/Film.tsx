@@ -74,38 +74,51 @@ const FadeText = ({ len, children, style }: { len: number; children: React.React
   return <div style={{ position: "absolute", fontFamily: serif, color: PAPER, opacity, ...style }}>{children}</div>;
 };
 
-/** TSUMUGI, stitched by the four threads over the lit lantern; the line follows when the silk has landed. */
-const TITLE_LAST = 47;
+/**
+ * The face of the film. TSUMUGI is stitched by the four threads over the lit lantern, a light runs along
+ * the silk, a gold thread is drawn under it and the line settles; then it holds, long enough to be read.
+ */
+const TITLE_LAST = 96;
 const TitleSilk = ({ frame }: { frame: number }) => (
   <Img src={staticFile(`title/f${String(Math.min(frame, TITLE_LAST)).padStart(4, "0")}.png`)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
 );
 
 const Title = () => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps } = useVideoConfig();
   const t = frame / fps;
-  const len = (timeline.opening.title[1] - timeline.opening.title[0]) as number;
-  const out = interpolate(t, [len - 0.4, len], [1, 0], clamp);
+  const [from, to] = timeline.opening.title;
+  const land = timeline.opening.titleLand;
+  const len = to - from;
+  // the words leave first, on the dark; only then does the lantern come back, so they never cross it
+  const words = interpolate(t, [len - 1.0, len - 0.5], [1, 0], { ...clamp, easing: Easing.inOut(Easing.quad) });
+  const shade = interpolate(t, [len - 0.6, len], [1, 0], { ...clamp, easing: Easing.inOut(Easing.quad) });
+  const thread = interpolate(t, [land + 0.3, land + 1.1], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
   return (
-    <AbsoluteFill style={{ opacity: out }} data-frames={durationInFrames}>
-      <AbsoluteFill style={{ background: "rgba(4,5,10,.84)", backdropFilter: "blur(16px)", opacity: interpolate(t, [0, 0.5], [0, 1], clamp) }} />
-      <TitleSilk frame={frame} />
+    <AbsoluteFill>
+      <AbsoluteFill style={{ background: "rgba(4,5,10,.84)", backdropFilter: "blur(16px)", opacity: interpolate(t, [0, 0.5], [0, 1], clamp) * shade }} />
+      <AbsoluteFill style={{ opacity: words }}>
+      <div style={{ position: "absolute", inset: 0, filter: "saturate(1.15) brightness(1.2)" }}>
+        <TitleSilk frame={frame} />
+      </div>
+      <div style={{ position: "absolute", top: 572, left: 960 - 280 * thread, width: 560 * thread, height: 1, background: GOLD, opacity: 0.8 }} />
       <div
         style={{
           position: "absolute",
-          top: 590,
+          top: 600,
           width: "100%",
           textAlign: "center",
           color: PAPER,
           fontFamily: serif,
-          fontSize: 36,
-          letterSpacing: "0.1em",
+          fontSize: 38,
+          letterSpacing: "0.12em",
           fontFeatureSettings: '"palt"',
-          opacity: interpolate(t, [1.25, 1.65], [0, 1], clamp),
+          opacity: interpolate(t, [land + 0.8, land + 1.4], [0, 1], clamp),
         }}
       >
         写真一枚から、言葉と時代を越えて、根拠をたどる。
       </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
@@ -141,7 +154,8 @@ const HAIRLINE = "0 0 0 1px rgba(243,236,223,.3), 0 14px 70px rgba(70,90,160,.2)
 const caption = { fontFamily: serif, fontSize: 21, letterSpacing: "0.08em", color: MUTED, fontFeatureSettings: '"palt"' } as const;
 
 /** The plate and the two records, side by side. The app underlines the names in the records; the film does the same on the photo. */
-const PLATE: [number, number, number, number] = [350, 470, 680, 380];
+const PLATE: [number, number, number, number] = [200, 160, 900, 500];
+const CLOSE_UP: [number, number, number, number] = [350, 470, 680, 380];
 const RECORD: [number, number, number, number] = [2640, 1080, 1072, 660];
 const Reveal = () => {
   const frame = useCurrentFrame();
@@ -156,26 +170,26 @@ const Reveal = () => {
   const records = ease(2.9, 3.5); // the record crop already carries the app's own underlines
   const RW = 826;
   // the names, in the coordinates of each crop; the score plucks at the same moments
-  const [person, company] = timeline.nameLines;
+  const [company, person] = timeline.nameLines;
   const onPlate = [
-    { p: "M 109 194 L 382 204", at: company },
-    { p: "M 304 266 L 512 272", at: person },
+    { p: "M 150 190 L 600 236", at: company },
+    { p: "M 425 338 L 762 346", at: person },
   ];
   const line = (at: number) => ({ strokeDasharray: 1, strokeDashoffset: 1 - ease(at, at + 0.5) });
   return (
     <AbsoluteFill style={{ background: STAGE }}>
       <div style={{ position: "absolute", left, top, width, borderRadius: 6, overflow: "hidden", boxShadow: HAIRLINE }}>
-        <Crop src="lantern.jpg" size={[1600, 1200]} box={PLATE} width={width} />
+        <Crop src="s/plate-photo.png" size={[1500, 750]} box={PLATE} width={width} />
         <svg viewBox={`0 0 ${PLATE[2]} ${PLATE[3]}`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
           {onPlate.map(({ p, at }) => (
             <path key={p} d={p} pathLength={1} stroke={GOLD} strokeWidth={3.2 / k} fill="none" style={line(at)} />
           ))}
         </svg>
       </div>
-      <div style={{ ...caption, position: "absolute", left: 138, top: 300 + PLATE[3] * (790 / PLATE[2]) + 14, opacity: records }}>同じ銘板の接写（別の写真、CC0）</div>
+      <div style={{ ...caption, position: "absolute", left: 138, top: 300 + PLATE[3] * (790 / PLATE[2]) + 14, opacity: records }}>Claude が読んだ写真の銘板（拡大）</div>
       <div style={{ position: "absolute", left: 134, top: 300 + PLATE[3] * (790 / PLATE[2]) + 56, display: "flex", alignItems: "center", gap: 18, opacity: records }}>
-        <Img src={staticFile("s/plate-read.png")} style={{ width: 200, height: 95, borderRadius: 6, boxShadow: HAIRLINE }} />
-        <div style={caption}>Claude が読んだ写真の銘板</div>
+        <Crop src="lantern.jpg" size={[1600, 1200]} box={CLOSE_UP} width={170} style={{ borderRadius: 6, boxShadow: HAIRLINE }} />
+        <div style={caption}>同じ銘板の接写（別の写真、CC0）</div>
       </div>
       <div style={{ position: "absolute", left: 960, top: 214, opacity: records }}>
         <div style={{ position: "relative", width: RW, borderRadius: 6, overflow: "hidden", boxShadow: HAIRLINE }}>
@@ -211,19 +225,41 @@ const Reach = () => {
   );
 };
 
-/** The postcard as a card, the lantern's warmth far behind it. */
+/** The postcard as a card, the lantern's warmth far behind it. On 「いまは」 it turns to English, and the friend's two questions are read large. */
+const CARD = 900;
+const ANSWERS: [number, number, number, number] = [60, 1115, 960, 650];
 const Close = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const rise = interpolate(frame / fps, [0, 0.8], [14, 0], { ...clamp, easing: Easing.out(Easing.cubic) });
-  const height = 900;
+  const t = frame / fps;
+  const ease = (a: number, b: number) => interpolate(t, [a, b], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const rise = interpolate(t, [0, 0.8], [14, 0], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const english = ease(3.5, 4.1);
+  const aside = ease(4.7, 5.4);
+  const width = (CARD * 9) / 16;
+  const card = { position: "absolute", inset: 0, width: "100%", height: "100%" } as const;
   return (
     <AbsoluteFill style={{ background: STAGE, overflow: "hidden" }}>
       <AbsoluteFill style={{ background: "radial-gradient(ellipse 760px 620px at 50% 44%, rgba(224,110,60,.07), transparent)" }} />
-      <Img
-        src={staticFile("s/postcard-native.png")}
-        style={{ position: "absolute", left: 960 - (height * 9) / 32, top: 26 + rise, height, width: (height * 9) / 16, borderRadius: 6, boxShadow: "0 0 0 1px rgba(243,236,223,.3), 0 24px 90px rgba(0,0,0,.7)" }}
-      />
+      <div style={{ position: "absolute", left: interpolate(aside, [0, 1], [960 - width / 2, 230]), top: 26 + rise, width, height: CARD, borderRadius: 6, overflow: "hidden", boxShadow: "0 0 0 1px rgba(243,236,223,.3), 0 24px 90px rgba(0,0,0,.7)" }}>
+        <Img src={staticFile("s/postcard-native.png")} style={card} />
+        <Img src={staticFile("s/postcard-en.png")} style={{ ...card, opacity: english }} />
+      </div>
+      <div style={{ position: "absolute", left: 800, top: 176, opacity: ease(5.1, 5.7) }}>
+        <Crop src="s/postcard-en.png" size={[1080, 1920]} box={ANSWERS} width={890} style={{ borderRadius: 6, boxShadow: HAIRLINE }} />
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+/** The first line cuts to the plate under the lantern, in the photo the app reads: dark and just out of reach, the question of the film. */
+const Plate = () => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+  return (
+    <AbsoluteFill style={{ background: STAGE, overflow: "hidden" }}>
+      <Img src={staticFile("mystery-plate.png")} style={{ width: "100%", height: "100%", transform: `scale(${1 + 0.0035 * (frame / fps)})` }} />
+      <AbsoluteFill style={{ background: STAGE, opacity: interpolate(frame, [durationInFrames - 15, durationInFrames - 1], [0, 1], clamp) }} />
     </AbsoluteFill>
   );
 };
@@ -312,6 +348,9 @@ export const Film = () => {
         <div style={framed}>
           <Bridge last={f(timeline.bridges.enter.duration)} />
         </div>
+      </Sequence>
+      <Sequence from={f(scene("mystery").start + timeline.opening.plateCut)} durationInFrames={f(scene("mystery").end - scene("mystery").start - timeline.opening.plateCut)}>
+        <Plate />
       </Sequence>
       {labels.map((l) => (
         <Sequence key={l.from} from={f(l.from)} durationInFrames={f(l.to - l.from)}>

@@ -22,7 +22,7 @@ export const STAGE_WORK: Record<string, { who: "claude" | "local" | "code" | "gr
 };
 
 export const WHO_LABEL = {
-  ja: { claude: "Claude", local: "ローカルGPU", code: "コード", graph: "Neo4j" },
+  ja: { claude: "Claude", local: "ローカルGPU", code: "プログラム", graph: "Neo4j" },
   en: { claude: "Claude", local: "Local GPU", code: "Code", graph: "Neo4j" },
 } as const;
 

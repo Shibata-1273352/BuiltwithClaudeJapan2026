@@ -17,7 +17,7 @@ const L = dict({
     q1: "これ、なんて書いてあるの？",
     q2: "いつからあるの？",
     byClaude: "Claude が写真から読んだ",
-    byCode: "年表との照合（コード）",
+    byCode: "年表との照合（プログラム）",
     reading: "読んでいます",
     checking: "年表を照合しています",
     noTimeline: "この場所の年表はまだ持っていません。",
