@@ -177,10 +177,10 @@ def film(tl):
     m.add(band(noise(2.4, 15), 900, 6000) * curve(n, [(0, 0), (1.2, 0.03), (2.3, 0.05), (2.4, 0)]), start("enter"), send=0.3, pan=0.2)
 
     # 破: the live run. The theme under the work, thicker as more runs at once
-    strings(m, start("read"), 13, ["D2", "A2"], gain=0.15, attack=2.5, release=2)
-    strings(m, start("read", 13), 14, ["D2", "A2", "E3", "A3"], gain=0.14, attack=2, release=2)
+    strings(m, start("read"), 10, ["D2", "A2"], gain=0.15, attack=2.5, release=2)
+    strings(m, start("read", 10), 11, ["D2", "A2", "E3", "A3"], gain=0.14, attack=2, release=2)
     motif(m, start("read", 0.5), [1.2, 1.3, 1.25, 1.6], gain=0.34)
-    motif(m, start("read", 12.5), [1.1, 1.2, 1.15, 1.4], gain=0.36, pan=0.1)
+    motif(m, start("read", 10), [1.1, 1.2, 1.15, 1.4], gain=0.36, pan=0.1)
 
     # into the print: the first opening of the film's harmony since the lantern
     p = start("print")
