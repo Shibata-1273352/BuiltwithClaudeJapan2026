@@ -13,7 +13,7 @@ const fonts = `
 
 /** The app is framed, not full bleed: the space under it belongs to the words, so nothing is laid over the UI. */
 const FRAME = { left: 134, top: 14, width: 1652, height: 929 };
-const FRAMED = ["wall", "enter", "read", "absence", "check", "burn", "gift", "other"];
+const FRAMED = ["wall", "press", "enter", "read", "absence", "check", "burn", "gift", "other"];
 /** Scenes composed on the film's ground: the words stand under them, with no shade. */
 const ON_GROUND = [...FRAMED, "reveal", "close"];
 const GOLD = "#e2b65a";
@@ -259,7 +259,7 @@ const Plate = () => {
   return (
     <AbsoluteFill style={{ background: STAGE, overflow: "hidden" }}>
       <Img src={staticFile("mystery-plate.png")} style={{ width: "100%", height: "100%", transform: `scale(${1 + 0.0035 * (frame / fps)})` }} />
-      <AbsoluteFill style={{ background: STAGE, opacity: interpolate(frame, [durationInFrames - 15, durationInFrames - 1], [0, 1], clamp) }} />
+      <AbsoluteFill style={{ background: STAGE, opacity: interpolate(frame, [0, 12, durationInFrames - 15, durationInFrames - 1], [1, 0, 0, 1], clamp) }} />
     </AbsoluteFill>
   );
 };
@@ -303,12 +303,12 @@ export const Film = () => {
     boxShadow: "0 0 0 1px rgba(243,236,223,.3), 0 14px 70px rgba(70,90,160,.28)",
   } as const;
   // what the frame shows, said under it: only once the threads have left it, and "enlarged" on a fixed crop
-  const labels = ["wall", "read", "absence", "check", "burn", "gift", "other"].flatMap((id) => {
+  const labels = ["wall", "press", "read", "absence", "check", "burn", "gift", "other"].flatMap((id) => {
     let at = scene(id).start;
     return (scene(id).segments as Segment[]).map((seg) => {
       const from = at;
       at += seconds(seg);
-      return { from: id === "read" ? from + 0.5 : from, to: at, text: id === "other" ? "アプリの実画面（別の写真：上野・根本中堂）" : seg.cam ? "アプリの実画面（拡大）" : "アプリの実画面" };
+      return { from: id === "read" ? from + 0.5 : from, to: at, text: id === "wall" ? "ハッカソン期間中に開発したアプリの実画面" : id === "other" ? "アプリの実画面（別の写真：上野・根本中堂）" : seg.cam ? "アプリの実画面（拡大）" : "アプリの実画面" };
     });
   });
   return (

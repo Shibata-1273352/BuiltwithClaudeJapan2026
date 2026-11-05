@@ -169,7 +169,7 @@ def film(tl):
     start = lambda k, at=0: S[k]["start"] + at  # noqa: E731
 
     # 序: the voice alone, and at the end of the wall one thin chord
-    strings(m, start("wall", 10), 3.5, ["D3", "A3"], gain=0.1, attack=1.6, release=1.6)
+    strings(m, start("mystery", 6.5), 5.5, ["D3", "A3"], gain=0.1, attack=1.6, release=1.6)
 
     # the threads fly into the frame; the analysis starts on the stop
     m.add(string(midi("E4"), gain=0.2, seed=11), start("enter", 0.2), send=0.5, label="enter")
