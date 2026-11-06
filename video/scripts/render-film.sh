@@ -5,6 +5,12 @@ LOG=out/film-render.log
 STALL=180 # seconds of silence
 TRIES=6
 
+# Chromium hangs off a child of the render, so the whole tree has to go.
+kill_tree() {
+  for child in $(pgrep -P "$1"); do kill_tree "$child"; done
+  kill -9 "$1" 2>/dev/null
+}
+
 try=1
 while [ "$try" -le "$TRIES" ]; do
   echo "attempt $try" > "$LOG"
@@ -15,17 +21,16 @@ while [ "$try" -le "$TRIES" ]; do
     idle=$(($(date +%s) - $(stat -f %m "$LOG")))
     if [ "$idle" -gt "$STALL" ]; then
       echo "stalled after ${idle}s" >> out/film-render-retries.log
-      pkill -9 -P "$pid"
-      kill -9 "$pid"
+      kill_tree "$pid"
       break
     fi
   done
-  if wait "$pid" && ! grep -q 'Error:' "$LOG"; then
+  # a crash Remotion recovers from leaves "Error:" in the log, so only the exit status and the last frame count
+  if wait "$pid" && tr '\r' '\n' < "$LOG" | awk -F'[ /]' '$1 == "Encoded" && $2 == $3 { ok = 1 } END { exit !ok }'; then
     echo done >> "$LOG"
     exit 0
   fi
   echo "attempt $try failed: $(tr '\r' '\n' < "$LOG" | grep -E '^Rendered' | tail -1)" >> out/film-render-retries.log
-  pkill -9 -f "chromium_headless_shell.*remotion" 2>/dev/null
   try=$((try + 1))
 done
 echo failed >> "$LOG"
