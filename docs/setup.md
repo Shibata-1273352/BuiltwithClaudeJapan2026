@@ -13,7 +13,7 @@
 
 ### キーなしで見る
 
-Node.js だけで、保存した実行の録画を動かせます。API キー、Neo4j、推論サーバーは要らず、Claude も呼びません。
+Node.js と [uv](https://docs.astral.sh/uv/) だけで、保存した実行の録画を動かせます。API キー、Neo4j、推論サーバーは要らず、Claude も呼びません。
 
 ```bash
 npm ci
