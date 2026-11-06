@@ -1,14 +1,13 @@
-"""Bridge 2, in Cycles: a thread from each side, hooked through each other, pulled into a knot.
+"""Bridge 2, in Cycles: two silk cords drawn into a knot.
 
-The 間 of the film: a macro in the dark, no words. Each thread is a bight (a loop with two legs); the
-two bights lie in crossing planes, so they hook like links and cannot pass through each other, and
-pulling draws them into the knot of a gift cord. Each thread is three twisted plies of staple fibres.
-The positions are a pure function of t, so frames render in any order.
+The 間 of the film: a macro in the dark, no words. render/knot_sim.py solves how the cords move; here each
+is dressed as kumihimo, a round braid of eight bundles of fine fibres, the same silk as the opening.
+The fibres are tied to the cord's own length, so the braid travels with it as it slides.
 
-  blender -b -P render/knot.py -- --t 2.6 --res 960 --samples 48 --out out/look/knot.png
+  score/.venv/bin/python render/knot_sim.py
+  blender -b -P render/knot.py -- --t 3.4 --res 960 --samples 48 --out out/look/knot.png
 """
 
-import json
 import math
 import os
 import sys
@@ -21,16 +20,81 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from letters import args, scene  # noqa: E402
 from spin import FPS, THREADS, area  # noqa: E402
 
-with open("timeline.json") as f:
-    B = json.load(f)["bridges"]["knot"]
-TIGHT = B["tighten"]
-FIBRES = 9000  # per thread
-POINTS = 40  # per fibre
-REACH = 2.6  # how far each leg runs from the tip of the bight
-THREAD = 0.024  # radius of a thread
-PLY = 0.56  # plies sit this far out, as a share of the thread
-TWIST = 34.0  # radians of ply per unit of thread
-LOOSE, TIGHTENED = (0.34, 0.33), (THREAD * 1.08, 0.062)  # (reach of the tip past centre, radius of the bight)
+SIM = np.load("out/knot-sim.npy")  # frames, cord, bead, xyz
+H = 0.0125  # spacing of the beads
+R = 0.0135  # radius of a cord
+TIGHT = 2.7  # the pull ends here; the knot stops closing at frame 87, the "cinch" of timeline.json
+FIBRES = 26000  # per cord
+POINTS = 24  # per fibre
+TURN = 44.0  # radians of braid per unit of cord
+BEYOND = 90  # beads added past each end, so no end shows in the frame
+TRIM = 40
+ROLL = -11.0  # degrees
+
+
+def soften(a, axis, passes):
+    b = np.moveaxis(a, axis, 0).copy()
+    for _ in range(passes):
+        b[1:-1] = 0.25 * b[:-2] + 0.5 * b[1:-1] + 0.25 * b[2:]
+    return np.moveaxis(b, 0, axis)
+
+
+# the beads are a solver's chain: smooth them along the cord and through time
+PATH = soften(soften(SIM, 2, 8), 0, 2)
+
+
+def line(f, c):
+    """Centre, normal and binormal along a cord at frame f."""
+    q = PATH[f, c]
+    k = np.arange(1, BEYOND + 1)[:, None]
+    # the solver pins the ends, so the last beads run stiff: carry the cord on straight from further in
+    q = q[TRIM:-TRIM]
+    head = q[0] + (q[0] - q[30]) / 30 * k[::-1]
+    tail = q[-1] + (q[-1] - q[-31]) / 30 * k
+    q = np.concatenate([head, q, tail])
+    t = np.gradient(q, axis=0)
+    t /= np.linalg.norm(t, axis=1, keepdims=True)
+    # against a fixed axis, not transported: the frame must not swim from one frame to the next
+    n = np.array([0.0, 1.0, 0.0]) - t[:, 1:2] * t
+    n /= np.linalg.norm(n, axis=1, keepdims=True)
+    return q, n, np.cross(t, n)
+
+
+def at(a, i):
+    lo = np.clip(i.astype(int), 0, len(a) - 2)
+    w = (i - lo)[..., None]
+    return a[lo] * (1 - w) + a[lo + 1] * w
+
+
+def strand(f, c, n, rng):
+    q, nor, bi = line(f, c)
+    span = (len(q) - 1) * H
+    sigma = rng.uniform(0, span, n)[:, None] + rng.uniform(0.1, 0.26, n)[:, None] * (np.linspace(0, 1, POINTS)[None, :] - 0.5)
+
+    core = rng.uniform(0, 1, n)[:, None] < 0.22
+    bundle = rng.integers(0, 8, n)[:, None]
+    i = bundle // 2
+    way = np.where(bundle % 2 == 0, 1.0, -1.0)
+    # two sets of four bundles, wound opposite ways, each passing over then under the other
+    theta = i * (math.pi / 2) + way * TURN * sigma
+    other = i * (math.pi / 2) + way * 2 * TURN * sigma
+    over = way * np.where(i % 2 == 0, 1.0, -1.0) * np.cos(2 * other)
+    spread = rng.uniform(-0.62, 0.62, n)[:, None]
+    theta = theta + spread
+    rad = R * (0.78 + 0.11 * over * (1 - 0.8 * (spread / 0.62) ** 2) + rng.uniform(-0.1, 0.04, n)[:, None])
+    rad = np.where(core, R * 0.6 * np.sqrt(rng.uniform(0, 1, n))[:, None], rad)
+
+    # now and then a single fibre has slipped its bundle at one end
+    fly = (rng.uniform(0, 1, n) < 0.0009)[:, None]
+    rad = rad + fly * 0.006 * np.linspace(0, 1, POINTS)[None, :] ** 3
+
+    i_ = np.clip(sigma / H, 0, len(q) - 1)
+    return at(q, i_) + (rad * np.cos(theta))[..., None] * at(nor, i_) + (rad * np.sin(theta))[..., None] * at(bi, i_)
+
+
+def fibres(n, f):
+    rng = np.random.default_rng(31)
+    return np.concatenate([strand(f, 0, n, rng), strand(f, 1, n, rng)]).astype(np.float32)
 
 
 def ease(u):
@@ -38,96 +102,34 @@ def ease(u):
     return u * u * u * (u * (6 * u - 15) + 10)
 
 
-def pull(t):
-    """0 loose, 1 tight: a long draw, then the last of it all at once, and the cord settling."""
-    settle = 0.0 if t < TIGHT else 0.05 * math.exp(-5.0 * (t - TIGHT)) * math.sin(17.0 * (t - TIGHT))
-    return ease(0.22 + 0.78 * t / TIGHT) - settle
-
-
-def bight(t):
-    """The centreline in its own plane, from the tip outward: signed distance along it, p, q."""
-    e = pull(t)
-    tip = LOOSE[0] + (TIGHTENED[0] - LOOSE[0]) * e
-    r = LOOSE[1] + (TIGHTENED[1] - LOOSE[1]) * e
-    a = np.linspace(0, math.pi / 2, 90)
-    arc_p, arc_q = (tip - r) + r * np.cos(a), r * np.sin(a)
-    d = np.linspace(0, 3.0, 700)[1:]
-    leg_p, leg_q = (tip - r) - d, r + 0.34 * d * d / (1 + 0.8 * d)
-    p, q = np.concatenate([arc_p, leg_p]), np.concatenate([arc_q, leg_q])
-    s = np.concatenate([[0], np.cumsum(np.hypot(np.diff(p), np.diff(q)))])
-    return s, p, q
-
-
-def strand(side, n, rng, t):
-    s, p, q = bight(t)
-    sigma0 = rng.uniform(-REACH, REACH, n)[:, None]
-    length = rng.uniform(0.22, 0.5, n)[:, None]
-    u = np.linspace(0, 1, POINTS)[None, :]
-    sigma = sigma0 + length * (u - 0.5)
-    ply = rng.integers(0, 3, n)[:, None]
-    ang = rng.uniform(0, math.tau, n)[:, None]
-    core = np.sqrt(rng.uniform(0, 1, n))[:, None]
-    fly = (rng.uniform(0, 1, n) < 0.025)[:, None]
-    ph = rng.uniform(0, math.tau, n)[:, None]
-
-    mirror = np.sign(sigma)
-    a = np.abs(sigma)
-    cp, cq = np.interp(a, s, p), mirror * np.interp(a, s, q)
-    h = 0.004
-    # p is even in sigma and q is odd, so the tangent carries the mirror on p, not on q
-    tp = mirror * (np.interp(a + h, s, p) - np.interp(np.maximum(a - h, 0), s, p))
-    tq = np.interp(a + h, s, q) - np.interp(np.maximum(a - h, 0), s, q)
-    norm = np.hypot(tp, tq) + 1e-9
-    np_, nq = -tq / norm, tp / norm
-
-    # three plies round the core, and the fibres round each ply, twisting the other way
-    turn = TWIST * sigma + ply * (math.tau / 3)
-    centre_n, centre_w = THREAD * PLY * np.cos(turn), THREAD * PLY * np.sin(turn)
-    roll = ang - 2.2 * TWIST * sigma
-    rad = THREAD * (1 - PLY) * 1.1 * core
-    end = np.abs(2 * u - 1) ** 5
-    rad = rad + fly * end * 0.02
-    off_n = centre_n + rad * np.cos(roll) + 0.0006 * np.sin(sigma * 60 + ph)
-    off_w = centre_w + rad * np.sin(roll)
-
-    pp, qq, ww = cp + off_n * np_, cq + off_n * nq, off_w
-    # the two threads lie in crossing planes, turning slowly together
-    phi = (0.52 if side > 0 else 0.52 - math.pi / 2) + 0.05 * t
-    x = side * pp
-    y = qq * math.sin(phi) + ww * math.cos(phi)
-    z = qq * math.cos(phi) - ww * math.sin(phi)
-    return np.stack([x, y, z], axis=2).astype(np.float32)
-
-
-def fibres(n, t):
-    rng = np.random.default_rng(31)
-    return np.concatenate([strand(1, n, rng, t), strand(-1, n, rng, t)], axis=0)
-
-
 def main():
-    from mathutils import Vector
+    from mathutils import Matrix, Vector
 
     a = args()
     s, cu = scene(a)
     s.world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.0052, 0.0091, 0.03, 1)
+    hair = bpy.data.materials[0].node_tree.nodes["Principled Hair BSDF"]
+    hair.inputs["Roughness"].default_value = 0.22
+    hair.inputs["Radial Roughness"].default_value = 0.42
     cam = s.camera
-    cam.data.dof.aperture_fstop = 0.8
+    cam.data.dof.aperture_fstop = 0.6
     for ob in [o for o in s.objects if o.type == "LIGHT"]:
         bpy.data.objects.remove(ob)
-    area("back", (0.5, 2.0, 0.6), (0, 0, 0), 1.4, (1.0, 0.84, 0.66), 150)
-    area("key", (-1.2, -1.0, 1.4), (0, 0, 0), 0.8, (1.0, 0.88, 0.74), 15)
-    area("rim", (1.6, 0.6, -1.0), (0, 0, 0), 1.0, (0.55, 0.6, 1.0), 60)
+    # one soft pool on the knot, so the cords fall away into the dark on either side
+    area("key", (-0.5, -1.3, 1.0), (0, 0, 0), 0.5, (1.0, 0.9, 0.78), 55)
+    area("back", (0.3, 1.1, 0.7), (0, 0, 0), 0.6, (1.0, 0.84, 0.66), 70)
+    area("rim", (0.9, 0.3, -0.8), (0, 0, 0), 0.5, (0.55, 0.6, 1.0), 24)
 
     n = FIBRES
     cu.add_curves([POINTS] * (2 * n))
     rng = np.random.default_rng(3)
     cu.attributes.new("radius", "FLOAT", "POINT")
     u = np.linspace(0, 1, POINTS)[None, :]
-    radius = (0.00042 * rng.uniform(0.7, 1.3, 2 * n))[:, None] * (1 - 0.85 * np.abs(2 * u - 1) ** 3)
+    radius = (0.00026 * rng.uniform(0.7, 1.3, 2 * n))[:, None] * (1 - 0.7 * np.abs(2 * u - 1) ** 3)
     cu.attributes["radius"].data.foreach_set("value", radius.astype(np.float32).ravel())
     # the Japanese record and the English one: the app's gold and light indigo
     dye = np.concatenate([np.tile(THREADS["toki"], (n, 1)), np.tile(THREADS["koto"], (n, 1))])
-    dye = dye * rng.uniform(0.8, 1.12, (2 * n, 1))
+    dye = dye * rng.uniform(0.82, 1.12, (2 * n, 1))
     cu.attributes.new("dye", "FLOAT_COLOR", "CURVE").data.foreach_set("color", np.concatenate([dye, np.ones((2 * n, 1))], axis=1).astype(np.float32).ravel())
 
     if a.frames:
@@ -140,11 +142,20 @@ def main():
         if os.path.exists(path) and a.frames:
             continue
         began = time.time()
-        cu.attributes["position"].data.foreach_set("vector", fibres(n, t).ravel())
+        f = min(len(SIM) - 1, round(t * FPS))
+        cu.attributes["position"].data.foreach_set("vector", fibres(n, f).ravel())
         cu.update_tag()
-        # the camera comes in with the pull, and the focus stays on the knot all the way
-        near = 4.4 - 1.9 * ease(t / (TIGHT + 0.5))
-        cam.location = Vector((0.015 * math.sin(t * 0.4), -near, 0.0))
+        # the camera comes in with the pull, and swings slowly round so the weave shows its depth
+        e = ease(t / (TIGHT + 0.6))
+        near = 4.2 - 2.75 * e
+        turn = math.radians(11 - 13 * t / 4)
+        rise = math.radians(9 - 6 * e)
+        cam.location = Vector((near * math.sin(turn) * math.cos(rise), -near * math.cos(turn) * math.cos(rise), near * math.sin(rise)))
+        # a slight lean, so the cords run across the frame rather than along it
+        up = Vector((math.sin(math.radians(ROLL)), 0.0, math.cos(math.radians(ROLL))))
+        look = -cam.location.normalized()
+        right = look.cross(up).normalized()
+        cam.rotation_euler = Matrix((right, right.cross(look), -look)).transposed().to_euler()
         cam.data.dof.focus_distance = near
         s.render.filepath = os.path.abspath(path)
         bpy.ops.render.render(write_still=True)

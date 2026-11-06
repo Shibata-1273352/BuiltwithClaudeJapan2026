@@ -14,7 +14,7 @@ what terms. "Not checked" means the record below was not re-verified at the sour
 | VSCO 2 Community Edition | Strings, harp, percussion | github.com/sgossner/VSCO-2-CE | CC0 (repository licence, checked) | Fetched by `score/fetch-samples.sh` |
 | Score | Music | Composed by Claude as code, `score/` | This repository | See `score/PROVENANCE.md` |
 | Plucked string | Theme | `apps/web/src/lib/live/feel.ts`, ported | This repository | |
-| Silk, thread and letters | Opening, title, bridges, reach | Rendered in Blender Cycles, `render/` | This repository | Letters follow the strokes of the CC0 photo; the title is Shippori Mincho laid as satin stitch; the reach is a picture, labelled 模式図, not data |
+| Silk, thread and letters | Opening, title, bridges, reach | Rendered in Blender Cycles, `render/`; the knot is solved by `render/knot_sim.py` | This repository | Letters follow the strokes of the CC0 photo; the title is Shippori Mincho laid as satin stitch; the reach is a picture, labelled 模式図, not data |
 | Screen takes | App scenes | `scripts/record-takes.ts` | This repository | One live run from the reading to the knot; enlarged cuts are stills from the recording, labelled 拡大. The Ueno scene is a second live run (`ueno` take), including the real year operation to 1878 |
 | Postcard | Close | The app's `/api/explorations/<id>/postcard`, Japanese then English (`?lang=en`), native 1080×1920 | This repository | |
 | Narration | Voice | ElevenLabs `eleven_v4`, stock voice George | Usable (author confirmed) | Cached by text in `out/voice/lines`; only changed lines are generated |
