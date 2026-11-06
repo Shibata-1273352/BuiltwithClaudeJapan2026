@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | ![Claude's guide note](apps/web/public/landing/read-en.jpg) | ![1878: the permanent gate had not been rebuilt](apps/web/public/landing/time-en.jpg) | ![A postcard with the checked sentence](apps/web/public/landing/postcard-en.jpg) |
 
-- **Demo video:** added at submission
+- **Demo video:** [watch on YouTube](https://youtu.be/ftTCR_WoUME) (Japanese narration)
 - **Run it:** [`docs/setup.md`](docs/setup.md) (in Japanese) starts with a recorded run that needs only Node.js and uv: no API key, Neo4j or inference server. Full setup is below
 - **How Claude is used:** [`docs/claude-code.md`](docs/claude-code.md), [`CLAUDE.md`](CLAUDE.md), [`.claude/`](.claude/)
 
