@@ -315,6 +315,7 @@
   },
   "knot": {
    "tighten": 2.7,
+   "cinch": 2.87,
    "duration": 4.0
   }
  },
