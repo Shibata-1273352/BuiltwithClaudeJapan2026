@@ -225,36 +225,43 @@
   {
    "id": "knot",
    "start": 114.15,
-   "end": 117.15,
+   "end": 118.15,
    "segments": [
     {
      "seq": "knot",
-     "dur": 3.0,
+     "dur": 4.0,
      "cam": null
     }
    ]
   },
   {
    "id": "reveal",
-   "start": 117.15,
-   "end": 127.65,
+   "start": 118.15,
+   "end": 128.65,
    "segments": []
   },
   {
    "id": "reach",
-   "start": 127.65,
-   "end": 134.15,
+   "start": 128.65,
+   "end": 135.15,
    "segments": []
   },
   {
    "id": "other",
-   "start": 134.15,
-   "end": 142.15,
+   "start": 135.15,
+   "end": 147.55,
    "segments": [
     {
-     "src": "takes/other.mp4",
-     "from": 7.7,
-     "to": 15.7,
+     "src": "takes/ueno.mp4",
+     "from": 6.6,
+     "to": 13.5,
+     "rate": 1,
+     "cam": null
+    },
+    {
+     "src": "takes/ueno.mp4",
+     "from": 21.9,
+     "to": 27.4,
      "rate": 1,
      "cam": null
     }
@@ -262,14 +269,14 @@
   },
   {
    "id": "close",
-   "start": 142.15,
-   "end": 154.15,
+   "start": 147.55,
+   "end": 159.55,
    "segments": []
   },
   {
    "id": "concept",
-   "start": 154.15,
-   "end": 159.15,
+   "start": 159.55,
+   "end": 164.55,
    "segments": [
     {
      "still": "concept.png",
@@ -285,12 +292,12 @@
   },
   {
    "id": "credit",
-   "start": 159.15,
-   "end": 165.15,
+   "start": 164.55,
+   "end": 170.55,
    "segments": []
   }
  ],
- "end": 165.15,
+ "end": 170.55,
  "bridges": {
   "enter": {
    "rect": [
@@ -307,8 +314,8 @@
    "duration": 2.5
   },
   "knot": {
-   "tighten": 2.5,
-   "duration": 3.0
+   "tighten": 2.7,
+   "duration": 4.0
   }
  },
  "steps": [

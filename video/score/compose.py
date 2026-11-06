@@ -209,6 +209,9 @@ def film(tl):
     for (label, at), note in zip(tl["steps"], ("E5", "A4", "G4")):
         m.add(string(midi(note), gain=0.3, seed=22), start("read") + at, send=0.5, label="step")
 
+    # the 間 ends on one low string, as the knot draws tight
+    m.add(string(midi("D3"), gain=0.34, seed=31), start("knot") + tl["bridges"]["knot"]["tighten"], send=0.6, label="cinch")
+
     # the answer: after the room, the gold note comes home
     r = start("reveal")
     solo(m, r + 0.2, 1.0, 3.2, 0.9)
@@ -239,7 +242,8 @@ def film(tl):
         pts += [(v["start"] - 0.25, 1.0), (v["start"], 0.36), (v["start"] + v["seconds"], 0.36), (v["start"] + v["seconds"] + 0.45, 1.0)]
     # 間: everything thins over a second and a half; only the room is left
     k = start("knot")
-    pts = sorted(pts + [(k - 1.5, 1.0), (k, 0.0), (k + 3.0, 0.0), (k + 3.1, 1.0)])
+    cinch = k + tl["bridges"]["knot"]["tighten"]
+    pts = sorted(pts + [(k - 1.5, 1.0), (k, 0.0), (cinch - 0.08, 0.0), (cinch, 1.0)])
     music = m.render(pts)
     music += room(end, 0.004)[: len(music)]  # the room stays when the music leaves, also in the 間
     pre, _ = sf.read(os.path.join(OUT, "opening.wav"), dtype="float32")
