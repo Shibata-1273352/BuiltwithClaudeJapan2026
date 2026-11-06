@@ -1,5 +1,7 @@
 # TSUMUGI（紡ぎ）
 
+[![CI](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/actions/workflows/ci.yml/badge.svg)](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/actions/workflows/ci.yml)
+
 **日本語** | [English](README.en.md)
 
 > 撮るだけで、目の前の日本が、意味と物語になる。
@@ -13,7 +15,7 @@ TSUMUGI は、旅先で撮った一枚の写真から、そこに書かれた言
 | ![Claude のガイド](apps/web/public/landing/read-ja.jpg) | ![1878年、恒久的な雷門はまだ再建されていなかった](apps/web/public/landing/time-ja.jpg) | ![確かめた一文の絵はがき](apps/web/public/landing/postcard-ja.jpg) |
 
 - **デモ動画：** 提出時に追記（構成は [docs/demo-script.md](docs/demo-script.md)）
-- **動かす：** [docs/setup.md](docs/setup.md)
+- **動かす：** [キーなしで録画を見る](docs/setup.md#キーなしで見る)、[全手順](docs/setup.md)
 - **Claude の使い方：** [Claude Code での開発](#claude-code-での開発)
 - **評価：** 手作りの小さな評価セットで、資料の刊行年で判定すると存在の判定は 41%、時代の取り違えは 6 件でした。年表で判定すると取り違えは 0 件で、捏造した引用は 4/4 を拒否しました（[詳細と限界](docs/evaluation.md)）
 

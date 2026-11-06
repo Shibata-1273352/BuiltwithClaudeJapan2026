@@ -1,5 +1,7 @@
 # TSUMUGI
 
+[![CI](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/actions/workflows/ci.yml/badge.svg)](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/actions/workflows/ci.yml)
+
 [日本語](README.md) | **English**
 
 > Take a photo — the Japan in front of you turns into meaning and story.
@@ -11,7 +13,7 @@
 | ![Claude's guide note](apps/web/public/landing/read-en.jpg) | ![1878: the permanent gate had not been rebuilt](apps/web/public/landing/time-en.jpg) | ![A postcard with the checked sentence](apps/web/public/landing/postcard-en.jpg) |
 
 - **Demo video:** added at submission
-- **Run it:** [`docs/setup.md`](docs/setup.md) (in Japanese); see Setup below
+- **Run it:** [`docs/setup.md`](docs/setup.md) (in Japanese) starts with a recorded run that needs Node.js only: no API key, Neo4j or inference server. Full setup is below
 - **How Claude is used:** [`docs/claude-code.md`](docs/claude-code.md), [`CLAUDE.md`](CLAUDE.md), [`.claude/`](.claude/)
 
 **Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer. My career has been at a telecom carrier, the job of connecting people; TSUMUGI (紡ぐ, *tsumugu*, to weave) connects time, place and people, with every thread checked against its source.

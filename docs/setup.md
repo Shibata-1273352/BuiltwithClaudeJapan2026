@@ -11,6 +11,27 @@
 
 ## 手順
 
+### キーなしで見る
+
+Node.js だけで、保存した実行の録画を動かせます。API キー、Neo4j、推論サーバーは要らず、Claude も呼びません。
+
+```bash
+npm ci
+mkdir -p "$HOME/tsumugi-data"
+cat > .env <<EOF
+DATA_DIR=$HOME/tsumugi-data
+ACCESS_TOKEN=$(openssl rand -hex 32)
+LOCAL_NO_AUTH=1
+EOF
+npm run setup:samples            # CC0 のサンプル写真
+npm run corpus:ingest            # 資料の取得（Claude は使わない）
+npm run demo:seed                # 録画を読み込む
+echo "DEMO_REPLAY_ID=exp_2c03558d5c6d47cc9072" >> .env
+npm run build && npm run start -w web
+```
+
+http://localhost:3000/replay/exp_2c03558d5c6d47cc9072 を開くと、読み取りから物語までが元の速さで再生されます。切り抜きと奥行きは画像なので含めていません。「絵の中へ」と、物に触れる操作には、下の全手順が必要です。
+
 ### 1. 環境変数
 
 ```bash
