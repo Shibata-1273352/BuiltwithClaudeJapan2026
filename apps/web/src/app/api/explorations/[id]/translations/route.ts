@@ -15,7 +15,8 @@ export async function GET(req: Request, ctx: RouteContext<"/api/explorations/[id
   if (lang !== "ja" && lang !== "en") return Response.json({ error: "lang must be ja or en" }, { status: 400 });
   const hit = cachedTranslations(id, lang);
   if (hit) return Response.json({ lang, items: hit, cached: true });
-  if (presenter) return Response.json({ lang, items: {}, cached: false }); // read-only: never spends
+  // read-only, or a recording seen without a key: the originals stand alone
+  if (presenter || !process.env.ANTHROPIC_API_KEY) return Response.json({ lang, items: {}, cached: false });
   const g = checkGuards();
   if (!g.ok) return Response.json({ error: g.reason }, { status: g.reason === "killed" ? 503 : 429 });
   const items = await translationsFor(id, lang, toTranslate(note, lang));

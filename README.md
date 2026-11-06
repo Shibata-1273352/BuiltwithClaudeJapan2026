@@ -1,21 +1,50 @@
 # TSUMUGI（紡ぎ）
 
+[![CI](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/actions/workflows/ci.yml/badge.svg)](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/actions/workflows/ci.yml)
+
 **日本語** | [English](README.en.md)
-
-![TSUMUGI コンセプト画像](images/TSUMUGI.png)
-
-*生成AIによるコンセプト画像*
 
 > 撮るだけで、目の前の日本が、意味と物語になる。
 
 TSUMUGI は、旅先で撮った一枚の写真から、そこに書かれた言葉と、その場所の歴史を、根拠をたどれる形で返すアプリです。Built with Claude Japan 2026 のために、ハッカソン期間中に新規開発しました。
 
-- **デモ動画：** 提出時に追記
-- **動画の構成：** [docs/demo-script.md](docs/demo-script.md)
+![雷門の写真を解析した TSUMUGI の画面](apps/web/public/landing/hero-ja.jpg)
+
+| 読む | 時をめくる | 持ち帰る |
+| --- | --- | --- |
+| ![Claude のガイド](apps/web/public/landing/read-ja.jpg) | ![1878年、恒久的な雷門はまだ再建されていなかった](apps/web/public/landing/time-ja.jpg) | ![確かめた一文の絵はがき](apps/web/public/landing/postcard-ja.jpg) |
+
+- **デモ動画：** 提出時に追記（構成は [docs/demo-script.md](docs/demo-script.md)）
+- **動かす：** [キーなしで録画を見る](docs/setup.md#キーなしで見る)、[全手順](docs/setup.md)
+- **Claude の使い方：** [Claude Code での開発](#claude-code-での開発)
+- **評価：** 手作りの小さな評価セットで、資料の刊行年で判定すると存在の判定は 41%、時代の取り違えは 6 件でした。年表で判定すると取り違えは 0 件で、捏造した引用は 4/4 を拒否しました（[詳細と限界](docs/evaluation.md)）
 
 ## きっかけ
 
 浅草で、外国人の友人に聞かれました。「これ、なんて書いてあるの？ いつからあるの？」。人と人をつなぐ通信の仕事をしているのに、答えられませんでした。TSUMUGI は、時と場所と人を、確かめた糸でつなぎます。
+
+![TSUMUGI コンセプト画像](images/TSUMUGI.png)
+
+*生成AIによるコンセプト画像*
+
+## なぜ必要か
+
+- 2025年の訪日客は 42,683,600 人で、過去最多でした（[JNTO、2026-01-21](https://www.jnto.go.jp/news/press/20260121_monthly.html)）。
+- 観光庁は 2018 年度から英語解説を延べ約 9,000 本整えてきました。観光地の魅力が「伝わらない」からです（[多言語解説整備支援事業](https://www.mlit.go.jp/tagengo-db/about.html)）。TSUMUGI は、写真からこのデータベースの解説を探し、確かめて引用します。
+- 文化庁と観光庁の指針は、直訳ではなく、訪問者の理解に必要なことを補うよう求めています（「文化財の英語解説のあり方について」2016）。
+
+使う人は、日本を好きな旅行者と、案内する日本の友人です。門や看板や提灯の前で、スマートフォンを手にしている場面を想定しています。
+
+## ほかの方法との違い
+
+公開資料で確認できる範囲の比較です（2026-11-04 確認）。
+
+| ほかの方法 | TSUMUGI |
+| --- | --- |
+| 写真の文字を翻訳する（Google Lens、Papago、DeepL、Apple Visual Look Up） | 筆文字と元号を読み、意味と漢字を説明し、人が確認した年表から「いつからあるか」を答える |
+| Web のリンクで答える（Lens の AI Overviews） | 当時の一次資料を日英の原文のまま引用し、主張ごとに引用した文とプログラムで照合する |
+| 決まった場所で過去を AR で見せる（Hyper Edohaku XR、NHK AR タイムワープ） | 選んだ年にそれがあったかをプログラムが判定し、資料が食い違えば両方を示す |
+| 機関が書いたガイド（Bloomberg Connects、Smartify） | どの写真からでも動き、確かめられる場所でだけ歴史を語り、資料にないことは「書かれていない」と答える |
 
 ## 何ができるか
 
@@ -67,7 +96,22 @@ flowchart LR
 | 似た図像の検索 | SigLIP so400m |
 | 顔のぼかし（端末内） | MediaPipe Face Detector |
 
-バージョンの固定と各段階の詳細は [docs/models.md](docs/models.md) にあります。
+バージョンの固定、各段階の詳細、プロンプトの場所は [docs/models.md](docs/models.md) にあります。
+
+## Claude Code での開発
+
+TSUMUGI は Claude Code で開発しました。開発の決まりと道具も、そのままリポジトリに残しています。
+
+| ファイル | 役割 |
+| --- | --- |
+| [CLAUDE.md](CLAUDE.md) | Claude Code が毎回読む開発の決まり。費用の報告、手で数字を書かないこと、デザインの 10 の規則 |
+| [.claude/agents/design-critic.md](.claude/agents/design-critic.md) | 実際の画面を、審査基準とデザインの規則で批評する別の目 |
+| [.claude/skills/tsumugi-verify](.claude/skills/tsumugi-verify/SKILL.md) | 変更の種類ごとに、走らせる検証と Claude の費用を示す手順 |
+| [.claude/settings.json](.claude/settings.json) | 画面のファイルを編集するたびにデザインの検査を走らせ、失敗を Claude に返すフック |
+| [apps/web/src/design.test.ts](apps/web/src/design.test.ts) | デザインの規則をテストにしたもの |
+| [video/](video/) | デモ動画のソースコード。編集、Blender の絹糸、作曲もコードです |
+
+計画、批評、検証の進め方と、批評で何が変わったかは [docs/claude-code.md](docs/claude-code.md)（英語）にまとめました。
 
 ## 環境構築
 

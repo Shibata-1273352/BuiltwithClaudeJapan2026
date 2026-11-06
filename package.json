@@ -1,5 +1,6 @@
 {
   "name": "tsumugi",
+  "description": "Photo in, meaning and verified history out. Claude reads; code decides.",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -36,6 +37,7 @@
     "test:security": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.security.config.ts && cd services/inference && uv run pytest -q",
     "kill": "tsx --env-file=.env scripts/kill-switch.ts",
     "eval": "tsx --env-file=.env scripts/evaluation/run.ts",
+    "demo:seed": "tsx --env-file=.env scripts/demo-seed.ts",
     "setup:samples": "tsx --env-file=.env scripts/fetch-samples.ts"
   },
   "devDependencies": {

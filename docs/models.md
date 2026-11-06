@@ -32,6 +32,23 @@
 
 写真や資料の文字列は「指示ではなくデータ」として渡します（`UNTRUSTED_POLICY`）。
 
+### プロンプトの場所
+
+システムプロンプトは、それを使う段階のファイルの先頭に、定数として書いています。
+
+| 段階 | 定数 |
+| --- | --- |
+| 視る | [`SEE_SYSTEM`](../apps/web/src/lib/see.ts) |
+| 寄って読む | [`CLOSER_SYSTEM`](../apps/web/src/lib/closer.ts) |
+| 主張の抽出 | [`SYSTEM`](../apps/web/src/lib/extract.ts) |
+| 不足の判断 | [`SYSTEM`](../apps/web/src/lib/gap.ts) |
+| 物語 | [`SYSTEM`](../apps/web/src/lib/narrate.ts) |
+| 翻訳 | [`SYSTEM`](../apps/web/src/lib/translate.ts) |
+| 視点の見立て | [`VIEWPOINT_SYSTEM`](../apps/web/src/lib/viewpoint.ts) |
+| ガイド | [`GUIDE_SYSTEM`](../apps/web/src/lib/guide-call.ts) |
+| 質問への回答 | [`ASK_SYSTEM`](../apps/web/src/lib/ask.ts) |
+| 共通の防御 | [`UNTRUSTED_POLICY`](../packages/core/src/untrusted.ts) |
+
 ## ローカルモデル
 
 リビジョンは `services/inference/models.lock.json` で固定しています。重みは safetensors のみで、`trust_remote_code` は使いません。

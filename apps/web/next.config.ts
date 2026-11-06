@@ -5,7 +5,7 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-// ASI05 / 9.4.3: no inline HTML from data, strict CSP, same-origin only.
+// ASI05 / 9.4.3: no inline HTML from data; connections are same-origin only.
 const csp = [
   "default-src 'self'",
   // 'wasm-unsafe-eval': on-device face detection (MediaPipe WASM, same-origin); does not allow JS eval.

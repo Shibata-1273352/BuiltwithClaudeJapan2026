@@ -1,6 +1,6 @@
 /**
- * The evaluation numbers for the stage (6.5, 2:40), computed from the stored result file — the same
- * figures as evaluation/results/<date>.md, never typed in by hand.
+ * The evaluation numbers, computed from the stored result file: the same figures as
+ * evaluation/results/<date>.md. eval-docs.test.ts checks the READMEs and docs against them.
  */
 import result from "../../../../evaluation/results/latest.json";
 
