@@ -1,5 +1,6 @@
 {
   "name": "tsumugi",
+  "description": "Photo in, meaning and verified history out. Claude reads; code decides.",
   "private": true,
   "type": "module",
   "license": "MIT",

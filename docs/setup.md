@@ -60,7 +60,7 @@ npm run inference         # http://127.0.0.1:8100（別のターミナルで実�
 ```bash
 set -a; . ./.env; set +a          # $DATA_DIR をシェルに読み込む
 npm run corpus:ingest            # 資料の取得、抜粋の照合、データベースの作成
-npm run corpus:headers -- --all  # 章ごとの文脈（Claude を使う。現在の資料で約 $7）
+npm run corpus:headers -- --all  # 章ごとの文脈（任意。Claude を使う。現在の資料で約 $7）
 npm run setup:samples            # パブリックドメイン、CC0 のサンプル写真
 (cd services/inference && uv run python scripts/build_scene.py artifact met-56689 "$DATA_DIR/samples/met_56689.jpg")
 (cd services/inference && uv run python scripts/build_scene.py photo "$DATA_DIR/samples/kaminarimon_cc0.jpg" --artifact met-56689)
@@ -89,7 +89,7 @@ npm run start -w web -- -p 3000
 | 画面 | パス |
 | --- | --- |
 | トップ | `/` |
-| 雷門で試す | `/live`（開くと Claude を呼ぶ探索が始まる。約 $0.4） |
+| 雷門で試す | `/live`（開くと Claude を呼ぶ探索が始まる。平均 約 $0.3） |
 | 上野・根本中堂で試す | `/live?sample=kaneiji_konponchudo_cc0.jpg`（同上） |
 | しくみ | `/how` |
 | 旅ノート | `/notes` |
@@ -112,7 +112,7 @@ npm run eval -- --no-llm  # Claude を呼ばない評価
 
 ## 費用の目安
 
-実際に Claude を呼ぶ探索は、1回およそ $0.2〜$0.4 です（標準速度の実測）。`CLAUDE_FAST=1` では高くなります。録画の再生は Claude を呼びません。
+実際に Claude を呼ぶ探索は、1回平均 $0.323 です（[実測の記録](../evaluation/results/2026-11-04.md)）。`CLAUDE_FAST=1` ではおよそ2倍になります。録画の再生は Claude を呼びません。
 
 ## トラブルシューティング
 
@@ -120,5 +120,6 @@ npm run eval -- --no-llm  # Claude を呼ばない評価
 | --- | --- |
 | 画面に「空間解析：簡易表示」と出る | 推論サーバーが動いているか（`npm run inference`）。GPU を使う別の処理と重なるとタイムアウトする |
 | 401 になる | `/?token=<ACCESS_TOKEN>` を開いたか |
+| どの画面も 503 になる | `ACCESS_TOKEN` が 16 文字以上か（`LOCAL_NO_AUTH=1` でも必要） |
 | 根拠グラフに保存されない | Docker と Neo4j が動いているか（`npm run graph:up`） |
 | 探索が始まらない | `DAILY_COST_LIMIT_USD` と、停止スイッチ（`npm run kill -- status`） |

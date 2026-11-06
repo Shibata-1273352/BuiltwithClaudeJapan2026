@@ -2,11 +2,17 @@
 
 [日本語](README.md) | **English**
 
-![TSUMUGI concept image](images/TSUMUGI.png)
-
-*Concept image, made with generative AI*
-
 > Take a photo — the Japan in front of you turns into meaning and story.
+
+![The TSUMUGI app after a run at Kaminarimon](apps/web/public/landing/hero-en.jpg)
+
+| Read | Across time | Take it home |
+| --- | --- | --- |
+| ![Claude's guide note](apps/web/public/landing/read-en.jpg) | ![1878: the permanent gate had not been rebuilt](apps/web/public/landing/time-en.jpg) | ![A postcard with the checked sentence](apps/web/public/landing/postcard-en.jpg) |
+
+- **Demo video:** added at submission
+- **Run it:** [`docs/setup.md`](docs/setup.md) (in Japanese); see Setup below
+- **How Claude is used:** [`docs/claude-code.md`](docs/claude-code.md), [`CLAUDE.md`](CLAUDE.md), [`.claude/`](.claude/)
 
 **Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer. My career has been at a telecom carrier, the job of connecting people; TSUMUGI (紡ぐ, *tsumugu*, to weave) connects time, place and people, with every thread checked against its source.
 
@@ -41,7 +47,7 @@
 
 **The story the demo tells** (all from stored sources): the gate burned in 慶応元年 (1865/66); 「実に95年間も雷門は再建されなかった」 (Sensō-ji); in 1960 it was rebuilt with Matsushita Kōnosuke's donation — said by Sensō-ji in Japanese and by the Japan Tourism Agency in English, which TSUMUGI ties into one knot; and Claude reads his name on the lantern base in the visitor's photo. When the record of the fire was thin, Claude decided to search again and found Takamura Kōun's memoir of that night, which disagrees with the temple's date; both are shown.
 
-- In the app: `/` (start), `/live` (try it at Kaminarimon; `?sample=kaneiji_konponchudo_cc0.jpg` at Konpon Chūdō, Ueno), `/how` (how Claude is used, measured), `/notes` (travel notes and the trip weave).
+- In the app: `/` (start), `/live` (try it at Kaminarimon; `?sample=kaneiji_konponchudo_cc0.jpg` at Konpon Chūdō, Ueno), `/how` (how Claude is used), `/notes` (travel notes and the trip weave).
 - Architecture, models, setup, licenses (Japanese): [`docs/architecture.md`](docs/architecture.md), [`docs/models.md`](docs/models.md), [`docs/setup.md`](docs/setup.md), [`docs/licenses.md`](docs/licenses.md)
 - Demo script (video): [`docs/demo-script.md`](docs/demo-script.md) · How Claude and Claude Code are used: [`docs/claude-code.md`](docs/claude-code.md)
 - Final verification (integration, acceptance, performance): [`docs/verification/final-2026-11-04.md`](docs/verification/final-2026-11-04.md)
@@ -57,10 +63,15 @@ Built for Built with Claude Japan 2026. Everything here was newly developed duri
 ```
 apps/web/            Next.js 16 (App Router) — UI, API, Claude calls, proxy.ts access control
 packages/core/       zod schemas shared by web and scripts (Evidence Graph domain, stage outputs)
-services/inference/  Python FastAPI server: SAM 3 segmentation + Depth Anything V2 (PyTorch MPS)
+services/inference/  Python FastAPI server: SAM 3, Depth Anything V2 and SigLIP (PyTorch MPS)
 infra/neo4j/         docker compose for Neo4j Community, constraints, seed
-scripts/             CLIs: graph init/dump, Claude "see" check, The Met probe
+corpus/              source definitions, entity dictionary, timelines
+evaluation/          evaluation cases and results
+scripts/             ingestion, checks, profiling and recording
 fixtures/            recorded external API responses for contract tests (tracked)
+tests/               security tests
+video/               the demo film as code: Remotion, Blender, the score
+docs/                documents
 ```
 
 Photos, masks, depth maps, corpora and graph dumps live **outside the repo** in `DATA_DIR`.
@@ -124,10 +135,10 @@ npm run typecheck && npm run lint
 (cd services/inference && uv run pytest)   # inference server: token, input validation, visual search
 npm run test:security         # SEC-01..10 (SEC-01..03 call Claude; SEC_SKIP_LLM=1 to skip; SEC-08 needs Neo4j)
 npm run secrets:scan          # gitleaks
-npm run eval -- --no-llm      # evaluation without Claude; drop --no-llm for the Batch API run (~$0.4)
+npm run eval -- --no-llm      # evaluation without Claude; drop --no-llm for the Batch API run (~$0.5)
 npm run kill -- status        # kill switch: on | off | status
 
-# end to end against a running server (real Claude, ~$0.2 each; replay needs none)
+# end to end against a running server (real Claude, ~$0.3 each; replay needs none)
 npm run e2e:explore -- http://127.0.0.1:3000 "$DATA_DIR/samples/kaminarimon_cc0.jpg"
 npm run e2e:capture -- http://127.0.0.1:3000 "$DATA_DIR/samples/kaminarimon_cc0.jpg"
 npx tsx --env-file=.env scripts/e2e-replay.ts http://127.0.0.1:3000 <exploration id>
@@ -157,7 +168,7 @@ npm run met -- 56689                              # The Met endpoints + fixture
 
 Pins live in `services/inference/models.lock.json` and `infra/neo4j/docker-compose.yml`.
 
-### Claude API limits observed (2026-11-02)
+### Claude API cost observed (2026-11-02)
 
 One "see" call costs about $0.05.
 
@@ -183,7 +194,7 @@ local GPU / code / Neo4j), a step rail with timers and an ETA; below: the result
 
 After done, 「時をめくる」 (year slider 1856 → 1878 → 1960) and 「言の地層」 open over the stage, and 舞台裏 shows one check at work on this photo (a negation caught and downgraded) and this run's Claude calls — no evaluation numbers (those stay in this README). Rehearsal of the 6.5 script in presenter mode, with timings and a screenshot per scene: `npx tsx --env-file=.env scripts/rehearse.ts <base> [/replay/<id> | /live]` (default: `DEMO_REPLAY_ID`, no Claude call).
 
-Checks: `npx tsx --env-file=.env scripts/e2e-sample.ts <base>` (live, ~$0.24), `scripts/e2e-demo.ts <base> <id>` (the public recording from a fresh session), `scripts/stage-shots.ts <base> /replay/<id> [--phone] [--at 3,15,25,40]`.
+Checks: `npx tsx --env-file=.env scripts/e2e-sample.ts <base>` (live, ~$0.3), `scripts/e2e-demo.ts <base> <id>` (the public recording from a fresh session), `scripts/stage-shots.ts <base> /replay/<id> [--phone] [--at 3,15,25,40]`.
 
 ## The Loom: touch, pull, weave
 
@@ -256,30 +267,30 @@ Benchmarks: `scripts/bench-see.ts <photo>` (Claude), `scripts/bench-scene.ts <ph
 
 ## Evaluation (`npm run eval`, REQUIREMENTS.md 10)
 
-A hand-made evaluation set (3 sites; gold annotated by Claude Code, a person's review comes next). It covers citation agreement and mis-bindings of entity and era; measuring hallucination in general is future work. The tables below are the first run (`evaluation/results/2026-11-03.md`); the latest run is [`evaluation/results/2026-11-04.md`](evaluation/results/2026-11-04.md) (Japanese summary: [`docs/evaluation.md`](docs/evaluation.md)). Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
+A hand-made evaluation set (3 sites; gold annotated by Claude Code, a person's review comes next). It covers citation agreement and mis-bindings of entity and era; measuring hallucination in general is future work. The tables below are the latest run, [`evaluation/results/2026-11-04.md`](evaluation/results/2026-11-04.md) (Japanese summary: [`docs/evaluation.md`](docs/evaluation.md)); every run is kept in [`evaluation/results/`](evaluation/results/), and a test checks these figures against the stored result. Cases: [`evaluation/cases.json`](evaluation/cases.json), frozen before the first run; the gold pool is built without the retrieval under test (`scripts/evaluation/pool.ts`).
 
 | Method (4.9) | Recall@10 en / ja | Entity identification | Relation (observed ≠ mentions) | Support (proxy) |
 | --- | --- | --- | --- | --- |
 | A full-text only | 71% / 45% | – | – | – |
-| B names + relation co-occurrence + RRF (no vector channel) | 71% / 41% | – | – | – |
-| C B + Claude selection, no code checks | 53% / 48% | 96% (n=24) | 100% (n=13) | 94% |
-| D B + Claim/Evidence checked by code | as B | 100% (n=18) | 100% (n=16) | 86% |
-| D+ D + gap round (adopted) | candidates 71% / 52% | 100% (n=20) | 100% (n=20) | 79% |
+| B names + relation co-occurrence + RRF (no vector channel) | 71% / 41% | 100% | – | – |
+| C B + Claude selection, no code checks | 60% / 46% | 95% (n=22) | 100% (n=15) | 94% |
+| D B + Claim/Evidence checked by code | as B | 100% (n=23) | 100% (n=30) | 74% |
+| D+ D + gap round (adopted) | candidates 74% / 61% | 100% (n=41) | 100% (n=49) | 67% |
 
 | Ablation (10.3) | With | Without |
 | --- | --- | --- |
 | Context headers (Recall@10 en / ja) | 71% / 41% | 63% / 41% |
 | Time range: existence accuracy / era mis-bindings | 100% / 0 | 41% / 6 (judged by publication date) |
-| Relation context: identification / support (proxy) | 100% / 86% | 100% / 91% |
-| Gap round: candidate recall en / ja | 71% / 52% | 71% / 50% |
+| Relation context: identification / support (proxy) | 100% / 74% | 100% / 72% |
+| Gap round: candidate recall en / ja | 74% / 61% | 71% / 50% |
 
-Also (first run): citations match the canonical text by construction (code cuts them; the check guards the pipeline, it does not measure Claude); fabricated citations rejected 4/4 (synthetic cases); narration sentences written beyond the claims and caught by the checks 1 of 20, none shown (failing sentences are never shown, by design); holds where the gold says hold 5/5. Existence accuracy is judged against the same timeline the gold comes from, so it is a regression check; the publication-date ablation is the informative number. Live-run figures (median time, cost, failures) and the batch size of the latest run are in its report.
+Also: citations match the canonical text by construction (100%, n=95; code cuts them, so the check guards the pipeline and does not measure Claude); fabricated citations rejected 4/4 (synthetic cases); narration sentences written beyond the claims and caught by the checks 0 of 18, none shown (failing sentences are never shown, by design); holds where the gold says hold 5/5. Existence accuracy is judged against the same timeline the gold comes from, so it is a regression check; the publication-date ablation is the informative number. Live-run figures (median time, cost, failures) and the batch size are in the report.
 
-**Next:** on this small set Claude's raw proposals were already 100% on the listed forbidden claims, so the value of the code checks shows up in citations, time and narration. Relation precision and the effect of the relation context will be tested with harder cases.
+**Next:** on this small set Claude's raw proposals were already 100% on the listed forbidden claims, so the value of the code checks shows up in citations, time and narration. The support proxy for D+ was 67%; separating its causes, and testing relation precision and the relation context, needs harder cases.
 
 ## Security notes (OWASP Agentic Top 10, see REQUIREMENTS.md 9.4)
 
-- Access token → HttpOnly / Secure / SameSite=Strict cookie; cross-origin state-changing requests rejected; strict CSP.
+- Access token → HttpOnly / Secure / SameSite=Strict cookie; cross-origin state-changing requests rejected; a CSP limits connections to the same origin (inline scripts stay allowed for Next.js).
 - `LOCAL_NO_AUTH=1` (opt-in, development) skips only the token for a browser on the same machine: the Host must be loopback and no forwarding header (X-Forwarded-*, Cf-*, Forwarded) may be present, so the tunnel URL always needs the token. Same-origin checks for state changes still apply.
 - Neo4j and the inference server listen on 127.0.0.1 only; the inference server requires a bearer token and validates inputs.
 - Text from photos, books and records is passed to Claude as delimited data with an explicit "do not follow" policy; outputs are schema-validated before use.
