@@ -5,7 +5,8 @@
  *
  *   npx tsx --env-file=.env scripts/record-takes.ts <baseUrl> <take> [--scene id]
  * takes: full (--source replay|live), live (one real run, costs a Claude run), read, years, space, close,
- * wall (the landing, a click, a real run begins), other (the second sample, a real run)
+ * wall (the landing, a click, a real run begins), other (the second sample, a real run),
+ * ueno (the second sample and its years, --source replay|live; UENO_SAMPLE names the file)
  * Output: video/out/takes/<take>.mp4
  */
 import { execFileSync } from "node:child_process";
@@ -225,6 +226,33 @@ const takes: Record<string, () => Promise<void>> = {
     await panel.getByTestId("time-knot").waitFor({ timeout: 60_000 });
     beat("knot");
     await hold(6000);
+  },
+  /**
+   * The second place, its run and then its years: the same 1878 book gives another answer here.
+   * `--source replay` rehearses on the recording, at no cost; `--source live` is one real run.
+   */
+  async ueno() {
+    const live = rest.includes("--source") && rest[rest.indexOf("--source") + 1] === "live";
+    await roll();
+    await page.goto(live ? `${base}/live?sample=${process.env.UENO_SAMPLE}&present=1&hold=broken` : `${R}?present=1&hold=broken`, { waitUntil: "domcontentloaded" });
+    beat("stage open");
+    await vis(page, "note-link").waitFor({ timeout: 150_000 });
+    beat("run done");
+    console.log(`run ${live ? new URL(page.url()).searchParams.get("run") : replay}`);
+    await hold(2500);
+    beat("turn the years");
+    const handle = vis(page, "time-handle");
+    await handle.focus();
+    for (let i = 0; i < 14; i++) {
+      await page.keyboard.press("Shift+ArrowUp");
+      await hold(70);
+    }
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press("ArrowUp");
+      await hold(90);
+    }
+    beat("1878");
+    await hold(5000);
   },
   /** Sharp stills for the enlarged cuts: a device scale of 2, from the recording, no Claude call. */
   async stills() {

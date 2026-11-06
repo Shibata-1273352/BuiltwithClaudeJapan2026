@@ -7,7 +7,7 @@
     "studio": "remotion studio src/index.ts",
     "typecheck": "tsc --noEmit",
     "opening": "remotion render src/index.ts Opening out/opening.mp4 --crf=16 --color-space=bt709",
-    "film": "remotion render src/index.ts Film out/film.mp4 --crf=20 --color-space=bt709",
+    "film": "caffeinate -i sh scripts/render-film.sh",
     "path-check": "remotion still src/index.ts PathCheck out/path-check.png",
     "sheet": "node scripts/contact-sheet.mjs",
     "qa": "node scripts/qa.mjs",
