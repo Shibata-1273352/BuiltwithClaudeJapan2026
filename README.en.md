@@ -6,13 +6,15 @@
 
 > Take a photo — the Japan in front of you turns into meaning and story.
 
+**▶ [Watch the demo video (2:51, YouTube, Japanese narration)](https://youtu.be/ftTCR_WoUME)**
+
 ![The TSUMUGI app after a run at Kaminarimon](apps/web/public/landing/hero-en.jpg)
 
 | Read | Across time | Take it home |
 | --- | --- | --- |
 | ![Claude's guide note](apps/web/public/landing/read-en.jpg) | ![1878: the permanent gate had not been rebuilt](apps/web/public/landing/time-en.jpg) | ![A postcard with the checked sentence](apps/web/public/landing/postcard-en.jpg) |
 
-- **Demo video:** [watch on YouTube](https://youtu.be/ftTCR_WoUME) (Japanese narration)
+- **The problem:** a translation app reads the sign but cannot say how long the thing has stood there, and an AI's answer gives no source to follow and can confuse the eras. TSUMUGI returns the words and the history of a photo with checked evidence
 - **Run it:** [`docs/setup.md`](docs/setup.md) (in Japanese) starts with a recorded run that needs only Node.js and uv: no API key, Neo4j or inference server. Full setup is below
 - **How Claude is used:** [`docs/claude-code.md`](docs/claude-code.md), [`CLAUDE.md`](CLAUDE.md), [`.claude/`](.claude/)
 
@@ -77,6 +79,16 @@ docs/                documents
 ```
 
 Photos, masks, depth maps, corpora and graph dumps live **outside the repo** in `DATA_DIR`.
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Web | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Three.js |
+| AI | Claude API (Anthropic SDK); inference server on FastAPI and PyTorch (MPS on Apple Silicon) |
+| Data | SQLite (sources and events), Neo4j Community (evidence graph) |
+| Checks | Vitest, Playwright, GitHub Actions, gitleaks |
+| Demo video | Remotion, Blender (Cycles), a score composed in Python |
 
 ## Setup
 
@@ -325,6 +337,16 @@ See [`docs/claude-code.md`](docs/claude-code.md). The project assets that were u
 - **Skills**: the `claude-api` skill before every API change (citations, Batch, fast mode); [`.claude/skills/tsumugi-verify`](.claude/skills/tsumugi-verify/SKILL.md) — which check to run for which change.
 - **Hooks**: [`.claude/settings.json`](.claude/settings.json) runs the design rules test (`apps/web/src/design.test.ts`) after every edit of a screen file, and feeds a failure back to Claude ([`scripts/hooks/design-check.mjs`](scripts/hooks/design-check.mjs)); gitleaks runs before every commit (lefthook).
 - **Verified on the machine**: every screen by screenshot scripts, the whole by `scripts/acceptance.ts`.
+
+## Status
+
+The Built with Claude Japan 2026 submission. The code under review is the tag `submission-v3`. The development record is kept in [Issues](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/issues?q=is%3Aissue) (in Japanese).
+
+## Author and acknowledgments
+
+Author: Takashi Shibata, AI engineer at a telecom carrier.
+
+Sources and images come from the public collections of the National Diet Library, Aozora Bunko, Project Gutenberg, Sensō-ji, Kan'ei-ji, the Japan Tourism Agency, The Metropolitan Museum of Art and Wikimedia Commons; the film's instruments are VSCO 2 Community Edition. Origins and terms: [`docs/licenses.md`](docs/licenses.md) and [`video/ASSETS.md`](video/ASSETS.md).
 
 ## License
 

@@ -6,6 +6,8 @@
 
 > 撮るだけで、目の前の日本が、意味と物語になる。
 
+**▶ [デモ動画を見る（2分51秒、YouTube）](https://youtu.be/ftTCR_WoUME)**
+
 TSUMUGI は、旅先で撮った一枚の写真から、そこに書かれた言葉と、その場所の歴史を、根拠をたどれる形で返すアプリです。Built with Claude Japan 2026 のために、ハッカソン期間中に新規開発しました。
 
 ![雷門の写真を解析した TSUMUGI の画面](apps/web/public/landing/hero-ja.jpg)
@@ -14,8 +16,8 @@ TSUMUGI は、旅先で撮った一枚の写真から、そこに書かれた言
 | --- | --- | --- |
 | ![Claude のガイド](apps/web/public/landing/read-ja.jpg) | ![1878年、恒久的な雷門はまだ再建されていなかった](apps/web/public/landing/time-ja.jpg) | ![確かめた一文の絵はがき](apps/web/public/landing/postcard-ja.jpg) |
 
-- **デモ動画：** [YouTube で見る](https://youtu.be/ftTCR_WoUME)（構成は [docs/demo-script.md](docs/demo-script.md)）
-- **動かす：** [キーなしで録画を見る](docs/setup.md#キーなしで見る)、[全手順](docs/setup.md)
+- **動画の構成：** [docs/demo-script.md](docs/demo-script.md)
+- **動かす：** [キーなしで録画を見る](#キーなしで録画を見る)、[すべての機能を使う](#すべての機能を使う)
 - **Claude の使い方：** [Claude Code での開発](#claude-code-での開発)
 - **評価：** 手作りの小さな評価セットで、資料の刊行年で判定すると存在の判定は 41%、時代の取り違えは 6 件でした。年表で判定すると取り違えは 0 件で、捏造した引用は 4/4 を拒否しました（[詳細と限界](docs/evaluation.md)）
 
@@ -27,7 +29,9 @@ TSUMUGI は、旅先で撮った一枚の写真から、そこに書かれた言
 
 *生成AIによるコンセプト画像*
 
-## なぜ必要か
+## 解く課題
+
+旅先で目の前の文字が読めても、それが何を意味し、いつからそこにあるのかまでは分かりません。写真の文字を訳すアプリは「いつからあるか」には答えず、AI の答えは根拠をたどれず、時代を取り違えることがあります。TSUMUGI は、写真から言葉と歴史を、確かめた根拠つきで返します。
 
 - 2025年の訪日客は 42,683,600 人で、過去最多でした（[JNTO、2026-01-21](https://www.jnto.go.jp/news/press/20260121_monthly.html)）。
 - 観光庁は 2018 年度から英語解説を延べ約 9,000 本整えてきました。観光地の魅力が「伝わらない」からです（[多言語解説整備支援事業](https://www.mlit.go.jp/tagengo-db/about.html)）。TSUMUGI は、写真からこのデータベースの解説を探し、確かめて引用します。
@@ -98,6 +102,16 @@ flowchart LR
 
 バージョンの固定、各段階の詳細、プロンプトの場所は [docs/models.md](docs/models.md) にあります。
 
+## 技術スタック
+
+| 層 | 技術 |
+| --- | --- |
+| Web | Next.js 16（App Router）、React 19、TypeScript、Tailwind CSS 4、Three.js |
+| AI | Claude API（Anthropic SDK）、推論サーバーは FastAPI と PyTorch（Apple Silicon の MPS） |
+| データ | SQLite（資料とイベント）、Neo4j Community（根拠グラフ） |
+| 検証 | Vitest、Playwright、GitHub Actions、gitleaks |
+| デモ動画 | Remotion、Blender（Cycles）、Python による作曲 |
+
 ## Claude Code での開発
 
 TSUMUGI は Claude Code で開発しました。開発の決まりと道具も、そのままリポジトリに残しています。
@@ -113,7 +127,30 @@ TSUMUGI は Claude Code で開発しました。開発の決まりと道具も�
 
 計画、批評、検証の進め方と、批評で何が変わったかは [docs/claude-code.md](docs/claude-code.md)（英語）にまとめました。
 
-## 環境構築
+## 動かし方
+
+### キーなしで録画を見る
+
+Node.js 22 以上と [uv](https://docs.astral.sh/uv/) だけで、保存した実行の録画を再生できます。API キー、Neo4j、推論サーバーは要らず、Claude も呼びません。
+
+```bash
+npm ci
+mkdir -p "$HOME/tsumugi-data"
+cat > .env <<EOF
+DATA_DIR=$HOME/tsumugi-data
+ACCESS_TOKEN=$(openssl rand -hex 32)
+LOCAL_NO_AUTH=1
+EOF
+npm run setup:samples            # CC0 のサンプル写真
+npm run corpus:ingest            # 資料の取得（Claude は使わない）
+npm run demo:seed                # 録画を読み込む
+echo "DEMO_REPLAY_ID=exp_2c03558d5c6d47cc9072" >> .env
+npm run build && npm run start -w web
+```
+
+http://localhost:3000/replay/exp_2c03558d5c6d47cc9072 を開くと、読み取りから物語までが元の速さで再生されます。
+
+### すべての機能を使う
 
 必要なもの：Apple Silicon の macOS（メモリ 16GB 以上）、Node.js 22 以上、[uv](https://docs.astral.sh/uv/)、Docker Desktop、gitleaks、Anthropic API キー、Hugging Face アカウント（SAM 3 の利用申請）。
 
@@ -122,9 +159,13 @@ cp .env.example .env     # 値の入れ方は docs/setup.md を参照
 npm ci
 npx lefthook install
 npm run graph:up && npm run graph:init
+# 推論サーバー、資料とサンプルの準備は docs/setup.md の 3〜4
+npm run setup:web-assets
+npm run build
+npm run start -w web -- -p 3000
 ```
 
-資料の取り込みとモデルの取得を含む全手順は [docs/setup.md](docs/setup.md) を参照してください。
+`http://localhost:3000/?token=<ACCESS_TOKEN>` を一度開くと使えます。「雷門で試す」は Claude を呼びます（費用の目安も docs/setup.md にあります）。各手順の詳細と確認コマンドは [docs/setup.md](docs/setup.md) にあります。
 
 ## ドキュメント
 
@@ -151,6 +192,16 @@ npm run graph:up && npm run graph:init
 - **名所の拡大：** 吾妻橋の年表の人の確認と、橋の世代ごとの管理を進め、名所を増やす
 - **評価の強化：** 正解データを人が確認し、より難しい事例を加える
 - **寄って読むの検証：** 銘板の前半は写真の中でぼやけており、読み取りと知識による補完の切り分けが次の課題です。高解像度の写真で検証する
+
+## 状態
+
+Built with Claude Japan 2026 の提出版です。審査の対象となるコードは、タグ `submission-v3` の時点のものです。開発の過程は [Issues](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/issues?q=is%3Aissue) に残しています。
+
+## 作者と謝辞
+
+作者：柴田 高志（通信事業者の AI エンジニア）
+
+資料と画像は、国立国会図書館、青空文庫、Project Gutenberg、浅草寺、寛永寺、観光庁、The Metropolitan Museum of Art、Wikimedia Commons の公開資料を使わせていただきました。動画の音源は VSCO 2 Community Edition です。出所と条件は [docs/licenses.md](docs/licenses.md) と [video/ASSETS.md](video/ASSETS.md) にあります。
 
 ## ライセンス
 
