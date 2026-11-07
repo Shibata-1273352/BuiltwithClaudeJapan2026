@@ -131,24 +131,40 @@ TSUMUGI は Claude Code で開発しました。開発の決まりと道具も�
 
 ### キーなしで録画を見る
 
-Node.js 22 以上と [uv](https://docs.astral.sh/uv/) だけで、保存した実行の録画を再生できます。API キー、Neo4j、推論サーバーは要らず、Claude も呼びません。
+Node.js 22 以上だけで、保存した実行の録画を操作できます。API キー、GPU、Neo4j、推論サーバーは要らず、Claude も呼びません。
+
+本来の TSUMUGI は、写真の切り抜き（SAM 3）、奥行き（Depth Anything V2）、似た図像の検索（SigLIP）を GPU の推論サーバーで計算し、Claude API が写真を読みます。この手順は CPU だけで動く再現環境です。実際の実行で得た Claude の出力、切り抜き、奥行きを保存したものを読み込み、再生します。資料のデータベースと画像は、Release [`demo-assets-v1`](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/releases/tag/demo-assets-v1) から取得します。
+
+新しく clone したフォルダで実行してください（`.env` を作り直します）。
 
 ```bash
 npm ci
-mkdir -p "$HOME/tsumugi-data"
+mkdir -p "$HOME/tsumugi-data/cache"
 cat > .env <<EOF
 DATA_DIR=$HOME/tsumugi-data
 ACCESS_TOKEN=$(openssl rand -hex 32)
 LOCAL_NO_AUTH=1
+DEMO_REPLAY_ID=exp_2c03558d5c6d47cc9072
+TSUMUGI_KILL=1
 EOF
-npm run setup:samples            # CC0 のサンプル写真
-npm run corpus:ingest            # 資料の取得（Claude は使わない）
-npm run demo:seed                # 録画を読み込む
-echo "DEMO_REPLAY_ID=exp_2c03558d5c6d47cc9072" >> .env
-npm run build && npm run start -w web
+R=https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/releases/download/demo-assets-v1
+npm run setup:samples                                                     # CC0 のサンプル写真
+curl -fsSL "$R/tsumugi-demo-corpus.tar.gz" | tar xz -C "$HOME/tsumugi-data"       # 資料のデータベース
+npm run demo:seed                                                         # 録画を読み込む
+curl -fsSL "$R/tsumugi-demo-cache.tar.gz" | tar xz -C "$HOME/tsumugi-data/cache"  # 切り抜き、奥行き、広重の版画
+npm run build
+npm run start -w web -- -H 127.0.0.1                                      # このマシンからだけ開ける
 ```
 
-http://localhost:3000/replay/exp_2c03558d5c6d47cc9072 を開くと、読み取りから物語までが元の速さで再生されます。
+http://localhost:3000/replay/exp_2c03558d5c6d47cc9072 を開くと、Claude が写真を読み、資料を探し、確かめるまでが元の速さで再生されます。再生が終わったら、写真の下のボタンから次の動線をたどれます。
+
+- **時をめくる → 時を流す：** 年が流れ、門が焼け、再建されます。焼けた日が資料で食い違う1866年では、両方の根拠を示します
+- **言の地層 → 名をたどる：** 広重の版画の上で、資料ごとの呼び名を手前から奥へたどります
+- **絵の中へ：** 1856年の広重の版画が、奥行きを持って開きます
+
+写真の提灯に触れたり、右の年表を1878年まで動かしたりもできます。「糸を引く」の質問欄は、この環境では答えを返しません（`TSUMUGI_KILL=1` で Claude を呼ばない設定のため）。
+
+審査用に、同じ構成の公開版（https://tsumugi-demo.onrender.com）も用意しています。アクセス用の鍵は、提出フォームでお伝えしています。
 
 ### すべての機能を使う
 

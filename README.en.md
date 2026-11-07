@@ -15,7 +15,7 @@
 | ![Claude's guide note](apps/web/public/landing/read-en.jpg) | ![1878: the permanent gate had not been rebuilt](apps/web/public/landing/time-en.jpg) | ![A postcard with the checked sentence](apps/web/public/landing/postcard-en.jpg) |
 
 - **The problem:** a translation app reads the sign but cannot say how long the thing has stood there, and an AI's answer gives no source to follow and can confuse the eras. TSUMUGI returns the words and the history of a photo with checked evidence
-- **Run it:** [`docs/setup.md`](docs/setup.md) (in Japanese) starts with a recorded run that needs only Node.js and uv: no API key, Neo4j or inference server. Full setup is below
+- **Run it without keys:** the commands in [README.md, 「キーなしで録画を見る」](README.md#キーなしで録画を見る) need only Node.js: no API key, GPU, Neo4j or inference server. It is a CPU-only reproduction that replays a stored run, including the cut-outs and depth computed on the GPU at the time, so touching objects, turning the years and 「絵の中へ」 (into the print) all work; Claude is never called. A hosted copy for the judges is at https://tsumugi-demo.onrender.com (access key in the submission form). Full setup is below
 - **How Claude is used:** [`docs/claude-code.md`](docs/claude-code.md), [`CLAUDE.md`](CLAUDE.md), [`.claude/`](.claude/)
 
 **Where it began.** In Asakusa, a friend from abroad asked me, “What does this say? How long has it been here?” — and I could not answer. My career has been at a telecom carrier, the job of connecting people; TSUMUGI (紡ぐ, *tsumugu*, to weave) connects time, place and people, with every thread checked against its source.
