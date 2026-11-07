@@ -13,24 +13,38 @@
 
 ### キーなしで見る
 
-Node.js と [uv](https://docs.astral.sh/uv/) だけで、保存した実行の録画を動かせます。API キー、Neo4j、推論サーバーは要らず、Claude も呼びません。
+Node.js 22 以上だけで、保存した実行の録画を操作できます。API キー、GPU、Neo4j、推論サーバーは要らず、Claude も呼びません。GPU で計算した切り抜きと奥行き、Claude の出力を保存したものを再生する、CPU だけの再現環境です。資料のデータベースと画像は Release [`demo-assets-v1`](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/releases/tag/demo-assets-v1) から取得します。
+
+新しく clone したフォルダで実行してください（`.env` を作り直します）。
 
 ```bash
 npm ci
-mkdir -p "$HOME/tsumugi-data"
+mkdir -p "$HOME/tsumugi-data/cache"
 cat > .env <<EOF
 DATA_DIR=$HOME/tsumugi-data
 ACCESS_TOKEN=$(openssl rand -hex 32)
 LOCAL_NO_AUTH=1
+DEMO_REPLAY_ID=exp_2c03558d5c6d47cc9072
+TSUMUGI_KILL=1
 EOF
-npm run setup:samples            # CC0 のサンプル写真
-npm run corpus:ingest            # 資料の取得（Claude は使わない）
-npm run demo:seed                # 録画を読み込む
-echo "DEMO_REPLAY_ID=exp_2c03558d5c6d47cc9072" >> .env
-npm run build && npm run start -w web
+R=https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/releases/download/demo-assets-v1
+npm run setup:samples                                                     # CC0 のサンプル写真
+curl -fsSL "$R/tsumugi-demo-corpus.tar.gz" | tar xz -C "$HOME/tsumugi-data"       # 資料のデータベース
+npm run demo:seed                                                         # 録画を読み込む
+curl -fsSL "$R/tsumugi-demo-cache.tar.gz" | tar xz -C "$HOME/tsumugi-data/cache"  # 切り抜き、奥行き、広重の版画
+npm run build
+npm run start -w web -- -H 127.0.0.1                                      # このマシンからだけ開ける
 ```
 
-http://localhost:3000/replay/exp_2c03558d5c6d47cc9072 を開くと、読み取りから物語までが元の速さで再生されます。切り抜きと奥行きは画像なので含めていません。「絵の中へ」と、物に触れる操作には、下の全手順が必要です。
+http://localhost:3000/replay/exp_2c03558d5c6d47cc9072 を開くと、読み取りから物語までが元の速さで再生されます。再生後は、物に触れる操作、時をめくる、言の地層、「絵の中へ」を試せます。「糸を引く」の質問欄は、`TSUMUGI_KILL=1` のため答えを返しません。
+
+| 項目 | 内容 |
+| --- | --- |
+| `TSUMUGI_KILL=1` | 新しい探索と質問を止め、Claude を呼ばない |
+| `-H 127.0.0.1` | `LOCAL_NO_AUTH=1` は鍵なしで開けるため、このマシンからの接続だけを受ける |
+| 資料のデータベース | 録画に使う16資料の本文と索引。`npm run corpus:ingest` で作ったもので、自分で作る場合はこのコマンドを使う（PDF の2資料は uv が必要） |
+
+審査用の公開版（https://tsumugi-demo.onrender.com）は、同じ手順を Render の無料枠で動かしたものです。アクセス用の鍵が必要です。
 
 ### 1. 環境変数
 
