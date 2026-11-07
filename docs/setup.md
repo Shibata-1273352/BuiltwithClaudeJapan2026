@@ -44,7 +44,7 @@ http://localhost:3000/replay/exp_2c03558d5c6d47cc9072 を開くと、読み取�
 | `-H 127.0.0.1` | `LOCAL_NO_AUTH=1` は鍵なしで開けるため、このマシンからの接続だけを受ける |
 | 資料のデータベース | 録画に使う16資料の本文と索引。`npm run corpus:ingest` で作ったもので、自分で作る場合はこのコマンドを使う（PDF の2資料は uv が必要） |
 
-審査用の公開版（https://tsumugi-demo.onrender.com）は、同じ手順を Render の無料枠で動かしたものです。アクセス用の鍵が必要です。
+審査用の[公開版](https://tsumugi-demo.onrender.com)は、同じ手順を Render の無料枠で動かしたものです。アクセス用の鍵が必要です。
 
 ### 1. 環境変数
 
