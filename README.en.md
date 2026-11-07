@@ -58,7 +58,7 @@
 
 Built for Built with Claude Japan 2026. Everything here was newly developed during the hackathon period.
 
-**Future work:** choosing among Claude's place candidates (FR-07); narrowing search by a time range (FR-55); measuring haptics, sound and frame rate on real phones; French (FR-41); a person's review of Azuma Bridge and more places; harder evaluation cases.
+**Future work:** knowledge that grows: verified claims and their evidence are already stored in the evidence graph, so when the next visitor photographs the same place, TSUMUGI will answer from that stored evidence first and have Claude read only what is missing (what grows is only claims that pass the checks and timelines a person reviewed); choosing among Claude's place candidates (FR-07); narrowing search by a time range (FR-55); measuring haptics, sound and frame rate on real phones; French (FR-41); a person's review of Azuma Bridge and more places; harder evaluation cases.
 
 ## Layout
 
