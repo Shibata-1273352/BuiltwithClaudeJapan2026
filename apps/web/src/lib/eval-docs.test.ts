@@ -13,9 +13,9 @@ describe("evaluation figures in the docs", () => {
 
   it("Japanese README", () => {
     const text = read("README.md");
-    expect(text).toContain(`存在の判定は ${pct(s.existence.byPublication)}、時代の取り違えは ${s.existence.misbindPublication} 件`);
-    expect(text).toContain(`取り違えは ${s.existence.misbindWith} 件`);
-    expect(text).toContain(`捏造した引用は ${s.citation.rejected}/${s.citation.fabricated} を拒否`);
+    expect(text).toContain(`存在判定の正解率は${pct(s.existence.byPublication)}で、時代の取り違えが${s.existence.misbindPublication}件`);
+    expect(text).toContain(`取り違えは${s.existence.misbindWith}件`);
+    expect(text).toContain(`${s.citation.fabricated}件中${s.citation.rejected}件を拒否`);
   });
 
   it("English README", () => {
