@@ -340,7 +340,7 @@ See [`docs/claude-code.md`](docs/claude-code.md). The project assets that were u
 
 ## Status
 
-The Built with Claude Japan 2026 submission. The code under review is the tag `submission-v3`. The development record is kept in [Issues](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/issues?q=is%3Aissue) (in Japanese).
+The Built with Claude Japan 2026 submission. The code under review is the tag `submission`. The development record is kept in [Issues](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/issues?q=is%3Aissue) (in Japanese).
 
 ## Author and acknowledgments
 

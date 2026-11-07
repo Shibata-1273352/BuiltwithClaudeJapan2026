@@ -211,7 +211,7 @@ npm run start -w web -- -p 3000
 
 ## 状態
 
-Built with Claude Japan 2026 の提出版です。審査の対象となるコードは、タグ `submission-v3` の時点のものです。開発の過程は [Issues](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/issues?q=is%3Aissue) に残しています。
+Built with Claude Japan 2026 の提出版です。審査の対象となるコードは、タグ `submission` の時点のものです。開発の過程は [Issues](https://github.com/Shibata-1273352/BuiltwithClaudeJapan2026/issues?q=is%3Aissue) に残しています。
 
 ## 作者と謝辞
 
